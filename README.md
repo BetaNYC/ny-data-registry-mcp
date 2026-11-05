@@ -4,7 +4,7 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 
 It complements the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP rather than replacing it. This server knows *where* data is (140 sources across state, county, city, agency, library and nonprofit portals) and hands the agent the right Socrata domain or ArcGIS service. Querying the data stays with `socrata` and the other BetaNYC MCPs.
 
-Built by [BetaNYC](https://beta.nyc). **Status: 0.1.0, local only.** Not published to npm; no GitHub repo yet. The package name `@betanyc/ny-data-registry-mcp` is a working title and not claimed.
+Built by [BetaNYC](https://beta.nyc). **Status: 0.1.0.** Package: `@betanyc/ny-data-registry-mcp`.
 
 ---
 
@@ -39,48 +39,54 @@ All tool inputs are strict: an unknown parameter is rejected by name, never sile
 
 Requires **Node 22.13 or later** (it uses Node's built-in `node:sqlite`, so there is nothing native to compile).
 
-```bash
-cd ~/Code/ny-data-registry-mcp
-npm install
-npm run build
-npm test                       # offline; no network
-node dist/cli.js harvest       # build the index (read-only, throttled; see "Refresh")
-```
-
-Proposed `.mcp.json` entry (**not added anywhere**; adding it is a separate decision):
+Add it to your MCP client's config (Claude Desktop, Claude Code, Cursor, VS Code and others use this shape):
 
 ```json
 "ny-data-registry-mcp": {
-  "command": "node",
-  "args": ["${HOME}/Code/ny-data-registry-mcp/dist/index.js"],
-  "env": {}
+  "command": "npx",
+  "args": ["-y", "@betanyc/ny-data-registry-mcp"]
 }
 ```
 
-Once published to npm this would become `"command": "npx", "args": ["-y", "@betanyc/ny-data-registry-mcp"]`.
+That's all. **The first time it starts, it downloads the dataset index by itself** (about 19 MB, unzipped to about 110 MB). This takes a few seconds on a normal connection. The five registry tools work right away. If you ask a dataset question while the download is still running, the tool waits up to 45 seconds and then says "try again in a minute".
 
-### Get the index (no harvest needed)
+From source instead:
 
-> **Do this once after installing, or the dataset tools won't work.** The server does not download the index by itself. Without it, the five registry tools still work, and the other four reply with these same download steps.
-
-The phase 2 tools (`search_datasets`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. Download the latest one from the [releases page](https://github.com/BetaNYC/ny-data-registry-mcp/releases) instead of running a 15-minute harvest:
-
-```sh
-mkdir -p ~/.cache/betanyc/ny-data-registry
-curl -L https://github.com/BetaNYC/ny-data-registry-mcp/releases/latest/download/ny-data-index.sqlite.gz \
-  | gunzip > ~/.cache/betanyc/ny-data-registry/ny-data-index.sqlite
+```bash
+git clone https://github.com/BetaNYC/ny-data-registry-mcp && cd ny-data-registry-mcp
+npm install            # also builds
+npm test               # offline; no network
 ```
 
-Each index release is tagged `index-YYYY-MM-DD` and ships a `SHA256SUMS` file.
+and point your client at `node /path/to/ny-data-registry-mcp/dist/index.js`.
+
+### The dataset index
+
+The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. It holds **metadata only**: titles, descriptions, column names and types, formats and links. No dataset contents.
+
+- **Where it comes from:** the `index-latest` release, at a fixed URL: `https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz`. Dated snapshots are kept as `index-YYYY-MM-DD` releases.
+- **Checked before use:** the server checks both SHA-256 sums in the release's `SHA256SUMS` file (the `.gz` and the unzipped `.sqlite`) and the schema version. A file that fails any check is never installed.
+- **Where it goes:** `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` (change with `NY_DATA_INDEX`).
+- **When:** only when the file is missing. An existing index is never replaced on its own.
+- **Get or refresh it by hand:**
+
+  ```bash
+  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download          # if missing
+  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download --force  # replace with the newest
+  ```
+
+- **Turn the download off:** set `NY_DATA_INDEX_AUTO_DOWNLOAD=0`. Then the dataset tools reply with these steps instead. Or build your own index with `ny-data-registry harvest` (see "Refresh").
 
 ### Environment variables (all optional)
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `NY_DATA_INDEX` | `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` | Where the index lives |
+| `NY_DATA_INDEX_AUTO_DOWNLOAD` | on | `0` = never download the index on first run |
+| `NY_DATA_INDEX_URL` | the `index-latest` release | Download the index from somewhere else (it must have a `SHA256SUMS` beside it) |
 | `NY_DATA_CACHE_DIR` | `${HOME}/.cache/betanyc/ny-data-registry` | Registry refresh cache and HTTP cache |
 | `NY_DATA_REGISTRY_REFRESH` | on | `0` = never fetch the published registry; use the bundled copy |
-| `NY_DATA_OFFLINE` | off | `1` = refuse every network call (tests use this) |
+| `NY_DATA_OFFLINE` | off | `1` = refuse every network call, including the first-run download (tests use this) |
 | `NY_DATA_MAX_LAYERS` | 250 | Per-portal cap on ArcGIS field requests per harvest |
 | `NY_DATA_MIN_INTERVAL_MS` | 1000 | Minimum gap between requests to one host (cannot be set below 1000) |
 | `SOCRATA_APP_TOKEN` | none | Sent as `X-App-Token` to the Socrata Discovery API |

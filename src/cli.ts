@@ -3,6 +3,7 @@
  * ny-data-registry harvest [--only id,id] [--max-layers N] [--concurrency N] [--stats-out file]
  * ny-data-registry eval [--out file]
  * ny-data-registry stats
+ * ny-data-registry download [--force]
  */
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -10,6 +11,7 @@ import { runHarvest } from "./harvest/run.js";
 import { refreshRegistry } from "./registry.js";
 import { indexInfo } from "./datasets.js";
 import { runEval } from "./eval.js";
+import { downloadIndex, indexUrl } from "./fetchindex.js";
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -17,8 +19,13 @@ function arg(name: string): string | undefined {
 }
 
 const cmd = process.argv[2];
-await refreshRegistry();
-if (cmd === "harvest") {
+if (cmd !== "download") await refreshRegistry();
+if (cmd === "download") {
+  const force = process.argv.includes("--force");
+  console.error(`downloading ${indexUrl()} ...`);
+  const r = await downloadIndex({ force });
+  console.log(r.skipped ? `index already installed at ${r.path} (${r.bytes} bytes); use --force to replace it` : `installed ${r.path} (${r.bytes} bytes), checksums verified`);
+} else if (cmd === "harvest") {
   const summary = await runHarvest({
     only: arg("only")?.split(","),
     maxLayers: arg("max-layers") ? Number(arg("max-layers")) : undefined,
@@ -44,6 +51,6 @@ if (cmd === "harvest") {
 } else if (cmd === "stats") {
   console.log(JSON.stringify(indexInfo(), null, 2));
 } else {
-  console.error("usage: ny-data-registry <harvest|eval|stats> [options]");
+  console.error("usage: ny-data-registry <download|harvest|eval|stats> [options]");
   process.exitCode = 2;
 }

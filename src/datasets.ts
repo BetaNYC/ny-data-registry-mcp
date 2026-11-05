@@ -10,14 +10,15 @@ import { resolvePlace, places, type ResolvedPlace } from "./places.js";
 import { registry } from "./registry.js";
 
 export class NoIndexError extends Error {
-  constructor() {
+  constructor(detail?: string) {
     super(
-      `The harvested index is not built yet (looked for ${indexPath()}). ` +
-        "Download the prebuilt index (one command, see the README section 'Get the index'): " +
-        "https://github.com/BetaNYC/ny-data-registry-mcp/releases/latest/download/ny-data-index.sqlite.gz " +
-        "and unzip it to that path. Or build it yourself with `npx ny-data-registry harvest` (15-60 minutes, " +
-        "read-only and throttled), or set NY_DATA_INDEX to an existing ny-data-index.sqlite. The registry tools (find_sources, " +
-        "list_sources_for_place, how_to_query, check_source, registry_info) work without it."
+      `The dataset index is not installed yet (looked for ${indexPath()}). ` +
+        (detail ? `${detail} ` : "") +
+        "The server downloads it by itself on first run (about 19 MB, from " +
+        "https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz). " +
+        "To get it by hand, run `npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download`, or see the README section 'Get the index'. " +
+        "Or build it yourself with `ny-data-registry harvest` (15-60 minutes, read-only and throttled), or set NY_DATA_INDEX to an existing ny-data-index.sqlite. " +
+        "The registry tools (find_sources, list_sources_for_place, how_to_query, check_source, registry_info) work without it."
     );
   }
 }
