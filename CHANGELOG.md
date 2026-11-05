@@ -27,5 +27,7 @@ First build. Local only: not published, no remote repository.
   (`docs/scout-mapping.md`).
 - Offline tests with recorded fixtures, a stdio smoke test, and a fixed question
   set scored against the real index (`eval/`).
-- `harvest.yml` (nightly harvest, not enabled) and `ci.yml` (tests on Node 22.13
-  and 26).
+- `harvest.yml` (nightly harvest, not enabled) and `ci.yml` (tests on Node 22.16
+  and 26). Node 22.16 is the floor: official Node builds before it ship SQLite
+  without FTS5, and the index needs it. Opening the index on such a build gives a
+  clear error naming the fix.
