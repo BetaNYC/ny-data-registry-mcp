@@ -1,0 +1,56 @@
+# Nightly harvest of the NY open data catalog index.
+#
+# NOT ENABLED. The schedule is commented out and this repo has not been pushed anywhere.
+# Turning it on is a separate decision (Noel). When enabled it:
+#   1. builds the package and runs the offline tests,
+#   2. downloads the previous index from the latest release (so first_seen / whats_new
+#      carry over and unchanged ArcGIS layers are skipped),
+#   3. runs `ny-data-registry harvest` (read-only, throttled, robots.txt honored),
+#   4. runs the question set against the new index, and
+#   5. publishes ny-data-index.sqlite + harvest stats as a release asset.
+name: harvest
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: "17 7 * * *"   # 07:17 UTC daily (02:17 / 03:17 New York)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: harvest
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      NY_DATA_CACHE_DIR: ${{ github.workspace }}/.cache
+      NY_DATA_INDEX: ${{ github.workspace }}/.cache/ny-data-index.sqlite
+      # Optional: a Socrata app token raises the shared-pool throttle limit.
+      SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+      - run: npm ci
+      - run: npm test
+      - name: Fetch previous index (if any)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          gh release download index-latest --pattern ny-data-index.sqlite --dir .cache || echo "no previous index"
+      - name: Harvest
+        run: node dist/cli.js harvest --stats-out .cache/harvest-stats.json
+      - name: Question set
+        run: node dist/cli.js eval --out .cache/eval.md || echo "question set below target; see eval.md"
+      - name: Publish index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view index-latest >/dev/null 2>&1 || gh release create index-latest --title "Latest harvested index" --notes "Rebuilt by the harvest workflow."
+          gh release upload index-latest .cache/ny-data-index.sqlite .cache/harvest-stats.json .cache/eval.md --clobber

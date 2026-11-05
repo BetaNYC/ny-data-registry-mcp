@@ -1,0 +1,19 @@
+# Offline tests at both ends of the declared Node range (engines: >=22.13).
+# Not active until the repo is pushed; no network is used by the tests.
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ["22.13.0", "26.x"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm test

@@ -1,0 +1,60 @@
+
+> @betanyc/ny-data-registry-mcp@0.1.0 test
+> npm run build && node --test --test-concurrency=1 test/*.test.mjs
+
+
+> @betanyc/ny-data-registry-mcp@0.1.0 build
+> tsc
+
+✔ Socrata asset maps with the exact 4x4, zipped columns and provenance (0.61475ms)
+✔ ArcGIS OGC item maps, and DCAT adds formats and the landing page (1.101833ms)
+✔ Monroe gotcha: Esri's Living Atlas items are excluded from a county portal (0.173959ms)
+✔ items from another org, out-of-state items, and non-public items are excluded (0.184542ms)
+✔ out-of-state guard refuses a portal whose items are mostly outside New York (the old Delaware, Ohio Hub) (0.139542ms)
+✔ DCAT spatial and ArcGIS extents parse; bad values become null (0.052458ms)
+✔ harvest plan: adapters, skips and reasons (2.928416ms)
+✔ robots.txt: Disallow and Crawl-delay are honored for '*' (0.263625ms)
+✔ key columns: curated variants match, generic names do not (0.232125ms)
+✔ placeholder and projected extents mean 'unknown', never 'outside New York' (0.160834ms)
+✔ a place-specific search pushes down titles that name a different county (0.777375ms)
+✔ Socrata computed-region columns never get a join key, whatever their display name (0.045375ms)
+✔ offline mode refuses every request (0.463625ms)
+✔ one descriptive User-Agent with no email, robots.txt read first, and >= 1 s between requests to a host (2011.617833ms)
+✔ conditional requests: the ETag is sent back and a 304 is served from cache (2007.124583ms)
+✔ an HTML page where JSON was expected is a block, not data (1005.370167ms)
+✔ a layer blocked by robots.txt is skipped with a note; it does not fail the portal (5.026583ms)
+✔ an unstable Hub listing (repeats, short of numberMatched) is incomplete, so nothing gets marked removed (2006.103167ms)
+✔ search_datasets finds a dataset by title and by column name, across platforms (1.200958ms)
+✔ search_datasets filters by format and place; statewide portals cover every county (1.170833ms)
+✔ get_dataset_columns returns fields with provenance and distributions (0.4005ms)
+✔ find_joinable groups by curated key and ignores generic names (1.053042ms)
+✔ whats_new and the change lifecycle: added, changed, removed only on a complete harvest (1.983583ms)
+✔ phase 2 tools explain how to build a missing index (0.220833ms)
+✔ every platform string in the bundled registry is in the family table (none unmapped) (0.5355ms)
+✔ an unknown platform string is flagged unmapped, never guessed (0.053209ms)
+✔ UNCONFIRMED strings stay family null with status unconfirmed (0.033916ms)
+✔ family table has no unused rows and only allowed families (0.058917ms)
+✔ source ids are unique and stable (2.057166ms)
+✔ places resolve counties, cities, boroughs, NYC and regions (0.393459ms)
+✔ list_sources_for_place: Erie County was checked and has no portal (0.311542ms)
+✔ list_sources_for_place distinguishes not-in-registry from no-portal (0.273166ms)
+✔ find_sources defaults to live rows and never returns a dead one (8.646375ms)
+✔ how_to_query hands Socrata rows to the socrata MCP with the API domain, not the portal domain (0.358583ms)
+✔ how_to_query points to the matching @betanyc MCP and its env var (0.078042ms)
+✔ how_to_query flags UNCONFIRMED, undocumented, gated and dead rows and never invents an endpoint (0.451334ms)
+✔ check_source refuses keyed, gated and bot-blocking sources, and is offline in tests (0.349083ms)
+✔ registry_info reports counts and nothing unmapped (0.14175ms)
+✔ an upstream platform_family in the registry is preferred to the local table (0.091291ms)
+✔ stdio server starts, lists 9 tools, and answers every one (146.795166ms)
+✔ every advertised tool schema rejects unknown parameters (0.265375ms)
+✔ exactly the nine planned tools are advertised (0.231833ms)
+✔ an unknown parameter is rejected by name, with the accepted ones listed (0.611167ms)
+✔ a bad enum value is an error, not a silent default (0.125417ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7835.342917

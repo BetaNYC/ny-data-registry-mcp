@@ -1,0 +1,18 @@
+{
+  "_readme": [
+    "Curated join keys for find_joinable. A column gets a key label only if its normalized field name (lowercase, non-alphanumerics -> _) is listed here exactly.",
+    "Deliberately conservative: generic names like 'name', 'id', 'cd', 'ct', 'tract' or 'geoid' are NOT listed, because they match too many unrelated things.",
+    "`scope` says where the key is meaningful. BBL and BIN are NYC-only; SWIS and FIPS are New York State-wide; ZIP is national."
+  ],
+  "keys": {
+    "BBL": { "scope": "nyc", "fields": ["bbl", "bbl_10", "borough_block_lot", "base_bbl", "bbl_id", "bblnum", "parcel_bbl", "tax_lot_bbl"] },
+    "BIN": { "scope": "nyc", "fields": ["bin", "bin_number", "bin_", "building_identification_number", "bldg_bin", "bin_num"] },
+    "borough": { "scope": "nyc", "fields": ["borough", "boro", "boroname", "boro_name", "borough_name", "boro_nm", "borocode", "boro_code", "borough_code", "borough_cd", "boro_cd_name"] },
+    "community district": { "scope": "nyc", "fields": ["community_board", "community_district", "comm_district", "commdist", "boro_cd", "borocd", "community_board_district", "cb_district", "communitydistrict", "communityboard", "community_districts"] },
+    "council district": { "scope": "nyc", "fields": ["council_district", "coun_dist", "councildist", "city_council_district", "council_dist", "council_districts", "councildistrict", "cc_district"] },
+    "census tract": { "scope": "national", "fields": ["census_tract", "censustract", "ct2010", "ct2020", "boroct2010", "boroct2020", "census_tract_2010", "census_tract_2020", "tract_ce", "tractce", "tractce10", "tractce20", "nta_census_tract", "geoid_tract", "census_tract_geoid"] },
+    "SWIS": { "scope": "new-york-state", "fields": ["swis", "swis_code", "swiscode", "swis_cd", "swis_sbl_id", "muni_swis", "swis_id", "swis_cnty"] },
+    "FIPS": { "scope": "national", "fields": ["fips", "fips_code", "county_fips", "countyfips", "county_fips_code", "co_fips", "countyfp", "stcofips", "fips_county", "state_county_fips"] },
+    "ZIP": { "scope": "national", "fields": ["zip", "zipcode", "zip_code", "incident_zip", "postcode", "postal_code", "zcta", "modzcta", "zip5", "zip_cd", "zipcodes", "zcta5", "zcta5ce10", "zcta5ce20", "mod_zcta", "zip_code_1", "postalcode"] }
+  }
+}

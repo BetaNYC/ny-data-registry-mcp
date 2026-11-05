@@ -1,0 +1,113 @@
+→ nys-office-of-information-technology-services-gis-program-of--data-gis-ny-gov (hub)
+→ nys-adirondack-park-agency (hub)
+→ nys-department-of-environmental-conservation (agol-org)
+→ nys-department-of-state (hub)
+→ nys-office-of-parks-recreation-and-historic-preservation (agol-org)
+→ albany-county (hub)
+→ columbia-county (hub)
+→ warren-county (hub)
+→ city-of-syracuse (hub)
+→ cortland-county (hub)
+→ oswego-county (hub)
+→ dutchess-county (hub)
+→ orange-county (enterprise)
+→ sullivan-county (hub)
+→ nyc-department-of-city-planning--services5-arcgis-com (agol-org)
+→ putnam-county (hub)
+→ suffolk-county (hub)
+→ westchester-county (hub)
+→ otsego-county (hub)
+→ steuben-county (hub)
+→ tioga-county (hub)
+→ tompkins-county (hub)
+→ cattaraugus-county (hub)
+→ city-of-rochester (hub)
+→ genesee-county (hub)
+→ livingston-county (enterprise)
+→ monroe-county (enterprise)
+→ ontario-county (hub)
+→ wayne-county (enterprise)
+→ yates-county (enterprise)
+✓ orange-county: failed 0 datasets, 0 columns, 2s — network error for https://gis.orangecountygov.com/portal/sharing/rest/portals/self?f=json: UNABLE_TO_VERIFY_LEAF_SIGNATURE unable to verify the first certificate; if the root CA is installed locally, try running Node.js with --use-system-ca
+✓ yates-county: ok 108 datasets, 4528 columns, 26s
+✓ cattaraugus-county: ok 67 datasets, 2139 columns, 81s
+✓ steuben-county: ok 11 datasets, 209 columns, 121s — dcat: HTTP 500 from https://steubencounty-scnygis.opendata.arcgis.com/api/feed/dcat-us/1.1.json: {"error":"Cannot read properties of undefined (reading 'dcatUS1X')"}
+✓ putnam-county: ok 26 datasets, 1138 columns, 121s — dcat: HTTP 403 from https://data-pcny.opendata.arcgis.com/api/feed/dcat-us/1.1.json: {"error":"Feeds have been disabled for this site"}
+✓ warren-county: ok 4 datasets, 278 columns, 121s
+✓ westchester-county: ok 91 datasets, 1600 columns, 122s — dcat: HTTP 403 from https://gis.westchestercountyny.gov/api/feed/dcat-us/1.1.json: {"error":"Feeds have been disabled for this site"}
+✓ cortland-county: ok 28 datasets, 782 columns, 122s
+✓ tompkins-county: ok 32 datasets, 733 columns, 122s
+✓ genesee-county: ok 4 datasets, 0 columns, 122s
+✓ albany-county: ok 41 datasets, 398 columns, 122s
+✓ nys-adirondack-park-agency: ok 24 datasets, 719 columns, 122s — dcat: HTTP 502 from https://adirondack-park-agency-adirondack.hub.arcgis.com/api/feed/dcat-us/1.1.json: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+</body>
+</html>
+
+✓ oswego-county: ok 23 datasets, 905 columns, 122s
+✓ columbia-county: ok 55 datasets, 1567 columns, 123s
+✓ city-of-rochester: ok 52 datasets, 1362 columns, 124s
+✓ ontario-county: ok 12 datasets, 319 columns, 127s
+✓ dutchess-county: ok 28 datasets, 372 columns, 129s
+✓ nys-office-of-parks-recreation-and-historic-preservation: ok 176 datasets, 6769 columns, 246s
+✓ sullivan-county: ok 26 datasets, 741 columns, 247s
+✓ livingston-county: ok 145 datasets, 2717 columns, 270s
+✓ monroe-county: ok 181 datasets, 6404 columns, 272s
+✓ wayne-county: ok 200 datasets, 1933 columns, 273s
+✓ nyc-department-of-city-planning--services5-arcgis-com: ok 611 datasets, 7565 columns, 311s
+✓ suffolk-county: ok 181 datasets, 2191 columns, 331s
+✓ tioga-county: ok 187 datasets, 5284 columns, 336s
+✓ otsego-county: ok 25 datasets, 869 columns, 344s
+✓ nys-department-of-environmental-conservation: ok 834 datasets, 4770 columns, 577s
+✓ city-of-syracuse: ok 136 datasets, 2819 columns, 579s
+✓ nys-office-of-information-technology-services-gis-program-of--data-gis-ny-gov: ok 190 datasets, 4289 columns, 696s
+✓ nys-department-of-state: ok 544 datasets, 2111 columns, 787s
+{
+  "run_id": 2,
+  "started_at": "2026-11-05T18:14:39.939Z",
+  "finished_at": "2026-11-05T18:27:46.686Z",
+  "run_seconds": 787,
+  "registry_generated": "2026-11-05",
+  "portals_tried": 30,
+  "succeeded": 29,
+  "partial": 0,
+  "failed": 1,
+  "blocked": 0,
+  "refused_out_of_state": 0,
+  "skipped_live_rows": 0,
+  "datasets_in_index": 9395,
+  "columns_in_index": 171875,
+  "key_columns_in_index": 5429,
+  "http_requests": 2602,
+  "crawl_delays_honored_ms": {
+    "data.gis.ny.gov": 60000,
+    "adirondack-park-agency-adirondack.hub.arcgis.com": 60000,
+    "opdgig.dos.ny.gov": 60000,
+    "warren-county-gis-warrencountyny.hub.arcgis.com": 60000,
+    "geodata-cc-ny.opendata.arcgis.com": 60000,
+    "albany-county-ny-open-data-albcountygis.hub.arcgis.com": 60000,
+    "cortland-county-gis-portal-cortlandplanning.hub.arcgis.com": 60000,
+    "data.syr.gov": 60000,
+    "data-oswegogis.hub.arcgis.com": 60000,
+    "gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com": 60000,
+    "opendata-dcny.hub.arcgis.com": 60000,
+    "data-pcny.opendata.arcgis.com": 60000,
+    "opendata.suffolkcountyny.gov": 60000,
+    "steubencounty-scnygis.opendata.arcgis.com": 60000,
+    "gis.westchestercountyny.gov": 60000,
+    "otsego-county-gis-otsegocountyny.hub.arcgis.com": 60000,
+    "tcdata-tompkinscounty.opendata.arcgis.com": 60000,
+    "tioga-county-one-map-tiogacountyny.hub.arcgis.com": 60000,
+    "cattaraugus-county-gis-hub-cattco.hub.arcgis.com": 60000,
+    "data.cityofrochester.gov": 60000,
+    "gis-data-cogeneseeny.hub.arcgis.com": 60000,
+    "ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com": 60000,
+    "imapinvasives.natureserve.org": 10000
+  },
+  "index_path": "~/.cache/betanyc/ny-data-registry/ny-data-index.sqlite",
+  "index_bytes": 102338560,
+  "max_layer_requests_per_portal": 250
+}
+portals: 30 entries (see --stats-out for detail)

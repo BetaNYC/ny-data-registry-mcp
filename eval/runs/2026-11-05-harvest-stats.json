@@ -1,0 +1,1407 @@
+{
+  "run_id": 1,
+  "started_at": "2026-11-05T17:58:05.510Z",
+  "finished_at": "2026-11-05T18:13:29.344Z",
+  "run_seconds": 924,
+  "registry_generated": "2026-11-05",
+  "portals_tried": 36,
+  "succeeded": 30,
+  "partial": 2,
+  "failed": 2,
+  "blocked": 2,
+  "refused_out_of_state": 0,
+  "skipped_live_rows": 53,
+  "datasets_in_index": 8477,
+  "columns_in_index": 144526,
+  "key_columns_in_index": 4931,
+  "http_requests": 3694,
+  "crawl_delays_honored_ms": {
+    "data.gis.ny.gov": 60000,
+    "opdgig.dos.ny.gov": 60000,
+    "adirondack-park-agency-adirondack.hub.arcgis.com": 60000,
+    "albany-county-ny-open-data-albcountygis.hub.arcgis.com": 60000,
+    "geodata-cc-ny.opendata.arcgis.com": 60000,
+    "warren-county-gis-warrencountyny.hub.arcgis.com": 60000,
+    "cortland-county-gis-portal-cortlandplanning.hub.arcgis.com": 60000,
+    "data.syr.gov": 60000,
+    "gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com": 60000,
+    "opendata-dcny.hub.arcgis.com": 60000,
+    "data-oswegogis.hub.arcgis.com": 60000,
+    "data-pcny.opendata.arcgis.com": 60000,
+    "opendata.suffolkcountyny.gov": 60000,
+    "gis.westchestercountyny.gov": 60000,
+    "otsego-county-gis-otsegocountyny.hub.arcgis.com": 60000,
+    "tcdata-tompkinscounty.opendata.arcgis.com": 60000,
+    "tioga-county-one-map-tiogacountyny.hub.arcgis.com": 60000,
+    "steubencounty-scnygis.opendata.arcgis.com": 60000,
+    "cattaraugus-county-gis-hub-cattco.hub.arcgis.com": 60000,
+    "gis-data-cogeneseeny.hub.arcgis.com": 60000,
+    "data.cityofrochester.gov": 60000,
+    "ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com": 60000,
+    "imapinvasives.natureserve.org": 10000
+  },
+  "index_path": "~/.cache/betanyc/ny-data-registry/ny-data-index.sqlite",
+  "index_bytes": 83353600,
+  "max_layer_requests_per_portal": 250,
+  "portals": [
+    {
+      "source_id": "albany-county",
+      "entity": "Albany County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 41,
+      "listed": 41,
+      "kept": 41,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "mBzcjj7yrA6fBe9F",
+      "out_of_state_check": {
+        "checked": 41,
+        "center_in_ny": 41,
+        "refuse": false
+      },
+      "requests": 85,
+      "columns_fetched_for": 41,
+      "columns_not_fetched": 0,
+      "datasets": 41,
+      "added": 41,
+      "changed": 0,
+      "removed": 0,
+      "columns": 398,
+      "seconds": 486
+    },
+    {
+      "source_id": "association-for-neighborhood-and-housing-development-anhd",
+      "entity": "Association for Neighborhood and Housing Development (ANHD)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "key required (key_required = Y); this server never calls keyed sources"
+    },
+    {
+      "source_id": "board-of-elections-in-the-city-of-new-york",
+      "entity": "Board of Elections in the City of New York",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "broome-county",
+      "entity": "Broome County",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "standalone ArcGIS Server REST directory: no catalog adapter in this build"
+    },
+    {
+      "source_id": "capital-district-transportation-authority-cdta",
+      "entity": "Capital District Transportation Authority (CDTA)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "custom API: described by the registry, not harvested"
+    },
+    {
+      "source_id": "cattaraugus-county",
+      "entity": "Cattaraugus County",
+      "adapter": "hub→agol-org",
+      "outcome": "ok",
+      "registry_dataset_count": 0,
+      "listed": 67,
+      "kept": 67,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "T3DEZCc7g6Lhq9kn",
+      "out_of_state_check": {
+        "checked": 57,
+        "center_in_ny": 48,
+        "refuse": false
+      },
+      "requests": 165,
+      "columns_fetched_for": 52,
+      "columns_not_fetched": 7,
+      "datasets": 67,
+      "added": 67,
+      "changed": 0,
+      "removed": 0,
+      "columns": 2139,
+      "seconds": 675
+    },
+    {
+      "source_id": "chemung-county",
+      "entity": "Chemung County",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "citizens-committee-for-children-of-new-york",
+      "entity": "Citizens' Committee for Children of New York",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "city-of-buffalo",
+      "entity": "City of Buffalo",
+      "adapter": "socrata",
+      "outcome": "ok",
+      "registry_dataset_count": 139,
+      "listed": 230,
+      "requests": 1,
+      "error": null,
+      "columns_fetched_for": 139,
+      "datasets": 230,
+      "added": 230,
+      "changed": 0,
+      "removed": 0,
+      "columns": 12855,
+      "seconds": 13
+    },
+    {
+      "source_id": "city-of-rochester",
+      "entity": "City of Rochester",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 52,
+      "listed": 52,
+      "kept": 52,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "yoz1ZtATTCokO9nU",
+      "out_of_state_check": {
+        "checked": 43,
+        "center_in_ny": 41,
+        "refuse": false
+      },
+      "requests": 106,
+      "columns_fetched_for": 50,
+      "columns_not_fetched": 1,
+      "datasets": 52,
+      "added": 52,
+      "changed": 0,
+      "removed": 0,
+      "columns": 1362,
+      "seconds": 532
+    },
+    {
+      "source_id": "city-of-syracuse",
+      "entity": "City of Syracuse",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 136,
+      "listed": 136,
+      "kept": 85,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 51,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": null,
+      "out_of_state_check": {
+        "checked": 120,
+        "center_in_ny": 69,
+        "refuse": false
+      },
+      "requests": 173,
+      "columns_fetched_for": 85,
+      "columns_not_fetched": 0,
+      "datasets": 85,
+      "added": 85,
+      "changed": 0,
+      "removed": 0,
+      "columns": 1644,
+      "seconds": 842
+    },
+    {
+      "source_id": "columbia-county",
+      "entity": "Columbia County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 55,
+      "listed": 55,
+      "kept": 55,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "F5762GA30C3SyZFy",
+      "out_of_state_check": {
+        "checked": 55,
+        "center_in_ny": 53,
+        "refuse": false
+      },
+      "requests": 156,
+      "columns_fetched_for": 55,
+      "columns_not_fetched": 0,
+      "datasets": 55,
+      "added": 55,
+      "changed": 0,
+      "removed": 0,
+      "columns": 1567,
+      "seconds": 537
+    },
+    {
+      "source_id": "columbia-university-libraries",
+      "entity": "Columbia University Libraries",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "GeoBlacklight with 104,570 records, mostly not New York. Excluded from the harvest."
+    },
+    {
+      "source_id": "cornell-university-library",
+      "entity": "Cornell University Library",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "GeoBlacklight: no adapter in this build"
+    },
+    {
+      "source_id": "cornell-university-northeast-regional-climate-center",
+      "entity": "Cornell University (Northeast Regional Climate Center)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "custom API: described by the registry, not harvested"
+    },
+    {
+      "source_id": "cornell-university-program-on-applied-demographics",
+      "entity": "Cornell University (Program on Applied Demographics)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "cortland-county",
+      "entity": "Cortland County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 28,
+      "listed": 28,
+      "kept": 28,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": null,
+      "out_of_state_check": {
+        "checked": 28,
+        "center_in_ny": 28,
+        "refuse": false
+      },
+      "requests": 72,
+      "columns_fetched_for": 28,
+      "columns_not_fetched": 0,
+      "datasets": 28,
+      "added": 28,
+      "changed": 0,
+      "removed": 0,
+      "columns": 782,
+      "seconds": 586
+    },
+    {
+      "source_id": "dutchess-county",
+      "entity": "Dutchess County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 28,
+      "listed": 28,
+      "kept": 28,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": null,
+      "out_of_state_check": {
+        "checked": 28,
+        "center_in_ny": 28,
+        "refuse": false
+      },
+      "requests": 57,
+      "columns_fetched_for": 27,
+      "columns_not_fetched": 1,
+      "datasets": 28,
+      "added": 28,
+      "changed": 0,
+      "removed": 0,
+      "columns": 372,
+      "seconds": 258
+    },
+    {
+      "source_id": "empire-center-for-public-policy",
+      "entity": "Empire Center for Public Policy",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "genesee-county",
+      "entity": "Genesee County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 4,
+      "listed": 4,
+      "kept": 4,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": null,
+      "out_of_state_check": {
+        "checked": 1,
+        "center_in_ny": 0,
+        "refuse": false
+      },
+      "requests": 2,
+      "columns_fetched_for": 0,
+      "columns_not_fetched": 0,
+      "datasets": 4,
+      "added": 4,
+      "changed": 0,
+      "removed": 0,
+      "columns": 0,
+      "seconds": 121
+    },
+    {
+      "source_id": "intro-nyc-independent-project",
+      "entity": "intro.nyc (independent project)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "john-jay-college-cuny-data-collaborative-for-justice",
+      "entity": "John Jay College (CUNY) Data Collaborative for Justice",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "justfix",
+      "entity": "JustFix",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "custom API: described by the registry, not harvested"
+    },
+    {
+      "source_id": "lehman-college-cuny",
+      "entity": "Lehman College (CUNY)",
+      "adapter": "socrata",
+      "outcome": "ok",
+      "registry_dataset_count": 352,
+      "listed": 454,
+      "requests": 1,
+      "error": null,
+      "columns_fetched_for": 352,
+      "datasets": 454,
+      "added": 454,
+      "changed": 0,
+      "removed": 0,
+      "columns": 13417,
+      "seconds": 15
+    },
+    {
+      "source_id": "livingston-county",
+      "entity": "Livingston County",
+      "adapter": "enterprise",
+      "outcome": "blocked",
+      "registry_dataset_count": null,
+      "listed": 146,
+      "kept": 145,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 1,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "0123456789ABCDEF",
+      "out_of_state_check": {
+        "checked": 108,
+        "center_in_ny": 64,
+        "refuse": false
+      },
+      "error": "blocked: disallowed by robots.txt (https://imapinvasives.natureserve.org/arcgis/rest/services/public_presence/MapServer/0?f=json)",
+      "seconds": 261
+    },
+    {
+      "source_id": "metropolitan-transportation-authority",
+      "entity": "Metropolitan Transportation Authority",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "custom API: described by the registry, not harvested"
+    },
+    {
+      "source_id": "metropolitan-transportation-authority-nyct-mta-bus",
+      "entity": "Metropolitan Transportation Authority (NYCT / MTA Bus)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "key required (key_required = Y); this server never calls keyed sources"
+    },
+    {
+      "source_id": "monroe-county",
+      "entity": "Monroe County",
+      "adapter": "enterprise",
+      "outcome": "ok",
+      "registry_dataset_count": 77,
+      "listed": 181,
+      "kept": 181,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "0123456789ABCDEF",
+      "out_of_state_check": {
+        "checked": 152,
+        "center_in_ny": 138,
+        "refuse": false
+      },
+      "requests": 253,
+      "columns_fetched_for": 73,
+      "columns_not_fetched": 87,
+      "datasets": 181,
+      "added": 181,
+      "changed": 0,
+      "removed": 0,
+      "columns": 2716,
+      "seconds": 304
+    },
+    {
+      "source_id": "nassau-county",
+      "entity": "Nassau County",
+      "adapter": "socrata",
+      "outcome": "ok",
+      "registry_dataset_count": 17,
+      "listed": 37,
+      "requests": 1,
+      "error": null,
+      "columns_fetched_for": 17,
+      "datasets": 37,
+      "added": 37,
+      "changed": 0,
+      "removed": 0,
+      "columns": 253,
+      "seconds": 10
+    },
+    {
+      "source_id": "new-york-city",
+      "entity": "New York City",
+      "adapter": "socrata",
+      "outcome": "ok",
+      "registry_dataset_count": 2412,
+      "listed": 3014,
+      "requests": 7,
+      "error": null,
+      "columns_fetched_for": 2416,
+      "datasets": 3014,
+      "added": 3014,
+      "changed": 0,
+      "removed": 0,
+      "columns": 57119,
+      "seconds": 32
+    },
+    {
+      "source_id": "new-york-city-council",
+      "entity": "New York City Council",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "key required (key_required = Y); this server never calls keyed sources"
+    },
+    {
+      "source_id": "new-york-city-police-department",
+      "entity": "New York City Police Department",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "new-york-public-library--api-repo-nypl-org",
+      "entity": "New York Public Library",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "key required (key_required = Y); this server never calls keyed sources"
+    },
+    {
+      "source_id": "new-york-state-assembly",
+      "entity": "New York State Assembly",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "new-york-state-energy-research-and-development-authority-nys",
+      "entity": "New York State Energy Research and Development Authority (NYSERDA)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "new-york-state-senate",
+      "entity": "New York State Senate",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "key required (key_required = Y); this server never calls keyed sources"
+    },
+    {
+      "source_id": "new-york-university-libraries",
+      "entity": "New York University Libraries",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "custom API: described by the registry, not harvested"
+    },
+    {
+      "source_id": "niagara-frontier-transportation-authority-nfta",
+      "entity": "Niagara Frontier Transportation Authority (NFTA)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyc-campaign-finance-board",
+      "entity": "NYC Campaign Finance Board",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyc-crash-mapper",
+      "entity": "NYC Crash Mapper",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "platform family unconfirmed"
+    },
+    {
+      "source_id": "nyc-department-of-buildings",
+      "entity": "NYC Department of Buildings",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyc-department-of-city-planning--nyc-gov",
+      "entity": "NYC Department of City Planning",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyc-department-of-city-planning--services5-arcgis-com",
+      "entity": "NYC Department of City Planning",
+      "adapter": "agol-org",
+      "outcome": "ok",
+      "registry_dataset_count": 530,
+      "listed": 614,
+      "kept": 611,
+      "excluded": {
+        "esri": 0,
+        "other_org": 2,
+        "out_of_state": 1,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "GfwWNkhOj9bNBqoJ",
+      "out_of_state_check": {
+        "checked": 548,
+        "center_in_ny": 532,
+        "refuse": false
+      },
+      "requests": 257,
+      "columns_fetched_for": 92,
+      "columns_not_fetched": 478,
+      "datasets": 611,
+      "added": 611,
+      "changed": 0,
+      "removed": 0,
+      "columns": 3443,
+      "seconds": 380
+    },
+    {
+      "source_id": "nyc-department-of-citywide-administrative-services",
+      "entity": "NYC Department of Citywide Administrative Services",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyc-department-of-finance",
+      "entity": "NYC Department of Finance",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyc-department-of-health-and-mental-hygiene",
+      "entity": "NYC Department of Health and Mental Hygiene",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyc-department-of-transportation",
+      "entity": "NYC Department of Transportation",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "custom API: described by the registry, not harvested"
+    },
+    {
+      "source_id": "nyc-independent-budget-office",
+      "entity": "NYC Independent Budget Office",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyc-office-of-technology-and-innovation-oti",
+      "entity": "NYC Office of Technology and Innovation (OTI)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "key required (key_required = Y); this server never calls keyed sources"
+    },
+    {
+      "source_id": "nyc-office-of-technology-and-innovation-oti-department-of-ci",
+      "entity": "NYC Office of Technology and Innovation (OTI) / Department of City Planning",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "key required (key_required = Y); this server never calls keyed sources"
+    },
+    {
+      "source_id": "nys-adirondack-park-agency",
+      "entity": "NYS Adirondack Park Agency",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 25,
+      "listed": 24,
+      "error": "dcat: HTTP 500 from https://adirondack-park-agency-adirondack.hub.arcgis.com/api/feed/dcat-us/1.1.json: {\"error\":\"Cannot read properties of undefined (reading 'toLowerCase')\"}",
+      "kept": 24,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "8krRUWgifzA4cgL3",
+      "out_of_state_check": {
+        "checked": 24,
+        "center_in_ny": 24,
+        "refuse": false
+      },
+      "requests": 81,
+      "columns_fetched_for": 23,
+      "columns_not_fetched": 1,
+      "datasets": 24,
+      "added": 24,
+      "changed": 0,
+      "removed": 0,
+      "columns": 719,
+      "seconds": 623
+    },
+    {
+      "source_id": "nys-board-of-elections",
+      "entity": "NYS Board of Elections",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nys-commission-on-ethics-and-lobbying-in-government-coelig",
+      "entity": "NYS Commission on Ethics and Lobbying in Government (COELIG)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nys-department-of-environmental-conservation",
+      "entity": "NYS Department of Environmental Conservation",
+      "adapter": "agol-org",
+      "outcome": "ok",
+      "registry_dataset_count": 842,
+      "listed": 874,
+      "kept": 833,
+      "excluded": {
+        "esri": 1,
+        "other_org": 39,
+        "out_of_state": 1,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "DZHaqZm9cxOD4CWM",
+      "out_of_state_check": {
+        "checked": 777,
+        "center_in_ny": 542,
+        "refuse": false
+      },
+      "requests": 259,
+      "columns_fetched_for": 96,
+      "columns_not_fetched": 723,
+      "datasets": 833,
+      "added": 833,
+      "changed": 0,
+      "removed": 0,
+      "columns": 2581,
+      "seconds": 805
+    },
+    {
+      "source_id": "nys-department-of-health",
+      "entity": "NYS Department of Health",
+      "adapter": "socrata",
+      "outcome": "ok",
+      "registry_dataset_count": 324,
+      "listed": 500,
+      "requests": 2,
+      "error": null,
+      "columns_fetched_for": 324,
+      "datasets": 500,
+      "added": 500,
+      "changed": 0,
+      "removed": 0,
+      "columns": 7179,
+      "seconds": 16
+    },
+    {
+      "source_id": "nys-department-of-state",
+      "entity": "NYS Department of State",
+      "adapter": "hub",
+      "outcome": "blocked",
+      "registry_dataset_count": 1888,
+      "listed": 552,
+      "kept": 523,
+      "excluded": {
+        "esri": 0,
+        "other_org": 7,
+        "out_of_state": 22,
+        "not_public": 0
+      },
+      "other_orgs": {
+        "EbVsqZ18sv1kVJ3k": 7
+      },
+      "own_org": "okXm0pb6aWH6XOGI",
+      "out_of_state_check": {
+        "checked": 406,
+        "center_in_ny": 280,
+        "refuse": false
+      },
+      "error": "blocked: disallowed by robots.txt (https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/3?f=json)",
+      "seconds": 693
+    },
+    {
+      "source_id": "nys-department-of-transportation--gis-dot-ny-gov",
+      "entity": "NYS Department of Transportation",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "standalone ArcGIS Server REST directory: no catalog adapter in this build"
+    },
+    {
+      "source_id": "nys-education-department",
+      "entity": "NYS Education Department",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nys-office-of-information-technology-services-gis-program-of--data-gis-ny-gov",
+      "entity": "NYS Office of Information Technology Services (GIS Program Office)",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 389,
+      "listed": 190,
+      "kept": 103,
+      "excluded": {
+        "esri": 0,
+        "other_org": 85,
+        "out_of_state": 2,
+        "not_public": 0
+      },
+      "other_orgs": {
+        "okXm0pb6aWH6XOGI": 19,
+        "EbVsqZ18sv1kVJ3k": 49,
+        "1xFZPtKn1wKC6POA": 7,
+        "0dC3T96jvK0z64NH": 4,
+        "gubH6kG9JCAsMX2M": 6
+      },
+      "own_org": "DZHaqZm9cxOD4CWM",
+      "out_of_state_check": {
+        "checked": 103,
+        "center_in_ny": 96,
+        "refuse": false
+      },
+      "requests": 253,
+      "columns_fetched_for": 101,
+      "columns_not_fetched": 2,
+      "datasets": 103,
+      "added": 103,
+      "changed": 0,
+      "removed": 0,
+      "columns": 1933,
+      "seconds": 924
+    },
+    {
+      "source_id": "nys-office-of-information-technology-services-gis-program-of--gisservices-its-ny-gov",
+      "entity": "NYS Office of Information Technology Services (GIS Program Office)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "standalone ArcGIS Server REST directory: no catalog adapter in this build"
+    },
+    {
+      "source_id": "nys-office-of-information-technology-services-gis-program-of--orthos-its-ny-gov",
+      "entity": "NYS Office of Information Technology Services (GIS Program Office)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "standalone ArcGIS Server REST directory: no catalog adapter in this build"
+    },
+    {
+      "source_id": "nys-office-of-information-technology-services-open-ny-progra",
+      "entity": "NYS Office of Information Technology Services (Open NY program)",
+      "adapter": "socrata",
+      "outcome": "ok",
+      "registry_dataset_count": 1036,
+      "listed": 1291,
+      "requests": 3,
+      "error": null,
+      "columns_fetched_for": 1036,
+      "datasets": 1291,
+      "added": 1291,
+      "changed": 0,
+      "removed": 0,
+      "columns": 16554,
+      "seconds": 21
+    },
+    {
+      "source_id": "nys-office-of-parks-recreation-and-historic-preservation",
+      "entity": "NYS Office of Parks, Recreation and Historic Preservation",
+      "adapter": "agol-org",
+      "outcome": "ok",
+      "registry_dataset_count": 172,
+      "listed": 176,
+      "kept": 176,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "1xFZPtKn1wKC6POA",
+      "out_of_state_check": {
+        "checked": 162,
+        "center_in_ny": 89,
+        "refuse": false
+      },
+      "requests": 252,
+      "columns_fetched_for": 96,
+      "columns_not_fetched": 76,
+      "datasets": 176,
+      "added": 176,
+      "changed": 0,
+      "removed": 0,
+      "columns": 3267,
+      "seconds": 500
+    },
+    {
+      "source_id": "nys-unified-court-system-office-of-court-administration",
+      "entity": "NYS Unified Court System (Office of Court Administration)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "nyu-furman-center",
+      "entity": "NYU Furman Center",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "office-of-the-new-york-city-comptroller",
+      "entity": "Office of the New York City Comptroller",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "custom API: described by the registry, not harvested"
+    },
+    {
+      "source_id": "office-of-the-state-comptroller--osc-ny-gov",
+      "entity": "Office of the State Comptroller",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "office-of-the-state-comptroller--wwe1-osc-state-ny-us",
+      "entity": "Office of the State Comptroller",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "ontario-county",
+      "entity": "Ontario County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 12,
+      "listed": 12,
+      "kept": 10,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 2,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": null,
+      "out_of_state_check": {
+        "checked": 11,
+        "center_in_ny": 9,
+        "refuse": false
+      },
+      "requests": 20,
+      "columns_fetched_for": 9,
+      "columns_not_fetched": 0,
+      "datasets": 10,
+      "added": 10,
+      "changed": 0,
+      "removed": 0,
+      "columns": 291,
+      "seconds": 144
+    },
+    {
+      "source_id": "orange-county",
+      "entity": "Orange County",
+      "adapter": "enterprise",
+      "outcome": "failed",
+      "registry_dataset_count": 1,
+      "error": "fetch failed",
+      "seconds": 1
+    },
+    {
+      "source_id": "oswego-county",
+      "entity": "Oswego County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 23,
+      "listed": 23,
+      "kept": 23,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "0dC3T96jvK0z64NH",
+      "out_of_state_check": {
+        "checked": 23,
+        "center_in_ny": 22,
+        "refuse": false
+      },
+      "requests": 61,
+      "columns_fetched_for": 23,
+      "columns_not_fetched": 0,
+      "datasets": 23,
+      "added": 23,
+      "changed": 0,
+      "removed": 0,
+      "columns": 905,
+      "seconds": 298
+    },
+    {
+      "source_id": "otsego-county",
+      "entity": "Otsego County",
+      "adapter": "hub",
+      "outcome": "partial",
+      "registry_dataset_count": 64,
+      "listed": null,
+      "error": "HTTP 404 from https://otsego-county-gis-otsegocountyny.hub.arcgis.com/api/search/v1/collections/dataset/items?limit=100&startindex=1: {\"message\":\"Collection with id \\\"dataset\\\" not found\",\"error\":\"Not Found\",\"statusCode\":404}",
+      "kept": 0,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": null,
+      "out_of_state_check": {
+        "checked": 0,
+        "center_in_ny": 0,
+        "refuse": false
+      },
+      "requests": 1,
+      "columns_fetched_for": 0,
+      "columns_not_fetched": 0,
+      "datasets": 0,
+      "added": 0,
+      "changed": 0,
+      "removed": 0,
+      "columns": 0,
+      "seconds": 122
+    },
+    {
+      "source_id": "putnam-county",
+      "entity": "Putnam County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 26,
+      "listed": 26,
+      "error": "dcat: HTTP 403 from https://data-pcny.opendata.arcgis.com/api/feed/dcat-us/1.1.json: {\"error\":\"Feeds have been disabled for this site\"}",
+      "kept": 26,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "dU6jdOIkCUj2UDe9",
+      "out_of_state_check": {
+        "checked": 26,
+        "center_in_ny": 25,
+        "refuse": false
+      },
+      "requests": 84,
+      "columns_fetched_for": 26,
+      "columns_not_fetched": 0,
+      "datasets": 26,
+      "added": 26,
+      "changed": 0,
+      "removed": 0,
+      "columns": 1138,
+      "seconds": 631
+    },
+    {
+      "source_id": "rochester-area-community-foundation",
+      "entity": "Rochester Area Community Foundation",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "rockland-county",
+      "entity": "Rockland County",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "Blocks automated clients (Scout eval, 2026-11-05). Skipped; never worked around."
+    },
+    {
+      "source_id": "schuyler-county",
+      "entity": "Schuyler County",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "social-science-research-council-measure-of-america",
+      "entity": "Social Science Research Council (Measure of America)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "no API (web pages, viewers or downloads only)"
+    },
+    {
+      "source_id": "state-of-new-york-as-harvested-by-data-gov",
+      "entity": "State of New York (as harvested by data.gov)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "CKAN (catalog.data.gov): a re-harvest of portals indexed directly; no adapter in this build"
+    },
+    {
+      "source_id": "steuben-county",
+      "entity": "Steuben County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 11,
+      "listed": 11,
+      "error": "dcat: HTTP 500 from https://steubencounty-scnygis.opendata.arcgis.com/api/feed/dcat-us/1.1.json: {\"error\":\"Cannot read properties of undefined (reading 'dcatUS1X')\"}",
+      "kept": 11,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": null,
+      "out_of_state_check": {
+        "checked": 11,
+        "center_in_ny": 11,
+        "refuse": false
+      },
+      "requests": 27,
+      "columns_fetched_for": 11,
+      "columns_not_fetched": 0,
+      "datasets": 11,
+      "added": 11,
+      "changed": 0,
+      "removed": 0,
+      "columns": 209,
+      "seconds": 296
+    },
+    {
+      "source_id": "suffolk-county",
+      "entity": "Suffolk County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 189,
+      "listed": 189,
+      "kept": 181,
+      "excluded": {
+        "esri": 8,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "JsDD4qdG5r2a7hR5",
+      "out_of_state_check": {
+        "checked": 101,
+        "center_in_ny": 96,
+        "refuse": false
+      },
+      "requests": 253,
+      "columns_fetched_for": 126,
+      "columns_not_fetched": 52,
+      "datasets": 181,
+      "added": 181,
+      "changed": 0,
+      "removed": 0,
+      "columns": 1515,
+      "seconds": 646
+    },
+    {
+      "source_id": "sullivan-county",
+      "entity": "Sullivan County",
+      "adapter": "hub",
+      "outcome": "partial",
+      "registry_dataset_count": 54,
+      "listed": null,
+      "error": "HTTP 404 from https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/api/search/v1/collections/dataset/items?limit=100&startindex=1: {\"message\":\"Collection with id \\\"dataset\\\" not found\",\"error\":\"Not Found\",\"statusCode\":404}",
+      "kept": 0,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": null,
+      "out_of_state_check": {
+        "checked": 0,
+        "center_in_ny": 0,
+        "refuse": false
+      },
+      "requests": 1,
+      "columns_fetched_for": 0,
+      "columns_not_fetched": 0,
+      "datasets": 0,
+      "added": 0,
+      "changed": 0,
+      "removed": 0,
+      "columns": 0,
+      "seconds": 121
+    },
+    {
+      "source_id": "tioga-county",
+      "entity": "Tioga County",
+      "adapter": "hub→agol-org",
+      "outcome": "ok",
+      "registry_dataset_count": 0,
+      "listed": 227,
+      "kept": 186,
+      "excluded": {
+        "esri": 0,
+        "other_org": 39,
+        "out_of_state": 2,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "PvkAiSMFS7cpxnJP",
+      "out_of_state_check": {
+        "checked": 174,
+        "center_in_ny": 125,
+        "refuse": false
+      },
+      "requests": 254,
+      "columns_fetched_for": 105,
+      "columns_not_fetched": 74,
+      "datasets": 186,
+      "added": 186,
+      "changed": 0,
+      "removed": 0,
+      "columns": 3189,
+      "seconds": 576
+    },
+    {
+      "source_id": "tompkins-county",
+      "entity": "Tompkins County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 32,
+      "listed": 32,
+      "kept": 32,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "oJbAAWNInLrxvF0A",
+      "out_of_state_check": {
+        "checked": 32,
+        "center_in_ny": 32,
+        "refuse": false
+      },
+      "requests": 66,
+      "columns_fetched_for": 32,
+      "columns_not_fetched": 0,
+      "datasets": 32,
+      "added": 32,
+      "changed": 0,
+      "removed": 0,
+      "columns": 733,
+      "seconds": 330
+    },
+    {
+      "source_id": "ulster-county",
+      "entity": "Ulster County",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "standalone ArcGIS Server REST directory: no catalog adapter in this build"
+    },
+    {
+      "source_id": "university-at-albany-nys-mesonet",
+      "entity": "University at Albany (NYS Mesonet)",
+      "adapter": "none",
+      "outcome": "skipped",
+      "reason": "key required (key_required = Y); this server never calls keyed sources"
+    },
+    {
+      "source_id": "warren-county",
+      "entity": "Warren County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 4,
+      "listed": 4,
+      "kept": 4,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "Fg3XpDIUTR3JZZES",
+      "out_of_state_check": {
+        "checked": 4,
+        "center_in_ny": 4,
+        "refuse": false
+      },
+      "requests": 17,
+      "columns_fetched_for": 4,
+      "columns_not_fetched": 0,
+      "datasets": 4,
+      "added": 4,
+      "changed": 0,
+      "removed": 0,
+      "columns": 278,
+      "seconds": 174
+    },
+    {
+      "source_id": "wayne-county",
+      "entity": "Wayne County",
+      "adapter": "enterprise",
+      "outcome": "failed",
+      "registry_dataset_count": 108,
+      "error": "portals/self returned no org id",
+      "seconds": 2
+    },
+    {
+      "source_id": "westchester-county",
+      "entity": "Westchester County",
+      "adapter": "hub",
+      "outcome": "ok",
+      "registry_dataset_count": 91,
+      "listed": 91,
+      "error": "dcat: HTTP 403 from https://gis.westchestercountyny.gov/api/feed/dcat-us/1.1.json: {\"error\":\"Feeds have been disabled for this site\"}",
+      "kept": 91,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 0,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "XKEHpOulfycN9cGC",
+      "out_of_state_check": {
+        "checked": 91,
+        "center_in_ny": 91,
+        "refuse": false
+      },
+      "requests": 105,
+      "columns_fetched_for": 91,
+      "columns_not_fetched": 0,
+      "datasets": 91,
+      "added": 91,
+      "changed": 0,
+      "removed": 0,
+      "columns": 1600,
+      "seconds": 275
+    },
+    {
+      "source_id": "yates-county",
+      "entity": "Yates County",
+      "adapter": "enterprise",
+      "outcome": "ok",
+      "registry_dataset_count": 80,
+      "listed": 112,
+      "kept": 99,
+      "excluded": {
+        "esri": 0,
+        "other_org": 0,
+        "out_of_state": 13,
+        "not_public": 0
+      },
+      "other_orgs": {},
+      "own_org": "0123456789ABCDEF",
+      "out_of_state_check": {
+        "checked": 96,
+        "center_in_ny": 80,
+        "refuse": false
+      },
+      "requests": 217,
+      "columns_fetched_for": 83,
+      "columns_not_fetched": 0,
+      "datasets": 99,
+      "added": 99,
+      "changed": 0,
+      "removed": 0,
+      "columns": 4368,
+      "seconds": 235
+    }
+  ]
+}

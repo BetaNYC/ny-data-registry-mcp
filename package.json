@@ -1,0 +1,49 @@
+{
+  "name": "@betanyc/ny-data-registry-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP server that finds open data across every New York data portal in BetaNYC's registry: which portal covers a place or topic, how to query it, and (with the harvested index) which datasets and columns exist, in what formats",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "new-york",
+    "nyc",
+    "open-data",
+    "socrata",
+    "arcgis",
+    "data-catalog",
+    "civic-tech",
+    "betanyc"
+  ],
+  "license": "MIT",
+  "author": "BetaNYC",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "ny-data-registry-mcp": "dist/index.js",
+    "ny-data-registry": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "data"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "npm run build && node --test --test-concurrency=1 test/*.test.mjs",
+    "harvest": "node dist/cli.js harvest",
+    "eval": "node dist/cli.js eval",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0 <2",
+    "zod": "^3.25.0 <4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0 <27",
+    "typescript": "^5.9.0 <6"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

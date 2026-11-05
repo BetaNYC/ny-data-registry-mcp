@@ -1,0 +1,322 @@
+{
+ "_source": "GET https://maps.monroecounty.gov/portal/sharing/rest/search?q=type:\"Feature Service\"&num=4&f=json (2026-11-05). Unfiltered: Esri Living Atlas items lead, the probe-6 gotcha",
+ "total": 108,
+ "start": 1,
+ "num": 4,
+ "nextStart": 5,
+ "results": [
+  {
+   "id": "e049a24713bf4377aa9e8f268f960af4",
+   "owner": "esri_livingatlas",
+   "created": 1773248097073,
+   "modified": 1773248097267,
+   "guid": null,
+   "name": "USA_Aquifers_Feature_Layer_view",
+   "title": "USA Aquifers",
+   "type": "Feature Service",
+   "typeKeywords": [
+    "ArcGIS Server",
+    "Data",
+    "Feature Access",
+    "Feature Service",
+    "Service",
+    "Singlelayer",
+    "View Service"
+   ],
+   "description": "<div><div><a href='https://en.wikipedia.org/wiki/Aquifer' target='_blank' rel='nofollow ugc noopener noreferrer'>Aquifers</a> are\n underground layers of gravel, sand, or permeable rock that contain \ng",
+   "tags": [
+    "Aquifers",
+    "Esri_environment",
+    "Esri_landscape",
+    "environment",
+    "fresh water",
+    "hosted"
+   ],
+   "snippet": "Aquifers of the 48 contiguous United States, Hawaii, Puerto Rico, and the U.S. Virgin Islands from the U.S. Geologic Survey's Ground Water Atlas of the United States.\n",
+   "thumbnail": "thumbnail/thumbnail1659844413994.png",
+   "documentation": null,
+   "extent": [
+    [
+     -124.9919298938521,
+     24.15607733973149
+    ],
+    [
+     -66.58764440520937,
+     49.385629722824994
+    ]
+   ],
+   "categories": [
+    "/Categories/Environment/Fresh Water"
+   ],
+   "spatialReference": "102100",
+   "accessInformation": "Source: Esri, USGS",
+   "classification": null,
+   "licenseInfo": "<img src='https://downloads.esri.com/blogs/arcgisonline/esrilogo_new.png' /> This work is licensed under the Esri Master License Agreement.<br /><div><a href='https://goto.arcgis.com/termsofuse/viewsummary' target='_blank' rel='nofollow ugc noopener noreferrer'><b>View Summary</b></a> | <a href='https://goto.arcgis.com/termsofuse/viewtermsofuse' target='_blank' rel='nofollow ugc noopener noreferrer'><b>View Terms of Use</b></a></div>",
+   "culture": "en-us",
+   "properties": null,
+   "advancedSettings": null,
+   "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_Aquifers_Feature_Layer_view/FeatureServer",
+   "proxyFilter": null,
+   "access": "public",
+   "size": -1,
+   "subInfo": 0,
+   "appCategories": [],
+   "industries": [],
+   "languages": [],
+   "largeThumbnail": "",
+   "banner": "",
+   "screenshots": [],
+   "listed": false,
+   "numComments": 0,
+   "numRatings": 0,
+   "avgRating": 0,
+   "numViews": 3289,
+   "scoreCompleteness": 100,
+   "groupDesignations": "livingatlas",
+   "apiToken1ExpirationDate": -1,
+   "apiToken2ExpirationDate": -1,
+   "lastViewed": -1
+  },
+  {
+   "id": "050d4dd33df7462db3ea3b76c1320462",
+   "owner": "esri_livingatlas",
+   "created": 1773248135126,
+   "modified": 1773248135269,
+   "guid": null,
+   "name": "USA_Wetlands",
+   "title": "USA Wetlands",
+   "type": "Feature Service",
+   "typeKeywords": [
+    "ArcGIS API for JavaScript",
+    "ArcGIS Server",
+    "Data",
+    "Feature Access",
+    "Feature Service",
+    "Multilayer",
+    "Service",
+    "View Service"
+   ],
+   "description": "<div>Wetlands are areas where water is present at or near the surface of\n the soil during at least part of the year. Wetlands provide habitat for\n many species of plants and animals that are adapted t",
+   "tags": [
+    "esri_landscape",
+    "esri_environment",
+    "NWI",
+    "USFWS",
+    "landscape",
+    "landcover",
+    "environment",
+    "wetlands",
+    "marsh",
+    "fresh water",
+    "freshwater",
+    "wetland"
+   ],
+   "snippet": "This feature layer displays wetlands of the United States from the National Wetlands Inventory produced by the US Fish and Wildlife Service, updated by Esri annually. ",
+   "thumbnail": "thumbnail/thumbnail1741897887513.png",
+   "documentation": null,
+   "extent": [
+    [
+     -80.44592809535908,
+     25.759717971327547
+    ],
+    [
+     -80.0800900169317,
+     25.968651260856753
+    ]
+   ],
+   "categories": [
+    "/Categories/Environment/Fresh Water",
+    "/Categories/Environment/Land Cover"
+   ],
+   "spatialReference": "102100",
+   "accessInformation": "Source: USFWS, Esri",
+   "classification": null,
+   "licenseInfo": "<img src='https://downloads.esri.com/blogs/arcgisonline/esrilogo_new.png' />\u00a0This work is licensed under the Esri Master License Agreement.<br /><div><a href='https://goto.arcgis.com/termsofuse/viewsummary' target='_blank' rel='nofollow ugc noopener noreferrer'><b>View Summary</b></a>\u00a0|\u00a0<a href='https://goto.arcgis.com/termsofuse/viewtermsofuse' target='_blank' rel='nofollow ugc noopener noreferrer'><b>View Terms of Use</b></a></div>",
+   "culture": "en-us",
+   "properties": null,
+   "advancedSettings": null,
+   "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_Wetlands/FeatureServer",
+   "proxyFilter": null,
+   "access": "public",
+   "size": -1,
+   "subInfo": 0,
+   "appCategories": [],
+   "industries": [],
+   "languages": [],
+   "largeThumbnail": "",
+   "banner": "",
+   "screenshots": [],
+   "listed": false,
+   "numComments": 0,
+   "numRatings": 0,
+   "avgRating": 0,
+   "numViews": 2973,
+   "scoreCompleteness": 100,
+   "groupDesignations": "livingatlas",
+   "apiToken1ExpirationDate": -1,
+   "apiToken2ExpirationDate": -1,
+   "lastViewed": -1
+  },
+  {
+   "id": "4bd9b6892530404abfe13645fcb5099a",
+   "owner": "esri_livingatlas",
+   "created": 1773247971667,
+   "modified": 1773247971837,
+   "guid": null,
+   "name": "NHDPlusV21",
+   "title": "National Hydrography Dataset Plus Version 2.1",
+   "type": "Feature Service",
+   "typeKeywords": [
+    "ArcGIS API for JavaScript",
+    "ArcGIS Server",
+    "Data",
+    "Feature Access",
+    "Feature Service",
+    "Metadata",
+    "Multilayer",
+    "Service"
+   ],
+   "description": "<div>The National Hydrography Dataset Plus (NHDplus) maps the<span> lakes, ponds, streams, rivers and other surface waters of the United States. Created by the</span>\u00a0<a href='https://www.epa.gov/wate",
+   "tags": [
+    "NHD",
+    "NHDPlus",
+    "esri_landscape",
+    "hosted",
+    "esri_environment",
+    "landscape",
+    "environment",
+    "fresh water"
+   ],
+   "snippet": "Lakes, ponds, streams, rivers, and other surface waters of the United States from the National Hydrography Database Plus version 2.1.",
+   "thumbnail": "thumbnail/thumbnail1742429874258.png",
+   "documentation": null,
+   "extent": [
+    [
+     -170.85002201771027,
+     -14.383354450188913
+    ],
+    [
+     145.87499614694065,
+     49.85381446196523
+    ]
+   ],
+   "categories": [
+    "/Categories/Environment/Fresh Water"
+   ],
+   "spatialReference": "4269",
+   "accessInformation": "Source: USGS, Esri",
+   "classification": null,
+   "licenseInfo": "<img src='https://downloads.esri.com/blogs/arcgisonline/esrilogo_new.png' /> This work is licensed under the Esri Master License Agreement.<br /><div><a href='https://goto.arcgis.com/termsofuse/viewsummary' target='_blank' rel='nofollow ugc noopener noreferrer'><b>View Summary</b></a> | <a href='https://goto.arcgis.com/termsofuse/viewtermsofuse' target='_blank' rel='nofollow ugc noopener noreferrer'><b>View Terms of Use</b></a></div>",
+   "culture": "en-us",
+   "properties": {
+    "indexJobId": ""
+   },
+   "advancedSettings": null,
+   "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/NHDPlusV21/FeatureServer",
+   "proxyFilter": null,
+   "access": "public",
+   "size": -1,
+   "subInfo": 0,
+   "appCategories": [],
+   "industries": [],
+   "languages": [],
+   "largeThumbnail": "",
+   "banner": "",
+   "screenshots": [],
+   "listed": false,
+   "numComments": 0,
+   "numRatings": 0,
+   "avgRating": 0,
+   "numViews": 2861,
+   "scoreCompleteness": 100,
+   "groupDesignations": "livingatlas",
+   "apiToken1ExpirationDate": -1,
+   "apiToken2ExpirationDate": -1,
+   "lastViewed": -1
+  },
+  {
+   "id": "e109e8fd9c5a495c813b5cbaee9c7d9b",
+   "owner": "esri_livingatlas",
+   "created": 1773247758816,
+   "modified": 1773247759048,
+   "guid": null,
+   "name": "NOAA_storm_reports_v1",
+   "title": "USA Storm Reports",
+   "type": "Feature Service",
+   "typeKeywords": [
+    "ArcGIS Server",
+    "Data",
+    "Feature Access",
+    "Feature Service",
+    "Multilayer",
+    "Service",
+    "View Service"
+   ],
+   "description": "<div>This map contains continuously updated U.S. tornado reports, wind storm reports and hail storm reports. Click each feature to receive information about the specific location and read a short desc",
+   "tags": [
+    "   NOAA",
+    "Esri",
+    "NOAA",
+    "NWS",
+    "Tornado",
+    "Wind",
+    "Hail",
+    "Storm",
+    "Reports",
+    "Live Feeds",
+    "earth observations",
+    "hazards",
+    "hosted",
+    "esri_environment",
+    "NOAA_storm_reports",
+    "livefeeds"
+   ],
+   "snippet": "This layer contains continuously updated U.S. tornado reports, wind storm reports and hail storm reports from the National Weather Service (NWS). ",
+   "thumbnail": "thumbnail/thumbnail1631328234983.png",
+   "documentation": null,
+   "extent": [
+    [
+     -113.80000000022876,
+     25.77000000012418
+    ],
+    [
+     -67.9999999996173,
+     48.97000000011181
+    ]
+   ],
+   "categories": [
+    "/Categories/Environment/Earth Observations",
+    "/Categories/Environment/Weather and Climate",
+    "/Categories/Trending/Current Events"
+   ],
+   "spatialReference": "102100",
+   "accessInformation": "NOAA, Esri",
+   "classification": null,
+   "licenseInfo": "<img alt='' src='https://downloads.esri.com/blogs/arcgisonline/esrilogo_new.png' /> This work is licensed under the Esri Master License Agreement.<br /><div><a href='https://goto.arcgis.com/termsofuse/viewsummary' target='_blank'><b>View Summary</b></a> | <a href='https://goto.arcgis.com/termsofuse/viewtermsofuse' target='_blank'><b>View Terms of Use</b></a></div>",
+   "culture": "en-us",
+   "properties": null,
+   "advancedSettings": null,
+   "url": "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/NOAA_storm_reports_v1/FeatureServer",
+   "proxyFilter": null,
+   "access": "public",
+   "size": -1,
+   "subInfo": 0,
+   "appCategories": [],
+   "industries": [],
+   "languages": [],
+   "largeThumbnail": "",
+   "banner": "",
+   "screenshots": [],
+   "listed": false,
+   "numComments": 0,
+   "numRatings": 0,
+   "avgRating": 0,
+   "numViews": 2860,
+   "scoreCompleteness": 100,
+   "groupDesignations": "livingatlas",
+   "apiToken1ExpirationDate": -1,
+   "apiToken2ExpirationDate": -1,
+   "lastViewed": -1
+  }
+ ]
+}

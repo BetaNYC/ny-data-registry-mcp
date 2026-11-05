@@ -1,0 +1,846 @@
+{
+  "_readme": [
+    "Human-editable. Maps each exact free-text `platform` string in the registry to one platform family.",
+    "Edit `family` to change a mapping. Add a row when the registry gains a new platform string.",
+    "A string missing from this table is reported as UNMAPPED by the server and the tests; it is never guessed.",
+    "family null means: known string, but the registry itself cannot say how the data is reached (UNCONFIRMED). Flagged, not guessed.",
+    "The original `platform` and `api_type` text is always kept and returned next to the family."
+  ],
+  "families": [
+    "socrata",
+    "arcgis-hub",
+    "arcgis-enterprise",
+    "arcgis-server",
+    "ckan",
+    "geoblacklight",
+    "custom-api",
+    "none"
+  ],
+  "mappings": [
+    {
+      "platform": "Socrata (Tyler Data & Insights)",
+      "family": "socrata",
+      "note": null,
+      "api_types_seen": [
+        "SODA 2.x",
+        "SODA 2.x (+ Socrata Discovery API)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Hub (ArcGIS Online org 'ShareGIS NY', urlKey sharegisny); gis.ny.gov is the HTML front site",
+      "family": "arcgis-hub",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS Hub / DCAT-US 1.1 feed; ArcGIS REST (hosted feature services)"
+      ]
+    },
+    {
+      "platform": "CKAN-derived catalog (data.gov, GSA)",
+      "family": "ckan",
+      "note": null,
+      "api_types_seen": [
+        "none verified (old CKAN action API at /api/3/action/* returns 404)"
+      ]
+    },
+    {
+      "platform": "AEM (panynj.gov)",
+      "family": "custom-api",
+      "note": "undocumented endpoint, found by inspection",
+      "api_types_seen": [
+        "REST/JSON (undocumented)"
+      ]
+    },
+    {
+      "platform": "custom",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST (real-time) + GTFS static",
+        "REST + GTFS / GTFS-Realtime",
+        "REST/JSON"
+      ]
+    },
+    {
+      "platform": "custom (GTFS / GTFS-Realtime)",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "GTFS-Realtime (protobuf) + JSON alerts + static GTFS ZIP"
+      ]
+    },
+    {
+      "platform": "OneBusAway / SIRI",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST (SIRI JSON/XML)"
+      ]
+    },
+    {
+      "platform": "custom HTML",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none (HTML query only)"
+      ]
+    },
+    {
+      "platform": "custom web app",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (CSV) + web query",
+        "web query (no API)"
+      ]
+    },
+    {
+      "platform": "custom (NYS Senate OpenLeg)",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST/JSON"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online / ArcGIS Hub",
+      "family": "arcgis-hub",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (hosted FeatureServer)"
+      ]
+    },
+    {
+      "platform": "Drupal (webny)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Bulk download (XLSX per snapshot); no API"
+      ]
+    },
+    {
+      "platform": "ASP.NET web app",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "web query (no API) + Open NY datasets"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online hosted services directory (services*.arcgis.com/<orgId>); harvested through ArcGIS Online org search",
+      "api_types_seen": [
+        "ArcGIS REST (FeatureServer)",
+        "ArcGIS REST (hosted FeatureServer)"
+      ]
+    },
+    {
+      "platform": "Custom site",
+      "family": null,
+      "note": "API status UNCONFIRMED in the registry",
+      "api_types_seen": [
+        "UNCONFIRMED"
+      ]
+    },
+    {
+      "platform": "ArcGIS Hub (ArcGIS Online org NYSDOS)",
+      "family": "arcgis-hub",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS Hub / DCAT-US 1.1 feed; ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "511NY traveler information platform",
+      "family": null,
+      "note": "API UNCONFIRMED in the registry",
+      "api_types_seen": [
+        "REST/JSON (UNCONFIRMED)"
+      ]
+    },
+    {
+      "platform": "Esri ArcGIS Server 11.5",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (MapServer/FeatureServer)"
+      ]
+    },
+    {
+      "platform": "Custom PHP site",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Bulk download (ZIP of Access/Excel databases); no API found"
+      ]
+    },
+    {
+      "platform": "Esri ArcGIS Server",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (MapServer/FeatureServer/GeocodeServer)",
+        "ArcGIS REST MapServer; WMS"
+      ]
+    },
+    {
+      "platform": "Drupal + dashboards",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (CSV/XLSX) + dashboards"
+      ]
+    },
+    {
+      "platform": "ColdFusion web app",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Interactive GET query form; no documented API",
+        "bulk download (CSV/ZIP via form POST)"
+      ]
+    },
+    {
+      "platform": "ColdFusion web apps (wwe2.osc.state.ny.us/transparency/)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "web query + export (tab-delimited download)"
+      ]
+    },
+    {
+      "platform": "Drupal",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "GTFS static (ZIP) + GIS files"
+      ]
+    },
+    {
+      "platform": "ArcGIS Hub",
+      "family": "arcgis-hub",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS Hub (OGC API Records search) + ArcGIS REST",
+        "ArcGIS Hub (OGC API Records search, DCAT-US) + ArcGIS REST",
+        "ArcGIS Hub (OGC Records + DCAT) / ArcGIS REST",
+        "ArcGIS Hub (OGC Records) / ArcGIS REST",
+        "ArcGIS Hub/REST",
+        "ArcGIS REST (org feature services); Hub search returns no datasets"
+      ]
+    },
+    {
+      "platform": "Socrata (retired)",
+      "family": "socrata",
+      "note": null,
+      "api_types_seen": [
+        "None (portal offline)"
+      ]
+    },
+    {
+      "platform": "City web page (CivicPlus), PDF reports",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": null,
+      "family": "none",
+      "note": null,
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Esri web map (viewer) on ArcGIS Server 10.91",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (raw services behind the viewer; no catalog)"
+      ]
+    },
+    {
+      "platform": "County web page (links out)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Vendor map viewer (VHB) + assessment database",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Schneider Beacon (parcel search); SIMS (login-gated)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Vendor map viewer (VHB) + Schneider Beacon",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Esri web map (viewer) on ArcGIS Server 10.9",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (raw services behind the viewer; no catalog)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Experience Builder viewer + ArcGIS Server (county-hosted)",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "ArcGIS Experience Builder viewer + Schneider Beacon",
+      "family": "arcgis-server",
+      "note": "viewer app; data via the org/county REST services",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services)"
+      ]
+    },
+    {
+      "platform": "Schneider Beacon (property) + static map pages",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Static map pages + paid data request; Schneider Beacon (property)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Enterprise 11.5 (county-hosted, maps.oneidacountyny.gov)",
+      "family": "arcgis-enterprise",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "Hosted web viewer (spatial.vhb.com) + Map Gallery",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Enterprise (self-hosted Sites) + ArcGIS Server 10.91",
+      "family": "arcgis-enterprise",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (Enterprise portal + server)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Hub (older Hub Basic site)",
+      "family": "arcgis-hub",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS Hub (DCAT) / ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "County web page with direct downloads + ArcGIS Server 11.5 REST",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "Schneider Beacon / Image Mate Online (parcel viewer)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Static page; parcels hosted on the NYS GIS Clearinghouse",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Drupal + static ENR",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (CSV/PDF)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Enterprise 11.3 (self-hosted; no Sites/Hub catalog)",
+      "family": "arcgis-enterprise",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (Enterprise portal + server)"
+      ]
+    },
+    {
+      "platform": "Image Mate Online (assessment records)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Socrata (Tyler Technologies)",
+      "family": "socrata",
+      "note": null,
+      "api_types_seen": [
+        "SODA"
+      ]
+    },
+    {
+      "platform": "Granicus Legistar",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST/JSON (OData-style)"
+      ]
+    },
+    {
+      "platform": "custom dashboard",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "web query (no documented API)"
+      ]
+    },
+    {
+      "platform": "custom (nyccfb.info)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (CSV)"
+      ]
+    },
+    {
+      "platform": "Java web app",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "web query (no API)"
+      ]
+    },
+    {
+      "platform": "nyc.gov CMS",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (XLSX)",
+        "bulk download (shapefile/CSV/FileGDB)"
+      ]
+    },
+    {
+      "platform": "custom static site + GitHub",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (CSV via GitHub) + web query"
+      ]
+    },
+    {
+      "platform": "custom JS site",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (XLSX)"
+      ]
+    },
+    {
+      "platform": "Azure API Management",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST (multiple)",
+        "REST/JSON"
+      ]
+    },
+    {
+      "platform": "Azure API Management (Geosupport backend)",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST/JSON"
+      ]
+    },
+    {
+      "platform": "custom CMS",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (UNCONFIRMED format)"
+      ]
+    },
+    {
+      "platform": "Checkbook NYC 2.0 (Drupal)",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST (XML over HTTP POST)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Enterprise 11.3 (self-hosted Portal + Sites)",
+      "family": "arcgis-enterprise",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (Enterprise portal sharing API + ArcGIS Server)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Hub (custom domain) + county ArcGIS Server",
+      "family": "arcgis-hub",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS Hub (OGC Records) / ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online (Experience Builder app)",
+      "family": "none",
+      "note": "ArcGIS Online viewer app only; registry lists no API",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Esri ArcGIS Server 11.3 (parcel viewer)",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "Schneider Beacon",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Schneider Beacon (parcel search)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "DANC Internet Mapping Application (custom/Esri)",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (DANC regional server)"
+      ]
+    },
+    {
+      "platform": "Esri ArcGIS Server 10.61 + custom JS viewer page (not Hub)",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "CivicPlus static page with Document Center downloads",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Schneider Geospatial (paid subscription)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "—",
+      "family": "none",
+      "note": null,
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "CivicPlus static page + ArcGIS Online web viewer",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Server 10.91 (REST directory, no Hub front end)",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "Socrata",
+      "family": "socrata",
+      "note": null,
+      "api_types_seen": [
+        "SODA"
+      ]
+    },
+    {
+      "platform": "Custom site + ArcGIS Online viewers",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Enterprise (self-hosted Portal, no Sites catalog)",
+      "family": "arcgis-enterprise",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST",
+        "ArcGIS REST (Enterprise portal)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Enterprise (self-hosted Sites)",
+      "family": "arcgis-enterprise",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (Enterprise portal)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online (Web AppViewer)",
+      "family": "none",
+      "note": "ArcGIS Online viewer app only; registry lists no API",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "County GIS page (PDF maps, viewer user guide)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online (individual apps)",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org services behind individual apps; no catalog",
+      "api_types_seen": [
+        "ArcGIS REST (org services, no catalog)"
+      ]
+    },
+    {
+      "platform": "WordPress",
+      "family": null,
+      "note": "API status UNCONFIRMED in the registry",
+      "api_types_seen": [
+        "UNCONFIRMED"
+      ]
+    },
+    {
+      "platform": "React app + Django REST API",
+      "family": "custom-api",
+      "note": "account-gated; data-access policy applies; never called",
+      "api_types_seen": [
+        "Web portal; data access by account (by request)"
+      ]
+    },
+    {
+      "platform": "Confluence",
+      "family": null,
+      "note": "download format UNCONFIRMED in the registry",
+      "api_types_seen": [
+        "Bulk download (SQLite/SpatiaLite) UNCONFIRMED"
+      ]
+    },
+    {
+      "platform": "Custom web app",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Indicator pages with Export (CSV) button; no API found"
+      ]
+    },
+    {
+      "platform": "Static site + GitHub data repo",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Bulk JSON in GitHub repo"
+      ]
+    },
+    {
+      "platform": "Django API + React front end",
+      "family": "custom-api",
+      "note": "undocumented endpoint, found by inspection",
+      "api_types_seen": [
+        "REST/JSON (undocumented)"
+      ]
+    },
+    {
+      "platform": "Retired",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "None",
+        "Was bulk data + APIs"
+      ]
+    },
+    {
+      "platform": "Custom REST",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST/JSON"
+      ]
+    },
+    {
+      "platform": "Map Warper (retired)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Was WMS/tiles + REST"
+      ]
+    },
+    {
+      "platform": "Custom web map",
+      "family": null,
+      "note": "API status UNCONFIRMED in the registry",
+      "api_types_seen": [
+        "UNCONFIRMED"
+      ]
+    },
+    {
+      "platform": "Custom web map + static file downloads",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Bulk download (CSV/XLSX)"
+      ]
+    },
+    {
+      "platform": "Static site + open file directory",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Bulk download (CSV directory)"
+      ]
+    },
+    {
+      "platform": "Unknown",
+      "family": null,
+      "note": "platform not identified in the registry",
+      "api_types_seen": [
+        "UNCONFIRMED"
+      ]
+    },
+    {
+      "platform": "GeoBlacklight",
+      "family": "geoblacklight",
+      "note": null,
+      "api_types_seen": [
+        "Blacklight JSON API",
+        "Blacklight JSON API; bulk download per record"
+      ]
+    },
+    {
+      "platform": "ACIS",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "REST/JSON"
+      ]
+    },
+    {
+      "platform": "Vue app",
+      "family": null,
+      "note": "API status UNCONFIRMED in the registry",
+      "api_types_seen": [
+        "UNCONFIRMED"
+      ]
+    },
+    {
+      "platform": "Custom web database",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Web search (no public API found)"
+      ]
+    },
+    {
+      "platform": "WordPress + embedded dashboards",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Interactive dashboards; download UNCONFIRMED"
+      ]
+    },
+    {
+      "platform": "InvenioRDM",
+      "family": "custom-api",
+      "note": null,
+      "api_types_seen": [
+        "InvenioRDM REST API"
+      ]
+    },
+    {
+      "platform": "Custom",
+      "family": "custom-api",
+      "note": "API exists but undocumented; access is by data request",
+      "api_types_seen": [
+        "Data request form; api.nysmesonet.org exists but undocumented"
+      ]
+    },
+    {
+      "platform": "Squarespace",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Per-indicator download buttons; no API found"
+      ]
+    }
+  ]
+}

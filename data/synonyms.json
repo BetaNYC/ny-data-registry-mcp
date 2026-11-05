@@ -1,0 +1,23 @@
+{
+  "_readme": "Small synonym table for keyword search (find_sources and search_datasets). A query term on the left also searches every term on the right. Keep it short and civic: this is not a thesaurus.",
+  "terms": {
+    "property": ["parcel", "parcels", "tax lot", "bbl", "assessment", "real property"],
+    "parcel": ["parcels", "tax parcel", "tax lot", "tax map", "real property", "assessment"],
+    "parcels": ["parcel", "tax parcel", "tax lot", "tax map", "real property"],
+    "rat": ["rodent", "rodents"],
+    "rats": ["rodent", "rodents"],
+    "rodent": ["rodents", "rat"],
+    "lead": ["lead service line", "lead pipe", "lead service"],
+    "pipes": ["service line", "water main"],
+    "crime": ["arrests", "complaints", "incidents", "public safety"],
+    "zoning": ["zoning district", "land use"],
+    "budget": ["spending", "appropriations", "expense"],
+    "transit": ["bus", "subway", "gtfs", "rail"],
+    "health": ["hospital", "disease", "medicaid"],
+    "schools": ["school", "education", "district"],
+    "311": ["service requests", "complaints"],
+    "elections": ["election", "voter", "enrollment"],
+    "trees": ["tree", "street tree", "forestry"],
+    "housing": ["affordable housing", "rent", "hpd"]
+  }
+}

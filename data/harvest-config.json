@@ -1,0 +1,38 @@
+{
+  "_readme": [
+    "Per-portal harvest rules, keyed by source id (see `registry_info` or `find_sources`). Anything not listed uses the defaults.",
+    "`skip` means never call this portal, with the reason reported in every harvest's stats."
+  ],
+  "defaults": {
+    "min_interval_ms_per_host": 1000,
+    "max_layer_requests_per_portal": 250,
+    "socrata_only": [
+      "dataset",
+      "map",
+      "file",
+      "href"
+    ],
+    "enterprise_item_types": [
+      "Feature Service",
+      "Map Service",
+      "CSV",
+      "Shapefile",
+      "File Geodatabase",
+      "GeoJson",
+      "Microsoft Excel",
+      "KML"
+    ],
+    "esri_org_ids": [
+      "P3ePLMYs2RVChkJx"
+    ],
+    "esri_owner_pattern": "^esri",
+    "esri_org_ids_note": "Only org ids seen live are listed (P3ePLMYs2RVChkJx: Esri's own national layers on Monroe's portal, probe 6, 2026-11-05). Items owned by another org are excluded from a portal anyway (see own-org rule), so this list is a second guard, not the main one."
+  },
+  "skip": {
+    "by_entity": {
+      "Association for Neighborhood and Housing Development (ANHD)": "Account-gated portal with a data-access policy. Never called.",
+      "Rockland County": "Blocks automated clients (Scout eval, 2026-11-05). Skipped; never worked around.",
+      "Columbia University Libraries": "GeoBlacklight with 104,570 records, mostly not New York. Excluded from the harvest."
+    }
+  }
+}

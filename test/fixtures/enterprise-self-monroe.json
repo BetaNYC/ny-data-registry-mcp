@@ -1,0 +1,6 @@
+{
+ "_source": "GET https://maps.monroecounty.gov/portal/sharing/rest/portals/self?f=json (2026-11-05), trimmed",
+ "id": "0123456789ABCDEF",
+ "name": "Monroe County GIS Portal",
+ "isPortal": true
+}

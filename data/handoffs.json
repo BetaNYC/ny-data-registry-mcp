@@ -1,0 +1,14 @@
+{
+  "_readme": [
+    "Which MCP server to use for a registry row. Matched on the exact `entity` string (and optionally the API host).",
+    "Env var names were read from each MCP's own source on 2026-11-05. Socrata rows hand off to the `socrata` MCP by domain; that rule lives in code, not here."
+  ],
+  "servers": [
+    { "entity": "NYC311", "mcp": "nyc-311-mcp", "package": "@betanyc/nyc-311-mcp", "env": ["NYC_311_API_KEY"], "note": "Calendar, status alerts and service-request lookup. For 311 service-request *data*, use the socrata MCP on data.cityofnewyork.us." },
+    { "entity": "New York City Council", "mcp": "nyc-council-mcp", "package": "@betanyc/nyc-council-mcp", "env": ["LEGISTAR_TOKEN", "LEGISTAR_DB_PATH"], "note": "Legistar legislation, hearings and votes." },
+    { "entity": "New York State Senate", "mcp": "nys-openlegislation-mcp", "package": "@betanyc/nys-openlegislation-mcp", "env": ["NYS_LEGISLATION_API_KEY", "NYS_CORPUS_DB"], "note": "NYS OpenLegislation: bills, laws, calendars, transcripts." },
+    { "entity": "Office of the New York City Comptroller", "mcp": "nyc-checkbook-mcp", "package": "@betanyc/nyc-checkbook-mcp", "env": [], "note": "Checkbook NYC spending, contracts, payroll, budget, revenue." },
+    { "entity": "Metropolitan Transportation Authority", "mcp": "mta-mcp", "package": null, "env": [], "note": "Local build only (BetaNYC/mta-mcp, deliberately unpublished because of MTA's data terms). Service alerts and accessibility outages." },
+    { "entity": "NYC Department of Citywide Administrative Services", "host": "a856-cityrecord.nyc.gov", "mcp": "nyc-record-mcp", "package": "@betanyc/nyc-record-mcp", "env": [], "note": "The City Record: notices, procurement, hearings." }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+ "_source": "GET https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/feed/dcat-us/1.1.json (2026-11-05), 2 of 61 entries",
+ "@type": "dcat:Catalog",
+ "conformsTo": "https://project-open-data.cio.gov/v1.1/schema",
+ "dataset": [
+  {
+   "@type": "dcat:Dataset",
+   "identifier": "https://www.arcgis.com/home/item.html?id=dea35a11cfbf4adeb083df6d63cf1f88&sublayer=1",
+   "landingPage": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/datasets/dea35a11cfbf4adeb083df6d63cf1f88_1",
+   "title": "2025 Cortland Zoning Feature Layer",
+   "description": "",
+   "keyword": [
+    "cortland_county",
+    "zoning",
+    "data_downloads",
+    "shapefile"
+   ],
+   "issued": "2024-07-30T12:48:48.000Z",
+   "modified": "2026-09-23T16:57:49.338Z",
+   "publisher": {
+    "name": "{{source}}"
+   },
+   "contactPoint": {
+    "@type": "vcard:Contact",
+    "fn": "cortlandplanning",
+    "hasEmail": "{{orgContactEmail}}"
+   },
+   "accessLevel": "public",
+   "spatial": "-76.2767,42.4077,-75.8665,42.7788",
+   "license": "",
+   "distribution": [
+    {
+     "@type": "dcat:Distribution",
+     "title": "ArcGIS Hub Dataset",
+     "format": "Web Page",
+     "mediaType": "text/html",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/datasets/dea35a11cfbf4adeb083df6d63cf1f88_1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "ArcGIS GeoService",
+     "format": "ArcGIS GeoServices REST API",
+     "mediaType": "application/json",
+     "accessURL": "https://services2.arcgis.com/fRWb1mz1huf3Aqyy/arcgis/rest/services/Cortland_Zoning_Feature_Layer/FeatureServer/1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "CSV",
+     "format": "CSV",
+     "mediaType": "text/csv",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/csv?layers=1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "Shapefile",
+     "format": "ZIP",
+     "mediaType": "application/zip",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/shapefile?layers=1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "GeoJSON",
+     "format": "GeoJSON",
+     "mediaType": "application/vnd.geo+json",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/geojson?layers=1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "KML",
+     "format": "KML",
+     "mediaType": "application/vnd.google-earth.kml+xml",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/kml?layers=1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "File Geodatabase",
+     "format": "ZIP",
+     "mediaType": "application/zip",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/filegdb?layers=1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "Feature Collection",
+     "format": "TXT",
+     "mediaType": "text/plain",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/featureCollection?layers=1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "Excel",
+     "format": "XLSX",
+     "mediaType": "application/vnd.ms-excel",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/excel?layers=1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "GeoPackage",
+     "format": "GPKG",
+     "mediaType": "application/geopackage+sqlite3",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/geoPackage?layers=1"
+    },
+    {
+     "@type": "dcat:Distribution",
+     "title": "SQLite Geodatabase",
+     "format": "GDB",
+     "mediaType": "application/geopackage+sqlite3",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/api/download/v1/items/dea35a11cfbf4adeb083df6d63cf1f88/sqlite?layers=1"
+    }
+   ],
+   "theme": [
+    "geospatial"
+   ]
+  },
+  {
+   "@type": "dcat:Dataset",
+   "identifier": "https://www.arcgis.com/home/item.html?id=b1cafec0b8494fb284205ca1904de6e3",
+   "landingPage": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/maps/b1cafec0b8494fb284205ca1904de6e3",
+   "title": "2025 Cortland Combined Parcel Map",
+   "description": "",
+   "keyword": [
+    ""
+   ],
+   "issued": "2024-12-09T19:49:18.000Z",
+   "modified": "2026-08-17T13:09:17.000Z",
+   "publisher": {
+    "name": "{{source}}"
+   },
+   "contactPoint": {
+    "@type": "vcard:Contact",
+    "fn": "cortlandplanning",
+    "hasEmail": "{{orgContactEmail}}"
+   },
+   "accessLevel": "public",
+   "spatial": "-77.0191,42.1397,-75.0443,43.0385",
+   "license": "",
+   "distribution": [
+    {
+     "@type": "dcat:Distribution",
+     "title": "ArcGIS Hub Dataset",
+     "format": "Web Page",
+     "mediaType": "text/html",
+     "accessURL": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/maps/b1cafec0b8494fb284205ca1904de6e3"
+    }
+   ],
+   "theme": [
+    "geospatial"
+   ]
+  }
+ ]
+}

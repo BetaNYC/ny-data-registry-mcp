@@ -1,0 +1,526 @@
+{
+ "_source": "GET https://api.us.socrata.com/api/catalog/v1?domains=health.data.ny.gov&search_context=health.data.ny.gov&only=dataset&limit=2 (2026-11-05), descriptions truncated",
+ "results": [
+  {
+   "resource": {
+    "name": "Medicaid Enrolled Provider Listing",
+    "id": "keti-qx5t",
+    "resource_name": null,
+    "parent_fxf": [],
+    "description": "<b>Revalidation disclaimer</b>:  Because of the CMS mandate to revalidate all providers within two years, the next anticipated revalidation date is no longer accurate and has been removed from the Medicaid Enrolled Provider Listing.  Providers must wait to receive a revalidation notification, via U.",
+    "attribution": "New York State Department of Health",
+    "attribution_link": "https://www.emedny.org/info/ProviderEnrollment/ManagedCareNetwork/index.aspx",
+    "contact_email": null,
+    "type": "dataset",
+    "updatedAt": "2026-11-02T20:13:02.000Z",
+    "createdAt": "2017-06-23T17:09:42.000Z",
+    "metadata_updated_at": "2026-11-02T20:02:04.000Z",
+    "data_updated_at": "2026-11-02T20:13:02.000Z",
+    "page_views": {
+     "page_views_last_week": 10850,
+     "page_views_last_month": 47555,
+     "page_views_total": 2935939,
+     "page_views_last_week_log": 13.405540383376932,
+     "page_views_last_month_log": 15.53733975268914,
+     "page_views_total_log": 21.48539105433536
+    },
+    "columns_name": [
+     "LONGITUDE",
+     "PROFESSION OR SERVICE",
+     "PROVIDER SPECIALTY",
+     "ENROLLMENT BEGIN DATE",
+     "FILE DATE",
+     "PROVIDER EMAIL",
+     "LATITUDE",
+     "COUNTY",
+     "PROVIDER OR FACILITY NAME",
+     "MEDICAID PROVIDER ID",
+     "TELEPHONE",
+     "CITY",
+     "MEDICAID TYPE",
+     "ZIP CODE",
+     "SERVICE ADDRESS",
+     "STATE",
+     "MEDICALLY FRAGILE CHILDREN AND ADULTS DIRECTORY IND",
+     "NPI"
+    ],
+    "columns_field_name": [
+     "longitude",
+     "profession_or_service",
+     "provider_specialty",
+     "enrollment_begin_date",
+     "updated",
+     "provider_email",
+     "latitude",
+     "county",
+     "mmis_name",
+     "mmis_id",
+     "telephone",
+     "city",
+     "medicaid_type",
+     "zip_code",
+     "service_address",
+     "state",
+     "medically_fragile_children_directory_ind",
+     "npi"
+    ],
+    "columns_datatype": [
+     "Text",
+     "Text",
+     "Text",
+     "Calendar date",
+     "Calendar date",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text"
+    ],
+    "columns_description": [
+     "Longitude related to the service address for the Medicaid provider ID. nnn.ddddd",
+     "Specifies the broad areas of service that a provider can render.",
+     "Identifies the medical specialty for which a provider is certified.",
+     "Most recent date the provider began participating in NYS FFS Medicaid/OPRA/ Mana",
+     "Date the file was created at eMedNY.  mm/dd/ccyy with leading zeros",
+     "The provider email address related to the service address for the Medicaid provi",
+     "Latitude related to the service address for the Medicaid provider ID. \u2013nn.dddddd",
+     "County related to the service address for the MMIS ID.",
+     "The name of a provider of Medicaid services as used on official State records.",
+     "A unique number assigned to each provider enrolled to provide services to member",
+     "Telephone number related to the service address for the Medicaid provider ID.  ",
+     "The City related to the service address for the Medicaid provider ID.",
+     "FFS (Fee for Service Medicaid): Provider is enrolled and participating in the Me",
+     "Zip Code related to the service address for the Medicaid provider ID.",
+     "Address related to the service address for the Medicaid provider ID.  ",
+     "State related to the service address for the MMIS ID.",
+     "Indicator to identify provider enrolled in the Medically Fragile Children Direct",
+     "National Provider ID (NPI) is a standard unique identifier for health care provi"
+    ],
+    "columns_format": [
+     {},
+     {
+      "align": "left"
+     },
+     {},
+     {
+      "view": "date"
+     },
+     {
+      "view": "date"
+     },
+     {},
+     {},
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "right"
+     },
+     {},
+     {},
+     {},
+     {},
+     {},
+     {
+      "align": "left"
+     },
+     {},
+     {
+      "align": "right"
+     }
+    ],
+    "download_count": 121547,
+    "provenance": "official",
+    "lens_view_type": "tabular",
+    "lens_display_type": "table",
+    "locked": false,
+    "backend": "nbe",
+    "blob_mime_type": null,
+    "hide_from_data_json": false,
+    "publication_date": "2020-12-28T16:03:15.000Z"
+   },
+   "classification": {
+    "categories": [],
+    "tags": [],
+    "domain_category": "Health",
+    "domain_tags": [
+     "fee-for-service",
+     "21st century cures act",
+     "children\u2019s health insurance",
+     "community health and chronic disease",
+     "consumer resources",
+     "emedny",
+     "ffs",
+     "managed care",
+     "medicaid",
+     "mmc",
+     "mmis",
+     "npi",
+     "opra",
+     "part 438",
+     "provider enrollment",
+     "strategic initiatives"
+    ],
+    "domain_metadata": [
+     {
+      "key": "Dataset-Summary_Posting-Frequency",
+      "value": "Weekly"
+     },
+     {
+      "key": "Dataset-Information_Agency",
+      "value": "Health, Department of"
+     }
+    ]
+   },
+   "metadata": {
+    "domain": "health.data.ny.gov"
+   },
+   "permalink": "https://health.data.ny.gov/d/keti-qx5t",
+   "link": "https://health.data.ny.gov/Health/Medicaid-Enrolled-Provider-Listing/keti-qx5t",
+   "owner": {
+    "id": "s9j2-nqmr",
+    "user_type": "interactive",
+    "display_name": "Open Data NY - DOH"
+   },
+   "creator": {
+    "id": "s9j2-nqmr",
+    "user_type": "interactive",
+    "display_name": "Open Data NY - DOH"
+   }
+  },
+  {
+   "resource": {
+    "name": "Food Service Establishment: Last Inspection",
+    "id": "cnih-y5dw",
+    "resource_name": null,
+    "parent_fxf": [],
+    "description": "This data includes the name and location of food service establishments and the violations that were found at the time of their last inspection. Although violation details are collected on inspection reports (i.e., the actual food item, quantity and temperature of food found out of temperature contr",
+    "attribution": "New York State Department of Health",
+    "attribution_link": "https://regs.health.ny.gov/volume-title-10/1997429580/subpart-14-1-food-service-establishments",
+    "contact_email": null,
+    "type": "dataset",
+    "updatedAt": "2026-11-01T19:01:14.000Z",
+    "createdAt": "2013-01-29T18:06:17.000Z",
+    "metadata_updated_at": "2026-11-01T19:01:02.000Z",
+    "data_updated_at": "2026-11-01T19:01:14.000Z",
+    "page_views": {
+     "page_views_last_week": 1508,
+     "page_views_last_month": 6147,
+     "page_views_total": 799233,
+     "page_views_last_week_log": 10.559377090526684,
+     "page_views_last_month_log": 12.585901449690772,
+     "page_views_total_log": 19.60825843217679
+    },
+    "columns_name": [
+     "NYS HEALTH OPERATION ID",
+     "New York Zip Codes",
+     "Counties",
+     "NYS Senate Districts",
+     "Local Waterfront Revitalization Program (LWRP) Communities",
+     "School Districts 2016.shp",
+     "Location1 (address)",
+     "Location1 (zip)",
+     "NYSDOH GAZETTEER (1980)",
+     "Location1 (city)",
+     "TOTAL #CRIT.  NOT CORRECTED ",
+     "INSPECTION TYPE",
+     "Location1",
+     "Location1 (state)",
+     "INSPECTION COMMENTS",
+     "TOTAL # CRITICAL VIOLATIONS",
+     "FOOD SERVICE FACILITY STATE",
+     "PERM. OPERATOR LAST NAME",
+     "ZIP CODE",
+     "PERMITTED  CORP. NAME",
+     "TOTAL # NONCRITICAL VIOLATIONS",
+     "DESCRIPTION",
+     "FACILITY ADDRESS",
+     "MUNICIPALITY",
+     "OPERATION NAME",
+     "PERM. OPERATOR FIRST NAME",
+     "FACILITY",
+     "ADDRESS",
+     "LAST INSPECTED",
+     "VIOLATIONS",
+     " LOCAL HEALTH DEPARTMENT",
+     "COUNTY",
+     "CITY",
+     "PERMIT EXPIRATION DATE",
+     "PERMITTED  (D/B/A)"
+    ],
+    "columns_field_name": [
+     "nys_health_operation_id",
+     ":@computed_region_43an_4dx5",
+     ":@computed_region_9yqb_tdyd",
+     ":@computed_region_assa_msit",
+     ":@computed_region_8ire_itmf",
+     ":@computed_region_5edz_4hdv",
+     "location1_address",
+     "location1_zip",
+     "nysdoh_gazetteer_1980",
+     "location1_city",
+     "total_crit_not_corrected",
+     "inspection_type",
+     "location1",
+     "location1_state",
+     "inspection_comments",
+     "total_critical_violations",
+     "food_service_facility_state",
+     "perm_operator_last_name",
+     "zip_code",
+     "permitted_corp_name",
+     "total_noncritical_violations",
+     "description",
+     "facility_address",
+     "municipality",
+     "operation_name",
+     "perm_operator_first_name",
+     "facility",
+     "address",
+     "date",
+     "violations",
+     "local_health_department",
+     "county",
+     "city",
+     "permit_expiration_date",
+     "permitted_d_b_a"
+    ],
+    "columns_datatype": [
+     "Text",
+     "Number",
+     "Number",
+     "Number",
+     "Number",
+     "Number",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Text",
+     "Point",
+     "Text",
+     "Text",
+     "Number",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Calendar date",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Calendar date",
+     "Text"
+    ],
+    "columns_description": [
+     "Unique identifier for operation, used on inspection forms",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "Municipality code for facility location is derived from the 1980\nNYSDOH Gazettee",
+     "",
+     "Total number of red (critical) violations that were NOT\ncorrected at the time of",
+     "Type of service (inspection, reinspection, field visit,\npreoperational, complain",
+     "",
+     "",
+     "Inspector\u2019s comments and narrative regarding the inspection\n(optional in databas",
+     "Total number of Red (critical) violations identified during\ninspection",
+     "State that facility is located in (NY)",
+     "Permit applicant (operator) last name",
+     "Facility postal zip code",
+     "Permit applicant (operator) corporation name",
+     "Total number of Blue (noncritical) violations identified during\ninspection",
+     "Description of FSE operation sub-type",
+     "Street address of facility",
+     "Facility location name (town, village, city or hamlet)",
+     "Name of FSE operation",
+     "Permit applicant (operator) first name",
+     "Name of the Facility or establishment where FSE operates",
+     "Street address and city of facility",
+     "Date of most recently reported inspection",
+     "Description of violations",
+     "Local Health Department issuing permit to Food Service",
+     "County where FSE is located",
+     "Facility city",
+     "Expiration date of FSE permit",
+     "Business name of operation, Doing Business As (D/B/A)"
+    ],
+    "columns_format": [
+     {
+      "align": "left"
+     },
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {
+      "align": "right"
+     },
+     {},
+     {
+      "precisionStyle": "standard",
+      "noCommas": "false",
+      "align": "right"
+     },
+     {
+      "align": "left"
+     },
+     {},
+     {},
+     {
+      "align": "left"
+     },
+     {
+      "precisionStyle": "standard",
+      "noCommas": "false",
+      "align": "right"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "precisionStyle": "standard",
+      "noCommas": "false",
+      "align": "right"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "view": "date",
+      "align": "right"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "align": "left"
+     },
+     {
+      "view": "date",
+      "align": "right"
+     },
+     {
+      "align": "left"
+     }
+    ],
+    "download_count": 99286,
+    "provenance": "official",
+    "lens_view_type": "tabular",
+    "lens_display_type": "table",
+    "locked": false,
+    "backend": "nbe",
+    "blob_mime_type": null,
+    "hide_from_data_json": false,
+    "publication_date": "2025-03-04T12:07:16.000Z"
+   },
+   "classification": {
+    "categories": [],
+    "tags": [],
+    "domain_category": "Health",
+    "domain_tags": [
+     "environmental health",
+     "public health",
+     "consumer resources",
+     "community health and chronic disease",
+     "food",
+     "restaurant",
+     "inspection",
+     "violation",
+     "oph"
+    ],
+    "domain_metadata": [
+     {
+      "key": "Dataset-Summary_Data-Frequency",
+      "value": "Daily"
+     },
+     {
+      "key": "Dataset-Summary_Posting-Frequency",
+      "value": "Monthly"
+     },
+     {
+      "key": "Dataset-Information_Agency",
+      "value": "Health, Department of"
+     }
+    ]
+   },
+   "metadata": {
+    "domain": "health.data.ny.gov"
+   },
+   "permalink": "https://health.data.ny.gov/d/cnih-y5dw",
+   "link": "https://health.data.ny.gov/Health/Food-Service-Establishment-Last-Inspection/cnih-y5dw",
+   "owner": {
+    "id": "s9j2-nqmr",
+    "user_type": "interactive",
+    "display_name": "Open Data NY - DOH"
+   },
+   "creator": {
+    "id": "s9j2-nqmr",
+    "user_type": "interactive",
+    "display_name": "Open Data NY - DOH"
+   }
+  }
+ ],
+ "resultSetSize": 324
+}

@@ -1,0 +1,518 @@
+{
+  "_readme": [
+    "Fixed question set, written 2026-11-05 before scoring. Each question has a known right answer.",
+    "Checks: `answer` (a field equals a value), `top3` (one of the first 3 results matches every given condition),",
+    "`field` (a dotted path equals a value), `min` (a dotted path is at least a number), `none` (no result matches).",
+    "Invariants checked on every result of every question: nothing dead or refused-as-out-of-state is reported as live, and no dataset whose extent lies wholly outside New York is returned.",
+    "`top3_any`: one of the first 3 results matches any one of the listed condition sets."
+  ],
+  "questions": [
+    {
+      "id": "Q01",
+      "q": "Does Erie County publish parcel data?",
+      "steps": [
+        {
+          "tool": "list_sources_for_place",
+          "args": {
+            "place": "Erie County",
+            "include_statewide": false
+          },
+          "check": {
+            "answer": [
+              "answer",
+              "no-portal-exists"
+            ]
+          }
+        },
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "tax parcels",
+            "place": "Erie County"
+          },
+          "check": {
+            "top3": {
+              "name": "NYS Tax Parcels Public"
+            }
+          }
+        }
+      ],
+      "note": "Erie has no portal; the right parcel source is the statewide 'NYS Tax Parcels Public' layer. Made strict at 13:30 after the final run showed a lax pass on Oswego's parcels (disclosed in the report)."
+    },
+    {
+      "id": "Q02",
+      "q": "What is the Socrata domain for state health data?",
+      "steps": [
+        {
+          "tool": "how_to_query",
+          "args": {
+            "entity": "NYS Department of Health"
+          },
+          "check": {
+            "field": [
+              "use.domain",
+              "health.data.ny.gov"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q03",
+      "q": "Which NY portals have anything on lead pipes?",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "lead service lines"
+          },
+          "check": {
+            "top3": {
+              "name": "lead"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q04",
+      "q": "What joins to 311 by BBL?",
+      "steps": [
+        {
+          "tool": "find_joinable",
+          "args": {
+            "dataset": "erm2-nwe9",
+            "column": "BBL"
+          },
+          "check": {
+            "min": [
+              "keys.0.datasets_sharing_key",
+              100
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q05",
+      "q": "rodent",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "rodent"
+          },
+          "check": {
+            "top3": {
+              "name": "rodent inspection",
+              "portal_id": "new-york-city"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q06",
+      "q": "parcels",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "parcels"
+          },
+          "check": {
+            "top3": {
+              "name": "parcel"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q07",
+      "q": "Does Buffalo have an open data portal?",
+      "steps": [
+        {
+          "tool": "list_sources_for_place",
+          "args": {
+            "place": "Buffalo",
+            "include_statewide": false
+          },
+          "check": {
+            "answer": [
+              "answer",
+              "portal-exists"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q08",
+      "q": "Where is New York City's open data portal?",
+      "steps": [
+        {
+          "tool": "find_sources",
+          "args": {
+            "query": "open data",
+            "place": "NYC"
+          },
+          "check": {
+            "top3": {
+              "source_id": "new-york-city"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q09",
+      "q": "Where is New York State's GIS data?",
+      "steps": [
+        {
+          "tool": "find_sources",
+          "args": {
+            "query": "GIS"
+          },
+          "check": {
+            "top3": {
+              "source_id": "nys-office-of-information-technology-services-gis-program-of--data-gis-ny-gov"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q10",
+      "q": "Is the City of Albany's open data portal up?",
+      "steps": [
+        {
+          "tool": "list_sources_for_place",
+          "args": {
+            "place": "City of Albany",
+            "include_statewide": false
+          },
+          "check": {
+            "answer": [
+              "answer",
+              "portal-dead"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q11",
+      "q": "How do I query NYC Council legislation?",
+      "steps": [
+        {
+          "tool": "how_to_query",
+          "args": {
+            "entity": "New York City Council"
+          },
+          "check": {
+            "field": [
+              "use.mcp",
+              "nyc-council-mcp"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q12",
+      "q": "What is Nassau County's Socrata domain?",
+      "steps": [
+        {
+          "tool": "how_to_query",
+          "args": {
+            "entity": "Nassau County"
+          },
+          "check": {
+            "field": [
+              "use.domain",
+              "opennassau.nassaucountyny.gov"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q13",
+      "q": "Suffolk County parcel data?",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "parcels",
+            "place": "Suffolk County"
+          },
+          "check": {
+            "top3_any": [
+              {
+                "name": "parcel",
+                "portal_id": "suffolk-county"
+              },
+              {
+                "name": "NYS Tax Parcels Public"
+              }
+            ]
+          }
+        }
+      ],
+      "note": "Suffolk's own parcel layer or the statewide 'NYS Tax Parcels Public'. Made strict at 13:30, same reason as Q01."
+    },
+    {
+      "id": "Q14",
+      "q": "What does Monroe County publish?",
+      "steps": [
+        {
+          "tool": "find_sources",
+          "args": {
+            "query": "data",
+            "place": "Monroe County"
+          },
+          "check": {
+            "top3": {
+              "source_id": "monroe-county"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q15",
+      "q": "Does Syracuse have open data?",
+      "steps": [
+        {
+          "tool": "list_sources_for_place",
+          "args": {
+            "place": "Syracuse",
+            "include_statewide": false
+          },
+          "check": {
+            "answer": [
+              "answer",
+              "portal-exists"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q16",
+      "q": "NYC street trees",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "street tree census"
+          },
+          "check": {
+            "top3": {
+              "name": "tree",
+              "portal_id": "new-york-city"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q17",
+      "q": "COVID hospitalizations in New York State",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "covid hospitalizations"
+          },
+          "check": {
+            "top3": {
+              "name": "covid"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q18",
+      "q": "NY Lottery winning numbers",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "lottery winning numbers"
+          },
+          "check": {
+            "top3": {
+              "name": "lottery",
+              "portal_id": "nys-office-of-information-technology-services-open-ny-progra"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q19",
+      "q": "Westchester municipal boundaries",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "municipal boundaries",
+            "place": "Westchester County"
+          },
+          "check": {
+            "top3": {
+              "name": "municipal"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q20",
+      "q": "DEC environmental remediation sites",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "environmental remediation sites"
+          },
+          "check": {
+            "top3": {
+              "name": "remediation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q21",
+      "q": "Who owns this building? (landlord data)",
+      "steps": [
+        {
+          "tool": "find_sources",
+          "args": {
+            "query": "who owns what landlord"
+          },
+          "check": {
+            "top3": {
+              "source_id": "justfix"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q22",
+      "q": "Statewide climate and weather station data",
+      "steps": [
+        {
+          "tool": "find_sources",
+          "args": {
+            "query": "climate"
+          },
+          "check": {
+            "top3": {
+              "source_id": "cornell-university-northeast-regional-climate-center"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q23",
+      "q": "Does Tompkins County have a portal?",
+      "steps": [
+        {
+          "tool": "list_sources_for_place",
+          "args": {
+            "place": "Tompkins County",
+            "include_statewide": false
+          },
+          "check": {
+            "answer": [
+              "answer",
+              "portal-exists"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q24",
+      "q": "Buffalo 311 requests",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "311 service requests",
+            "place": "Buffalo"
+          },
+          "check": {
+            "top3": {
+              "name": "311",
+              "portal_id": "city-of-buffalo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q25",
+      "q": "Is the Long Island Index still live?",
+      "steps": [
+        {
+          "tool": "find_sources",
+          "args": {
+            "query": "Long Island Index"
+          },
+          "check": {
+            "none": {
+              "source_id": "rauch-foundation-long-island-index"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q26",
+      "q": "NYC 311 data as CSV",
+      "steps": [
+        {
+          "tool": "search_datasets",
+          "args": {
+            "query": "311 service requests",
+            "place": "NYC",
+            "format": "csv"
+          },
+          "check": {
+            "top3": {
+              "name": "311 service requests",
+              "portal_id": "new-york-city"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Q27",
+      "q": "How do I get NYC 311 service-request status?",
+      "steps": [
+        {
+          "tool": "how_to_query",
+          "args": {
+            "entity": "NYC311"
+          },
+          "check": {
+            "field": [
+              "use.mcp",
+              "nyc-311-mcp"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

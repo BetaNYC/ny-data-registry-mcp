@@ -1,0 +1,302 @@
+{
+ "_source": "GET https://data-pcny.opendata.arcgis.com/api/search/v1/collections/dataset/items?limit=2 (2026-11-05)",
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "id": "54bba1c26ce7482d8eb66fe02a4d5b27",
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.98253026560718,
+       41.529692394258085
+      ],
+      [
+       -73.53072022609065,
+       41.529692394258085
+      ],
+      [
+       -73.53072022609065,
+       41.318892798325784
+      ],
+      [
+       -73.98253026560718,
+       41.318892798325784
+      ],
+      [
+       -73.98253026560718,
+       41.529692394258085
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "snippet": "Municipal boundaries of Putnam County, NY",
+    "extent": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        -73.98253026560718,
+        41.529692394258085
+       ],
+       [
+        -73.53072022609065,
+        41.529692394258085
+       ],
+       [
+        -73.53072022609065,
+        41.318892798325784
+       ],
+       [
+        -73.98253026560718,
+        41.318892798325784
+       ],
+       [
+        -73.98253026560718,
+        41.529692394258085
+       ]
+      ]
+     ]
+    },
+    "commentsEnabled": false,
+    "groupDesignations": null,
+    "access": "public",
+    "apiToken2ExpirationDate": -1,
+    "typeKeywords": [
+     "ArcGIS Server",
+     "Data",
+     "Feature Access",
+     "Feature Service",
+     "Metadata",
+     "Service",
+     "Hosted Service"
+    ],
+    "description": "",
+    "licenseInfo": "",
+    "ownerId": "99a9e64420117bd2c4fbdf97813c8350",
+    "title": "Municipal Boundaries",
+    "type": "Feature Service",
+    "orgId": "dU6jdOIkCUj2UDe9",
+    "screenshots": [],
+    "subInfo": 0,
+    "advancedSettings": null,
+    "appCategories": [],
+    "modified": 1792517823000,
+    "avgRating": 0,
+    "id": "54bba1c26ce7482d8eb66fe02a4d5b27",
+    "categories": [],
+    "spatialReference": "102715",
+    "numRatings": 0,
+    "owner": "Putnam_County_NY",
+    "accessInformation": "Putnam County IT/GIS",
+    "largeThumbnail": null,
+    "lastViewed": 1792515600000,
+    "thumbnail": "thumbnail/thumbnail.png",
+    "languages": [],
+    "created": 1681403487000,
+    "documentation": null,
+    "banner": null,
+    "classification": null,
+    "url": "https://services2.arcgis.com/dU6jdOIkCUj2UDe9/arcgis/rest/services/Municipal_Boundary/FeatureServer",
+    "tags": [
+     "Putnam County NY",
+     "Municipal Boundaries",
+     "Municipality"
+    ],
+    "numViews": 231585,
+    "numComments": 0,
+    "size": 344064,
+    "listed": false,
+    "scoreCompleteness": 60,
+    "culture": "en-us",
+    "industries": [],
+    "apiToken1ExpirationDate": -1,
+    "name": "Municipal_Boundary",
+    "guid": null,
+    "proxyFilter": null,
+    "properties": null,
+    "source": "Putnam County, NY",
+    "license": "none"
+   },
+   "time": null,
+   "links": [
+    {
+     "rel": "self",
+     "type": "application/geo+json",
+     "title": "This document as GeoJSON",
+     "href": "https://data-pcny.opendata.arcgis.com/api/search/v1/collections/dataset/items/54bba1c26ce7482d8eb66fe02a4d5b27"
+    },
+    {
+     "rel": "collection",
+     "type": "application/json",
+     "title": "Dataset",
+     "href": "https://data-pcny.opendata.arcgis.com/api/search/v1/collections/dataset"
+    }
+   ]
+  },
+  {
+   "id": "e17b9b87a7b041abbd6b8146d02c1443",
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.95302653259056,
+       41.52441695946898
+      ],
+      [
+       -73.53264260417156,
+       41.52441695946898
+      ],
+      [
+       -73.53264260417156,
+       41.32406127157361
+      ],
+      [
+       -73.95302653259056,
+       41.32406127157361
+      ],
+      [
+       -73.95302653259056,
+       41.52441695946898
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "snippet": "Agricultural District Boundaries in Putnam County, NY",
+    "extent": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        -73.95302653259056,
+        41.52441695946898
+       ],
+       [
+        -73.53264260417156,
+        41.52441695946898
+       ],
+       [
+        -73.53264260417156,
+        41.32406127157361
+       ],
+       [
+        -73.95302653259056,
+        41.32406127157361
+       ],
+       [
+        -73.95302653259056,
+        41.52441695946898
+       ]
+      ]
+     ]
+    },
+    "commentsEnabled": false,
+    "groupDesignations": null,
+    "access": "public",
+    "apiToken2ExpirationDate": -1,
+    "typeKeywords": [
+     "ArcGIS Server",
+     "Data",
+     "Feature Access",
+     "Feature Service",
+     "Metadata",
+     "Service",
+     "Hosted Service"
+    ],
+    "description": "<div style='text-align:Left;'><p><span>This layer depicts the Agricultural District in Putnam County, including the recent 2025 and 2026 additions.</span></p><p><span>These areas are specially designated for tax purposes and are intended preserve&nbsp;</span>and protect agricultural lands.</p></div>",
+    "licenseInfo": "<span style='margin: 0px; padding: 0px; user-select: text; -webkit-user-drag: none; -webkit-tap-highlight-color: transparent; font-size: 12pt; font-family: Calibri, Calibri_MSFontService, sans-serif; font-kerning: none; line-height: 20.5042px; font-variant-ligatures: none !important;'><span style='margin: 0px; padding: 0px; user-select: text; -webkit-user-drag: none; -webkit-tap-highlight-color: transparent; background-color: inherit;'>Putnam County makes no representations or warranties, express or implied, with respect to the use of or reliance on the Data provided. The User accepts the Data provided \u201cas is\u201d with no guarantees that it is error free, complete, accurate, current or fit for any particular purpose and assumes all risks associated with its use. The County disclaims any responsibility or legal liability to Users for damages of any kind, relating to the providing of the Data or the use of it. Users should be aware that temporal changes may have occurred since this Data was created.</span></span><span style='margin: 0px; padding: 0px; user-select: text; -webkit-user-drag: none; -webkit-tap-highlight-color: transparent; color: rgb(0, 0, 0); font-size: 12pt; line-height: 20.5042px; font-family: Calibri, Calibri_MSFontService, sans-serif;'>\u00a0</span>",
+    "ownerId": "99a9e64420117bd2c4fbdf97813c8350",
+    "title": "Agricultural Districts",
+    "type": "Feature Service",
+    "orgId": "dU6jdOIkCUj2UDe9",
+    "screenshots": [],
+    "subInfo": 0,
+    "advancedSettings": null,
+    "appCategories": [],
+    "modified": 1792517722000,
+    "avgRating": 0,
+    "id": "e17b9b87a7b041abbd6b8146d02c1443",
+    "categories": [
+     "/Categories/Districts"
+    ],
+    "spatialReference": "102715",
+    "numRatings": 0,
+    "owner": "Putnam_County_NY",
+    "accessInformation": "Putnam County IT&GIS, Putnam County Legislature\n",
+    "largeThumbnail": null,
+    "lastViewed": 1792515600000,
+    "thumbnail": "thumbnail/thumbnail.png",
+    "languages": [],
+    "created": 1581701194000,
+    "documentation": null,
+    "banner": null,
+    "classification": null,
+    "url": "https://services2.arcgis.com/dU6jdOIkCUj2UDe9/arcgis/rest/services/Dist_Ag_2019/FeatureServer",
+    "tags": [
+     "Agricultural",
+     "Putnam County NY",
+     "District",
+     "Environmental"
+    ],
+    "numViews": 3976,
+    "numComments": 0,
+    "size": 843776,
+    "listed": false,
+    "scoreCompleteness": 90,
+    "culture": "en-us",
+    "industries": [],
+    "apiToken1ExpirationDate": -1,
+    "name": "Dist_Ag_2019",
+    "guid": null,
+    "proxyFilter": null,
+    "properties": null,
+    "source": "Putnam County, NY",
+    "license": "custom"
+   },
+   "time": null,
+   "links": [
+    {
+     "rel": "self",
+     "type": "application/geo+json",
+     "title": "This document as GeoJSON",
+     "href": "https://data-pcny.opendata.arcgis.com/api/search/v1/collections/dataset/items/e17b9b87a7b041abbd6b8146d02c1443"
+    },
+    {
+     "rel": "collection",
+     "type": "application/json",
+     "title": "Dataset",
+     "href": "https://data-pcny.opendata.arcgis.com/api/search/v1/collections/dataset"
+    }
+   ]
+  }
+ ],
+ "timestamp": "2026-11-05T17:43:23.035Z",
+ "numberMatched": 26,
+ "numberReturned": 2,
+ "links": [
+  {
+   "rel": "self",
+   "type": "application/geo+json",
+   "title": "This document as GeoJSON",
+   "href": "https://data-pcny.opendata.arcgis.com/api/search/v1/collections/dataset/items"
+  },
+  {
+   "rel": "next",
+   "type": "application/geo+json",
+   "title": "items (next)",
+   "href": "https://data-pcny.opendata.arcgis.com/api/search/v1/collections/dataset/items?limit=2&startindex=3"
+  },
+  {
+   "rel": "collection",
+   "type": "application/json",
+   "title": "Dataset",
+   "href": "https://data-pcny.opendata.arcgis.com/api/search/v1/collections/dataset"
+  }
+ ]
+}
