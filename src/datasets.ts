@@ -13,8 +13,10 @@ export class NoIndexError extends Error {
   constructor() {
     super(
       `The harvested index is not built yet (looked for ${indexPath()}). ` +
-        "Build it with `npx ny-data-registry harvest` (about 30-60 minutes, read-only and throttled), " +
-        "or set NY_DATA_INDEX to an existing ny-data-index.sqlite. The registry tools (find_sources, " +
+        "Download the prebuilt index (one command, see the README section 'Get the index'): " +
+        "https://github.com/BetaNYC/ny-data-registry-mcp/releases/latest/download/ny-data-index.sqlite.gz " +
+        "and unzip it to that path. Or build it yourself with `npx ny-data-registry harvest` (15-60 minutes, " +
+        "read-only and throttled), or set NY_DATA_INDEX to an existing ny-data-index.sqlite. The registry tools (find_sources, " +
         "list_sources_for_place, how_to_query, check_source, registry_info) work without it."
     );
   }

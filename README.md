@@ -61,6 +61,8 @@ Once published to npm this would become `"command": "npx", "args": ["-y", "@beta
 
 ### Get the index (no harvest needed)
 
+> **Do this once after installing, or the dataset tools won't work.** The server does not download the index by itself. Without it, the five registry tools still work, and the other four reply with these same download steps.
+
 The phase 2 tools (`search_datasets`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. Download the latest one from the [releases page](https://github.com/BetaNYC/ny-data-registry-mcp/releases) instead of running a 15-minute harvest:
 
 ```sh
@@ -69,7 +71,7 @@ curl -L https://github.com/BetaNYC/ny-data-registry-mcp/releases/latest/download
   | gunzip > ~/.cache/betanyc/ny-data-registry/ny-data-index.sqlite
 ```
 
-Each index release is tagged `index-YYYY-MM-DD` and ships a `SHA256SUMS` file. The server does not download it for you yet.
+Each index release is tagged `index-YYYY-MM-DD` and ships a `SHA256SUMS` file.
 
 ### Environment variables (all optional)
 
