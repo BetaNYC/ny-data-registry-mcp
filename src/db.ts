@@ -1,6 +1,7 @@
 /**
  * The harvested index: one SQLite file with FTS5. Uses Node's built-in node:sqlite
- * (Node >= 22.13), so there is no native dependency to compile.
+ * (Node >= 22.16, the first official build whose bundled SQLite has FTS5), so there
+ * is no native dependency to compile.
  *
  * Schema is a superset of Scout's TypeORM entities (Portal, Dataset, DatasetColumn,
  * Tag); see docs/scout-mapping.md. Missing values stay NULL; nothing is invented.
@@ -135,9 +136,22 @@ export interface PortalRecord {
   registry_last_verified: string;
 }
 
+/** Fail with a clear message when this Node's SQLite lacks FTS5 (official builds before 22.16, or a system SQLite built without it). */
+function assertFts5(db: DatabaseSync): void {
+  try {
+    db.exec("CREATE VIRTUAL TABLE temp.fts5_probe USING fts5(x); DROP TABLE temp.fts5_probe;");
+  } catch {
+    throw new Error(
+      `This Node (${process.version}, SQLite ${process.versions.sqlite ?? "unknown"}) has no SQLite FTS5, which the dataset index needs. ` +
+        "Use Node 22.16 or later from nodejs.org (or nvm, fnm, Volta). The registry tools still work."
+    );
+  }
+}
+
 export function openDb(path = indexPath(), opts: { readOnly?: boolean } = {}): DatabaseSync {
   if (!opts.readOnly) mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path, opts.readOnly ? { readOnly: true } : {});
+  assertFts5(db);
   if (!opts.readOnly) {
     db.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;");
     db.exec(SCHEMA);

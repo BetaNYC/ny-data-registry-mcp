@@ -37,7 +37,7 @@ All tool inputs are strict: an unknown parameter is rejected by name, never sile
 
 ## Install
 
-Requires **Node 22.13 or later** (it uses Node's built-in `node:sqlite`, so there is nothing native to compile).
+Requires **Node 22.16 or later** (it uses Node's built-in `node:sqlite`, so there is nothing native to compile; 22.16 is the first official Node whose SQLite includes FTS5 full-text search).
 
 Add it to your MCP client's config (Claude Desktop, Claude Code, Cursor, VS Code and others use this shape):
 
