@@ -57,7 +57,19 @@ Proposed `.mcp.json` entry (**not added anywhere**; adding it is a separate deci
 }
 ```
 
-Once published to npm this would become `"command": "npx", "args": ["-y", "@betanyc/ny-data-registry-mcp"]`, with the index downloaded from a release asset instead of built locally.
+Once published to npm this would become `"command": "npx", "args": ["-y", "@betanyc/ny-data-registry-mcp"]`.
+
+### Get the index (no harvest needed)
+
+The phase 2 tools (`search_datasets`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. Download the latest one from the [releases page](https://github.com/BetaNYC/ny-data-registry-mcp/releases) instead of running a 15-minute harvest:
+
+```sh
+mkdir -p ~/.cache/betanyc/ny-data-registry
+curl -L https://github.com/BetaNYC/ny-data-registry-mcp/releases/latest/download/ny-data-index.sqlite.gz \
+  | gunzip > ~/.cache/betanyc/ny-data-registry/ny-data-index.sqlite
+```
+
+Each index release is tagged `index-YYYY-MM-DD` and ships a `SHA256SUMS` file. The server does not download it for you yet.
 
 ### Environment variables (all optional)
 
@@ -116,7 +128,7 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 ## Refresh
 
 - **Registry**: picked up on next server start (conditional GET of the Pages copy).
-- **Index**: re-run `node dist/cli.js harvest`. `.github/workflows/harvest.yml` is written to do this nightly in GitHub Actions and publish the SQLite file as a release asset, but it is **not enabled** (schedule commented out, repo not pushed).
+- **Index**: re-run `node dist/cli.js harvest`. `.github/workflows/harvest.yml` is written to do this nightly in GitHub Actions and publish the SQLite file as a release asset, but it is **not enabled** (schedule commented out). Index releases are published by hand for now; the first is [`index-2026-11-05`](https://github.com/BetaNYC/ny-data-registry-mcp/releases/tag/index-2026-11-05).
 
 ---
 

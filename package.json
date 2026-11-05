@@ -45,5 +45,13 @@
   },
   "engines": {
     "node": ">=22.13"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BetaNYC/ny-data-registry-mcp.git"
+  },
+  "homepage": "https://github.com/BetaNYC/ny-data-registry-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
   }
 }
