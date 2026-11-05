@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] — unreleased
 
-First build. Local only: not published, no remote repository.
+First public release.
 
 ### Added
+
+- **First-run download of the dataset index.** When the index is missing, the
+  server fetches it from the fixed `index-latest` release in the background
+  (about 19 MB), checks both SHA-256 sums and the schema version, and installs
+  it atomically. A dataset tool asked during the download waits up to 45 s. Off
+  with `NY_DATA_INDEX_AUTO_DOWNLOAD=0` and in offline mode. An existing index is
+  never replaced on its own.
+- `ny-data-registry download [--force]` to fetch or refresh the index by hand.
+- `registry_info` reports the download state (`index_download`).
+- `mcpName` and `server.json` for the official MCP Registry, and a tag-driven
+  `release.yml` (npm publish with provenance; code releases never marked latest).
 
 - Registry tools: `find_sources`, `list_sources_for_place`, `how_to_query`,
   `check_source`, `registry_info`, over the bundled NY data portal registry

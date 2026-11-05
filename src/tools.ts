@@ -3,6 +3,23 @@ import { FAMILIES } from "./families.js";
 import { findSources, howToQuery, listSourcesForPlace, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
 import { findJoinable, getDatasetColumns, indexInfo, NoIndexError, searchDatasets, whatsNew } from "./datasets.js";
+import { awaitIndex, downloadState } from "./fetchindex.js";
+import { indexExists } from "./db.js";
+
+const INDEX_TOOLS = new Set(["search_datasets", "get_dataset_columns", "find_joinable", "whats_new"]);
+/** How long a dataset tool waits for a first-run download before answering "still downloading". */
+const INDEX_WAIT_MS = 45_000;
+
+async function requireIndex(): Promise<void> {
+  if (indexExists()) return;
+  const st = await awaitIndex(INDEX_WAIT_MS);
+  if (indexExists()) return;
+  if (st.status === "downloading") {
+    throw new NoIndexError(`It is downloading now (started ${st.started_at}). Try again in a minute.`);
+  }
+  if (st.status === "failed" || st.status === "skipped") throw new NoIndexError(`The automatic download did not run: ${st.error}.`);
+  throw new NoIndexError();
+}
 
 const FAMILY_ENUM = [...FAMILIES];
 const STATUS_ENUM = ["live", "no-portal", "UNCONFIRMED", "dead", "any"] as const;
@@ -185,6 +202,7 @@ const text = (v: unknown) => ({ content: [{ type: "text", text: JSON.stringify(v
 
 export async function callTool(name: string, args: unknown) {
   try {
+    if (INDEX_TOOLS.has(name)) await requireIndex();
     switch (name) {
       case "find_sources":
         return text(findSources(parseToolArgs("find_sources", args)));
@@ -204,7 +222,7 @@ export async function callTool(name: string, args: unknown) {
       }
       case "registry_info":
         parseToolArgs("registry_info", args);
-        return text(registryInfo(indexInfo()));
+        return text({ ...registryInfo(indexInfo()), index_download: downloadState() });
       case "search_datasets":
         return text(searchDatasets(parseToolArgs("search_datasets", args)));
       case "get_dataset_columns":
@@ -222,6 +240,6 @@ export async function callTool(name: string, args: unknown) {
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { content: [{ type: "text", text: `Error: ${message}` }], isError: true, ...(err instanceof NoIndexError ? {} : {}) };
+    return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
   }
 }

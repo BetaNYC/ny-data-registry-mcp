@@ -3,11 +3,12 @@
 # NOT ENABLED. The schedule is commented out and this repo has not been pushed anywhere.
 # Turning it on is a separate decision (Noel). When enabled it:
 #   1. builds the package and runs the offline tests,
-#   2. downloads the previous index from the latest release (so first_seen / whats_new
+#   2. downloads the previous index from the index-latest release (so first_seen / whats_new
 #      carry over and unchanged ArcGIS layers are skipped),
 #   3. runs `ny-data-registry harvest` (read-only, throttled, robots.txt honored),
 #   4. runs the question set against the new index, and
-#   5. publishes ny-data-index.sqlite + harvest stats as a release asset.
+#   5. publishes ny-data-index.sqlite.gz + SHA256SUMS + harvest stats to index-latest,
+#      the fixed release the server downloads on first run.
 name: harvest
 
 on:
@@ -43,7 +44,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p .cache
-          gh release download index-latest --pattern ny-data-index.sqlite --dir .cache || echo "no previous index"
+          if gh release download index-latest --pattern ny-data-index.sqlite.gz --dir .cache; then
+            gunzip -f .cache/ny-data-index.sqlite.gz
+          else
+            echo "no previous index"
+          fi
       - name: Harvest
         run: node dist/cli.js harvest --stats-out .cache/harvest-stats.json
       - name: Question set
@@ -52,5 +57,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view index-latest >/dev/null 2>&1 || gh release create index-latest --title "Latest harvested index" --notes "Rebuilt by the harvest workflow."
-          gh release upload index-latest .cache/ny-data-index.sqlite .cache/harvest-stats.json .cache/eval.md --clobber
+          # Fold the WAL into the main file, so the published .sqlite is complete on its own.
+          node -e 'const { DatabaseSync } = require("node:sqlite"); const d = new DatabaseSync(process.argv[1]); d.exec("PRAGMA wal_checkpoint(TRUNCATE)"); d.close();' .cache/ny-data-index.sqlite
+          cd .cache
+          gzip -9 -k -f ny-data-index.sqlite
+          # Servers check both sums before installing; keep both lines.
+          sha256sum ny-data-index.sqlite.gz ny-data-index.sqlite > SHA256SUMS
+          gh release view index-latest >/dev/null 2>&1 || gh release create index-latest --latest=false --title "Latest harvested index" --notes "Rebuilt by the harvest workflow."
+          gh release upload index-latest ny-data-index.sqlite.gz SHA256SUMS harvest-stats.json eval.md --clobber

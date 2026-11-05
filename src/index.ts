@@ -5,6 +5,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 import { TOOLS, callTool } from "./tools.js";
 import { refreshRegistry } from "./registry.js";
 import { VERSION } from "./paths.js";
+import { ensureIndex } from "./fetchindex.js";
 
 const server = new Server({ name: "ny-data-registry-mcp", version: VERSION }, { capabilities: { tools: {} } });
 
@@ -20,3 +21,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
+
+// First run: fetch the prebuilt dataset index in the background (about 19 MB), so the
+// dataset tools work without a manual step. Never blocks startup; errors surface in
+// registry_info and in the dataset tools' replies.
+void ensureIndex();

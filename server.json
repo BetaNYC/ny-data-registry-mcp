@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.BetaNYC/ny-data-registry-mcp",
+  "title": "NY Data Registry",
+  "description": "Find New York open data: which portal covers a place or topic, how to query it, datasets and columns",
+  "repository": {
+    "url": "https://github.com/BetaNYC/ny-data-registry-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@betanyc/ny-data-registry-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "NY_DATA_INDEX_AUTO_DOWNLOAD",
+          "description": "Set to 0 to stop the first-run download of the dataset index",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "SOCRATA_APP_TOKEN",
+          "description": "Optional Socrata app token, used only when building your own index",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
