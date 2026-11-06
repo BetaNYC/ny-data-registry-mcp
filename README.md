@@ -35,6 +35,53 @@ All tool inputs are strict: an unknown parameter is rejected by name, never sile
 
 ---
 
+## Questions to try
+
+Ask your AI assistant these once the server is connected. Where we ran a question on 2026-11-05, what it found is noted. Portals change, so your results may differ.
+
+**Which datasets match my words?** (`search_datasets`)
+
+- "Which New York cities publish housing code violation data? Search for 'housing code violations' and 'code enforcement', and list the results by city." Finds New York City (HPD violations, NYCHA violations, tenant complaints, DOB violations), Buffalo (code violations) and Syracuse (code violations, unfit properties, rental registry).
+- "Do any New York cities publish zoning data? If so, what formats do they publish them in?" Finds New York City, Buffalo, Rochester, Glens Falls and Cortland, plus zoning layers on the Westchester, Albany, Dutchess, Tioga, Wayne, Oswego and Warren county portals.
+- "Find flood zones, as GeoJSON." Finds the statewide FEMA flood hazard layer, plus Buffalo and Cortland County.
+- "Find restaurant inspection data." Top hit: NYC's DOHMH restaurant inspection results.
+- "Where are the farmers markets?" Finds the statewide list on data.ny.gov and Albany County's.
+- "Find EV charging stations, as a CSV file." Finds two NYC charging datasets and the statewide alternative fuel stations list.
+- "Housing code violations in Syracuse." / "Bike lanes in Buffalo." / "Street trees in Buffalo." Narrow a search to one place.
+- "Where are the polling places?" Finds Suffolk and Tompkins counties.
+- "Crash data updated since 2026-10-01." Use a date to see only datasets that changed recently.
+
+**Who has data, and for where?** (`find_sources`, `list_sources_for_place`)
+
+- "Which New York portals have health data?"
+- "Which state agencies have a real API?" / "Which portals need an API key?"
+- "What open data does Erie County have?" Erie County was checked and has no portal; the answer says so.
+- "What can I get for Syracuse?" / "What covers Queens, or the North Country?"
+
+**How do I use it?** (`how_to_query`, `get_dataset_columns`, `find_joinable`)
+
+- "How do I pull data from the NYS Department of Health portal?"
+- "Does Westchester County publish zoning data, and what columns does it have?"
+- "What columns does Buffalo's code violations dataset have?"
+- "What other datasets can I join to NYC's housing violations by BBL?"
+
+**Is it current?** (`whats_new`, `check_source`, `registry_info`)
+
+- "What datasets were added or changed since October 1?"
+- "Is Albany's data portal still working?"
+- "How many sources do you track, and when was the list last updated?"
+
+**Tips**
+
+- **Try more than one wording.** Cities name the same thing differently: "code enforcement" finds datasets that "housing code violations" misses.
+- **New York City crowds the results.** NYC's matches tend to fill the top of the list. To see the rest of the state, name a place or ask a second time for results outside New York City.
+- **Add a date to skip old data.** "School enrollment" alone returns NYC tables from 2010–2011; add a date, such as "updated since 2025-01-01", to skip them.
+- **An empty result can still have data elsewhere.** The index covers Socrata and ArcGIS portals only. A city may publish on a site this server does not search.
+- **Some maps are not official.** The Westchester and Tioga county zoning layers say they are not the legal boundaries. Check the town's own map before relying on one.
+- **It finds the data; another tool fetches it.** Hand a Socrata dataset to the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP. For an ArcGIS layer, open or download it from the portal.
+
+---
+
 ## Install
 
 Requires **Node 22.16 or later** (it uses Node's built-in `node:sqlite`, so there is nothing native to compile; 22.16 is the first official Node whose SQLite includes FTS5 full-text search).
