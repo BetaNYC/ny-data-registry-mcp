@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   successful Release of a `v*` tag, or by hand for a given tag. GitHub OIDC
   login, no stored secret; `mcp-publisher` pinned to v1.8.8 and checked with
   cosign.
+- `glama.json`: lets BetaNYC claim this server's listing on Glama
+  (maintainer: `noneck`).
 
 ## [0.1.0] — unreleased
 
