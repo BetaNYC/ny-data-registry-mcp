@@ -56,7 +56,7 @@ jobs:
     env:
       MCP_PUBLISHER_VERSION: v1.8.8
       # head_branch holds the tag name for a tag-triggered run.
-      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.workflow_run.head_branch }}
+      TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.workflow_run.head_branch }}
     steps:
       - name: Check the tag looks like a version
         run: |
