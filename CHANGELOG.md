@@ -21,7 +21,7 @@ BetaNYC/betanyc-ai-workspace#1645 (epic #1637).
 - `about_betanyc`: who built the server, the repository, where to report a bug in this server or ask for a new feature, and
   BetaNYC's links.
 - `src/betanyc-tools.ts`, copied unchanged from the workspace's
-  `scripts/mcp_shared/betanyc-tools.ts` (v1.2.0). Never edit the copy; change the canonical
+  `scripts/mcp_shared/betanyc-tools.ts` (v1.2.1). Never edit the copy; change the canonical
   file and copy it again.
 - `WHATS-CHANGED.md`, the reader-facing record of changes, backfilled to 0.1.0, and shipped
   in the npm package (`files`). There is no website; GitHub's rendering of the file is the

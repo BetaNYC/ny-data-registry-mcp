@@ -232,7 +232,7 @@ The pull request that bumps the version changes it in `package.json`, both `vers
 
 On release day, one commit, which the tag then goes on:
 
-1. `## Unreleased: Title` becomes `## YYYY-MM-DD: Title`, same title, with the New York date of the day the tag lands (`TZ=America/New_York date +%F`). `check` rejects a future date.
+1. `## Unreleased: Title` becomes `## YYYY-MM-DD: Title`, same title, with the New York date of the day the tag lands (`TZ=America/New_York date +%F`). `check` rejects a future date. Once the entry is on `main`, its title never changes, dated or not; CI rejects it.
 2. The `CHANGELOG.md` heading gets the same date: `## [X.Y.Z] — YYYY-MM-DD`.
 3. The entry's MCP version link gains that heading's anchor. Compute it, never write it by hand: `python3 -c "import sys; sys.path.insert(0,'scripts'); import whats_changed as w; print(w.github_slug('[X.Y.Z] — YYYY-MM-DD'))"`.
 4. `python3 scripts/whats_changed.py check WHATS-CHANGED.md --release` passes.
