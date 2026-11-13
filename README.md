@@ -4,13 +4,15 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 
 It complements the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP rather than replacing it. This server knows *where* data is (140 sources across state, county, city, agency, library and nonprofit portals) and hands the agent the right Socrata domain or ArcGIS service. Querying the data stays with `socrata` and the other BetaNYC MCPs.
 
-Built by [BetaNYC](https://beta.nyc). **Status: 0.1.0.** Package: `@betanyc/ny-data-registry-mcp`.
+Built by [BetaNYC](https://beta.nyc). **Status: 0.2.0.** Package: `@betanyc/ny-data-registry-mcp`.
+
+What changed in this server, newest first, including corrections: [WHATS-CHANGED.md](WHATS-CHANGED.md).
 
 ---
 
 ## What it does
 
-Nine tools, in two groups.
+Eleven tools, in three groups.
 
 **Registry tools** (work out of the box, no index needed):
 
@@ -30,6 +32,15 @@ Nine tools, in two groups.
 | `get_dataset_columns` | Fields and types, every distribution (format + URL), license, publisher, extent, and per-field provenance |
 | `find_joinable` | Datasets sharing a join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), from a curated key-column map, not raw name equality |
 | `whats_new` | Datasets added, changed or removed since a date |
+
+**About this server** (the two tools every BetaNYC MCP server carries; no index needed):
+
+| Tool | What it answers |
+|---|---|
+| `whats_changed` | What changed in **this server**, newest first, from [WHATS-CHANGED.md](WHATS-CHANGED.md): new tools, fixes and corrections. Filters: since, tag (Site, Data, MCP, Correction), limit. For datasets that are new on the portals, use `whats_new` |
+| `about_betanyc` | Who built the server, its version, where to report a problem, and BetaNYC's links |
+
+These two come from `src/betanyc-tools.ts`, a copy of a file shared by every BetaNYC MCP server: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
 
 All tool inputs are strict: an unknown parameter is rejected by name, never silently dropped (same rule as `nyc-311-mcp`).
 
@@ -189,7 +200,7 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 
 ## How it was checked
 
-- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all nine tools.
+- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all eleven tools.
 - `node dist/cli.js eval`: a fixed set of real questions (`eval/questions.json`) scored against the real index. Results: `eval/runs/`.
 
 Latest results (2026-11-05, office-mac), all in `eval/runs/`:
@@ -212,6 +223,21 @@ Latest results (2026-11-05, office-mac), all in `eval/runs/`:
 - Orange County's portal is unreachable from Node because its server does not send its intermediate TLS certificate. Certificate checks are not disabled.
 - Syracuse's Hub returned 126 unique items of 136 on one run even with sorted paging; the guard kept the index whole, but a short listing can still miss new items until the next run.
 - The index is about 110 MB uncompressed, larger than the scoping estimate (low tens of MB), mostly Socrata column metadata and the full-text index.
+
+## Releases
+
+A tag `vX.Y.Z` runs `.github/workflows/release.yml`: tests, a check that `server.json` matches `package.json`, a check that `WHATS-CHANGED.md` has no `Unreleased` entry, `npm publish`, and a GitHub Release. `publish-mcp.yml` then lists the version in the MCP Registry.
+
+The pull request that bumps the version changes it in `package.json`, both `version` fields in `package-lock.json`, both in `server.json`, `VERSION` in `src/paths.ts`, and "Status" at the top of this README. When the release changes what the server returns or which tools it has, the same pull request adds a `CHANGELOG.md` section headed `## [X.Y.Z] — Unreleased` and a `WHATS-CHANGED.md` entry headed `## Unreleased: Title`, in plain words, tagged `MCP`, with `- **MCP version:** [ny-data-registry-mcp X.Y.Z](CHANGELOG.md)` (no anchor yet). A fix for a wrong answer is also tagged `Correction` and says what to re-check under "If you used the old numbers".
+
+On release day, one commit, which the tag then goes on:
+
+1. `## Unreleased: Title` becomes `## YYYY-MM-DD: Title`, same title, with the New York date of the day the tag lands (`TZ=America/New_York date +%F`). `check` rejects a future date.
+2. The `CHANGELOG.md` heading gets the same date: `## [X.Y.Z] — YYYY-MM-DD`.
+3. The entry's MCP version link gains that heading's anchor. Compute it, never write it by hand: `python3 -c "import sys; sys.path.insert(0,'scripts'); import whats_changed as w; print(w.github_slug('[X.Y.Z] — YYYY-MM-DD'))"`.
+4. `python3 scripts/whats_changed.py check WHATS-CHANGED.md --release` passes.
+
+Never rewrite an older entry in `WHATS-CHANGED.md`; add a dated `- **Update YYYY-MM-DD:**` line to it. CI enforces this. `scripts/whats_changed.py` and `src/betanyc-tools.ts` are copies of files in the BetaNYC workspace; never edit them here. A release that changes only metadata gets no entry; its commit carries a `No-whats-changed: <reason>` trailer.
 
 ## Terms of use
 

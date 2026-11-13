@@ -1,6 +1,6 @@
 {
   "name": "@betanyc/ny-data-registry-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "mcpName": "io.github.BetaNYC/ny-data-registry-mcp",
   "description": "MCP server that finds open data across every New York data portal in BetaNYC's registry: which portal covers a place or topic, how to query it, and (with the harvested index) which datasets and columns exist, in what formats",
   "keywords": [
@@ -25,7 +25,8 @@
   },
   "files": [
     "dist",
-    "data"
+    "data",
+    "WHATS-CHANGED.md"
   ],
   "scripts": {
     "build": "tsc",
