@@ -33,14 +33,14 @@ Eleven tools, in three groups.
 | `find_joinable` | Datasets sharing a join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), from a curated key-column map, not raw name equality |
 | `whats_new` | Datasets added, changed or removed since a date |
 
-**About this server** (the two tools every BetaNYC MCP server carries; no index needed):
+**About this server** (the two tools BetaNYC is adding to each of its MCP servers; no index needed):
 
 | Tool | What it answers |
 |---|---|
 | `whats_changed` | What changed in **this server**, newest first, from [WHATS-CHANGED.md](WHATS-CHANGED.md): new tools, fixes and corrections. Filters: since, tag (Site, Data, MCP, Correction), limit. For datasets that are new on the portals, use `whats_new` |
 | `about_betanyc` | Who built the server, its version, where to report a problem, and BetaNYC's links |
 
-These two come from `src/betanyc-tools.ts`, a copy of a file shared by every BetaNYC MCP server: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
+These two come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
 
 All tool inputs are strict: an unknown parameter is rejected by name, never silently dropped (same rule as `nyc-311-mcp`).
 
