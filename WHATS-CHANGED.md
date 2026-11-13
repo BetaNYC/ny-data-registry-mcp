@@ -5,12 +5,12 @@ This page lists the changes to ny-data-registry-mcp that a reader would notice: 
 - **History begins:** 2026-11-05, the first release. Corrections made before this date may be missing.
 - **Data refresh:** The list of New York data sources is checked for a newer copy each time the server starts. The index of datasets and columns is published by hand as a GitHub release; the first is from 2026-11-05.
 
-To report a problem with this server or ask for a feature, [open an issue on GitHub](https://github.com/BetaNYC/ny-data-registry-mcp/issues).
+To report a bug in this server or ask for a new feature, [open an issue on GitHub](https://github.com/BetaNYC/ny-data-registry-mcp/issues).
 
 ## Unreleased: A What's changed record, and two tools that explain the server
 
 - **Tags:** MCP
-- **What changed:** Two new tools let your AI assistant answer "what has changed in this server?" and "who built this?" with links to BetaNYC and to the place to report a problem with this server. The first reads this page. The tool for datasets that are new on the portals, whats_new, is unchanged.
+- **What changed:** Two new tools let your AI assistant answer "what has changed in this server?" and "who built this?" with links to BetaNYC and to the place to report a bug in this server or ask for a new feature. The first reads this page. The tool for datasets that are new on the portals, whats_new, is unchanged.
 - **MCP version:** [ny-data-registry-mcp 0.2.0](CHANGELOG.md)
 - **More detail:** [Release notes](CHANGELOG.md)
 

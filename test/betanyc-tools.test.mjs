@@ -92,7 +92,7 @@ test("whats_changed rejects bad arguments by name, and does not take whats_new's
   }
 });
 
-test("about_betanyc names the server, its version, and where to report a problem", async () => {
+test("about_betanyc names the server, its version, and where to report a bug or ask for a new feature", async () => {
   const r = await callTool("about_betanyc", {});
   assert.notEqual(r.isError, true, textOf(r));
   const s = r.structuredContent;

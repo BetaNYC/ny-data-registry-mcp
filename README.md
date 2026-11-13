@@ -38,7 +38,7 @@ Eleven tools, in three groups.
 | Tool | What it answers |
 |---|---|
 | `whats_changed` | What changed in **this server**, newest first, from [WHATS-CHANGED.md](WHATS-CHANGED.md): new tools, fixes and corrections. Filters: since, tag (Site, Data, MCP, Correction), limit. For datasets that are new on the portals, use `whats_new` |
-| `about_betanyc` | Who built the server, its version, where to report a problem, and BetaNYC's links |
+| `about_betanyc` | Who built the server, its version, where to report a bug in this server or ask for a new feature, and BetaNYC's links |
 
 These two come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
 
