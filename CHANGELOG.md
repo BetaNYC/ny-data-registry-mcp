@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-11-12
+
+See [#8](https://github.com/BetaNYC/ny-data-registry-mcp/issues/8) (epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
 ### Added
 
 - README: a "Questions to try" section with sample questions for every tool,
@@ -18,6 +22,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cosign.
 - `glama.json`: lets BetaNYC claim this server's listing on Glama
   (maintainer: `noneck`).
+- `search_datasets`: `total_matches`, the true number of matching datasets
+  (an uncapped count with the same filters), and `ranked_pool`, which says
+  plainly when only the best 5,000 text matches were re-ranked.
+- `search_datasets` answers in one call. When the matches do not all fit in the
+  reply (over `limit`, or over the size budget), the reply counts every match by
+  portal (`auto_grouped: true`, top titles per portal), lists the best-ranked
+  rows that fit, and writes every match to a CSV file (`export`: path, rows,
+  bytes, columns). The tool result also carries an MCP `resource_link` to the
+  file. Small answers come back as plain rows, with no file.
+- Synonyms can be two-word phrases that match only when the words sit together in
+  the query. New: `tax lot` / `tax lots` also search `parcel`, `parcels`, `tax parcel`
+  and `tax map`, so "tax lot" finds county layers named just "Parcels" (785 to 900
+  matches on the 2026-11-05 index) while "parking lot" does not expand.
+- Synonyms from a review of how 35 New York portals label their data: bike ↔ bicycle,
+  covid ↔ coronavirus, tax map, assessment roll, voting, garbage, broadband, police.
+- Ranking puts datasets that contain the words actually typed ahead of synonym-only
+  matches (those count at `SYNONYM_WEIGHT` = 0.5), and a title holding the typed words
+  together, in order, gets a bonus (`PHRASE_BONUS`). "tax lot" keeps PLUTO first.
+- CSV exports are spreadsheet-safe: a text value starting with `=`, `+`, `-`, `@`, tab or CR
+  gets a leading `'` so Excel, Numbers, LibreOffice and Google Sheets never run it as a formula.
+- CSV exports: RFC 4180, UTF-8, best-ranked first, in
+  `${HOME}/.cache/betanyc/ny-data-registry/exports/` or `NY_DATA_EXPORT_DIR`.
+  `export: "auto" | "always" | "never"` (default `auto`). The newest 50 are
+  kept, none older than 7 days; pruning only removes files with the export
+  name pattern, directly inside that folder.
+- `search_datasets` `offset` / `next_offset` for paging by hand. Optional;
+  passing `offset` turns off the auto-summary and the automatic CSV. Ties are
+  broken by dataset id, so the order is the same on every page.
+- `search_datasets` `group_by` (`portal`, `entity`, `county`,
+  `platform_family`): every group with its exact match count and its top titles
+  (`top_per_group`, default 3), covering all matches. `county` counts a
+  dataset in each county it covers.
+- `search_datasets` `detail`: `compact` (default) or `full`.
+- `search_datasets` `coverage`: the registry portals the index does not search,
+  and why (no portal, not harvested, failed or partial harvest). With a place,
+  the ones that cover it are listed; otherwise counted.
+
+### Changed
+
+- Synonyms removed because they pulled in wrong results: `schools` → `district`,
+  `elections` → `enrollment`, `crime` → `complaints`.
+- `search_datasets` rows are compact by default (id, name, portal, type, update
+  date, link, formats). Pass `detail: "full"` for the earlier shape (description,
+  API endpoint, views, column count, `query_with`, score).
+- `search_datasets` answers are kept under 20 KB (`RESPONSE_BUDGET_BYTES`).
+  Rows past the budget are left out and counted in `omitted_for_size`; the CSV
+  has them. Fifty full rows were about 60 KB, more than some MCP
+  clients accept from one tool call.
+- `search_datasets` re-ranks up to 5,000 matches instead of 400, so ranking and
+  paging reach past the 400th match. On the 2026-11-05 index a typical query
+  takes under 10 ms; a query matching 7,000 datasets takes about 45 ms.
+
+### Removed
+
+- `search_datasets` `total_candidates`. It stopped at 400 and read like a real
+  total. Use `total_matches`.
 
 ## [0.1.0] — unreleased
 

@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 
 process.env.NY_DATA_OFFLINE = "1";
 process.env.NY_DATA_REGISTRY_REFRESH = "0";
+// search_datasets CSV exports go to a throwaway folder, never the real cache.
+process.env.NY_DATA_EXPORT_DIR ??= mkdtempSync(join(tmpdir(), "nydr-exports-"));
 
 export const FIXTURES = fileURLToPath(new URL("./fixtures/", import.meta.url));
 export const fixture = (name) => JSON.parse(readFileSync(join(FIXTURES, name), "utf8"));

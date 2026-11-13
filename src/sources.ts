@@ -25,6 +25,14 @@ let syn: Record<string, string[]> | null = null;
 export function expandTerms(tokens: string[]): { term: string; weight: number }[] {
   syn ??= readDataJson<{ terms: Record<string, string[]> }>("synonyms.json").terms;
   const out = new Map<string, number>();
+  // Two-word keys ("tax lot") match only the adjacent pair, so "parking lot" never expands.
+  const pairs = tokens.slice(1).map((t, i) => `${tokens[i]} ${t}`);
+  for (const pair of pairs) {
+    for (const s of syn[pair] ?? []) {
+      const p = s.toLowerCase().trim();
+      if (p && !out.has(p)) out.set(p, 0.5);
+    }
+  }
   for (const t of tokens) {
     out.set(t, 1);
     const stem = t.endsWith("s") && t.length > 3 ? t.slice(0, -1) : null;
