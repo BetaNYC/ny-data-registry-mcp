@@ -2,7 +2,7 @@ import { statSync } from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
 import { readDataJson, indexPath } from "../paths.js";
 import { BlockedError, crawlDelays, requestLog } from "../http.js";
-import { openDb, upsertPortal, setPortalHarvest, writePortalDatasets, purgePortal, type HarvestedDataset, type PortalRecord } from "../db.js";
+import { openDb, upsertPortal, setPortalHarvest, writePortalDatasets, purgePortal, portalsNotIn, dropPortal, type HarvestedDataset, type PortalRecord } from "../db.js";
 import { registry, type Source } from "../registry.js";
 import { socrataDomain } from "../sources.js";
 import { refuseReason } from "../check.js";
@@ -21,6 +21,43 @@ interface HarvestConfig {
     esri_owner_pattern: string;
   };
   skip: { by_entity: Record<string, string> };
+  cadence?: CadenceConfig;
+}
+
+/**
+ * How often each portal is read. Nightly by default; self-hosted county ArcGIS servers
+ * (the `enterprise` adapter) weekly, to be gentle on small county servers (epic #7, D5).
+ */
+export interface CadenceConfig {
+  /** Days between reads, by plan kind (`socrata`, `hub`, `agol-org`, `enterprise`). Missing = 1. */
+  days_by_adapter: Record<string, number>;
+  /** Per-portal overrides, by source id. */
+  days_by_source?: Record<string, number>;
+  /** A portal is due this many hours early, so a scheduled run that starts late does not slip a whole cycle. */
+  slack_hours?: number;
+}
+
+/** Days between reads for one portal. */
+export function cadenceDays(sourceId: string, planKind: string, cfg?: CadenceConfig): number {
+  const v = cfg?.days_by_source?.[sourceId] ?? cfg?.days_by_adapter?.[planKind] ?? 1;
+  return Number.isFinite(v) && v >= 1 ? v : 1;
+}
+
+/**
+ * Whether a portal is due tonight. `lastHarvested` is when it was last read (any outcome),
+ * from the previous index. A portal never read, or with cadence 1, is always due.
+ */
+export function cadenceDue(
+  lastHarvested: string | null,
+  days: number,
+  now: Date,
+  slackHours = 6
+): { due: boolean; next_due?: string } {
+  if (days <= 1 || !lastHarvested) return { due: true };
+  const last = Date.parse(lastHarvested);
+  if (!Number.isFinite(last)) return { due: true };
+  const nextDue = last + days * 86_400_000 - slackHours * 3_600_000;
+  return now.getTime() >= nextDue ? { due: true } : { due: false, next_due: new Date(nextDue).toISOString() };
 }
 
 export type Plan =
@@ -101,11 +138,39 @@ export function portalRecord(s: Source): PortalRecord {
   };
 }
 
+export interface DroppedPortal {
+  portal_id: string;
+  datasets: number;
+  reason: string;
+}
+
+/**
+ * Portals whose id left the registry are dropped from the index (issue #21). Portal ids are
+ * derived from registry rows (`assignSourceIds`), so a row that changes or disappears leaves its
+ * old id behind, never read again, with its datasets frozen at their last read. The registry
+ * records no id changes, so nothing is re-keyed: the datasets come back under the new id when
+ * that portal is read.
+ *
+ * Nothing is dropped when the loaded registry is older than the one the index was built from
+ * (for example the bundled copy after a failed refresh): that would drop live portals.
+ */
+export function dropPlan(
+  orphans: { portal_id: string; datasets: number }[],
+  loadedRegistry: string,
+  indexRegistry: string | null
+): { drop: DroppedPortal[]; kept: { portal_id: string; datasets: number }[]; kept_reason: string | null } {
+  if (!orphans.length) return { drop: [], kept: [], kept_reason: null };
+  if (indexRegistry && loadedRegistry < indexRegistry) {
+    return { drop: [], kept: orphans, kept_reason: `the loaded registry (${loadedRegistry}) is older than the index's (${indexRegistry}); nothing dropped` };
+  }
+  return { drop: orphans.map((o) => ({ ...o, reason: "id no longer in the registry" })), kept: [], kept_reason: null };
+}
+
 export interface PortalStats {
   source_id: string;
   entity: string;
   adapter: string;
-  outcome: "ok" | "partial" | "failed" | "refused" | "blocked" | "skipped";
+  outcome: "ok" | "partial" | "failed" | "refused" | "blocked" | "skipped" | "not-due";
   reason?: string;
   listed?: number | null;
   kept?: number;
@@ -130,6 +195,8 @@ interface RunOpts {
   only?: string[];
   maxLayers?: number;
   concurrency?: number;
+  /** Read every portal tonight, whatever its cadence. */
+  ignoreCadence?: boolean;
   log?: (s: string) => void;
 }
 
@@ -189,6 +256,13 @@ export async function runHarvest(opts: RunOpts = {}) {
   const reg = registry();
   const db = openDb();
   const started = new Date();
+  const indexRegistry = (db.prepare("SELECT value FROM meta WHERE key = 'registry_generated'").get() as { value: string } | undefined)?.value ?? null;
+  const orphanPlan = dropPlan(portalsNotIn(db, new Set(reg.sources.map((s) => s.source_id))), reg.generated, indexRegistry);
+  for (const d of orphanPlan.drop) {
+    dropPortal(db, d.portal_id);
+    log(`✗ dropped ${d.portal_id}: ${d.datasets} datasets (${d.reason})`);
+  }
+  if (orphanPlan.kept_reason) log(`! ${orphanPlan.kept.length} portal(s) not in the registry kept: ${orphanPlan.kept_reason}`);
   const runId = Number(db.prepare("INSERT INTO harvest_runs(started_at) VALUES (?)").run(started.toISOString()).lastInsertRowid);
   db.prepare("INSERT OR REPLACE INTO meta(key, value) VALUES ('registry_generated', ?)").run(reg.generated);
 
@@ -201,6 +275,18 @@ export async function runHarvest(opts: RunOpts = {}) {
     if (plan.kind === "skip") {
       if (s.status === "live") stats.push({ source_id: s.source_id, entity: s.entity, adapter: "none", outcome: "skipped", reason: plan.reason });
       continue;
+    }
+    const days = cadenceDays(s.source_id, plan.kind, cfg.cadence);
+    if (!opts.ignoreCadence && days > 1) {
+      const last = (db.prepare("SELECT last_harvested FROM portals WHERE id = ?").get(s.source_id) as { last_harvested: string | null } | undefined)?.last_harvested ?? null;
+      const c = cadenceDue(last, days, started, cfg.cadence?.slack_hours);
+      if (!c.due) {
+        stats.push({
+          source_id: s.source_id, entity: s.entity, adapter: plan.kind, outcome: "not-due",
+          reason: `read every ${days} days; last read ${last}; next due after ${c.next_due}`,
+        });
+        continue;
+      }
     }
     work.push({ s, plan });
   }
@@ -364,6 +450,11 @@ export async function runHarvest(opts: RunOpts = {}) {
     blocked: stats.filter((x) => x.outcome === "blocked").length,
     refused_out_of_state: stats.filter((x) => x.outcome === "refused").length,
     skipped_live_rows: stats.filter((x) => x.outcome === "skipped").length,
+    not_due: stats.filter((x) => x.outcome === "not-due").length,
+    dropped_portals: orphanPlan.drop,
+    dropped_datasets: orphanPlan.drop.reduce((a, d) => a + d.datasets, 0),
+    orphan_portals_kept: orphanPlan.kept,
+    orphan_portals_kept_reason: orphanPlan.kept_reason,
     datasets_in_index: totals.datasets,
     columns_in_index: totals.columns,
     key_columns_in_index: totals.key_columns,

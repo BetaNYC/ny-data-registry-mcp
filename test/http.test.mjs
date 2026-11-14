@@ -106,3 +106,64 @@ test("an unstable Hub listing (repeats, short of numberMatched) is incomplete, s
     }
   );
 });
+
+// Engineering standard § 6, "Polite Socrata querying": 2 s floor, Retry-After on 429 and 503, capped backoff.
+test("Socrata hosts get a 2 s floor; other hosts keep 1 s", async () => {
+  const { hostFloorMs, isSocrataHost, SOCRATA_MIN_INTERVAL_MS } = await import("../dist/http.js");
+  assert.equal(SOCRATA_MIN_INTERVAL_MS, 2000);
+  assert.equal(isSocrataHost("api.us.socrata.com"), true);
+  assert.equal(isSocrataHost("notsocrata.com"), false);
+  assert.equal(hostFloorMs("api.us.socrata.com"), 2000);
+  assert.equal(hostFloorMs("gis.example.gov"), 1000);
+});
+
+test("retry waits: Retry-After seconds or HTTP-date, else 5 s then 10 s, never over 60 s", async () => {
+  const { retryWaitMs } = await import("../dist/http.js");
+  const now = Date.parse("2026-11-14T07:00:00Z");
+  assert.equal(retryWaitMs("3", 1, now), 3000);
+  assert.equal(retryWaitMs("600", 1, now), 60000);
+  assert.equal(retryWaitMs("Sat, 14 Nov 2026 07:00:10 GMT", 1, now), 10000);
+  assert.equal(retryWaitMs("Sat, 14 Nov 2026 06:00:00 GMT", 1, now), 0);
+  assert.equal(retryWaitMs(null, 1, now), 5000);
+  assert.equal(retryWaitMs(null, 2, now), 10000);
+  assert.equal(retryWaitMs("soon", 1, now), 5000);
+});
+
+test("two requests to the Socrata Discovery host are at least 2 s apart", async () => {
+  await withStub(
+    (url) => (url.endsWith("/robots.txt") ? new Response("", { status: 404 }) : json({ results: [] })),
+    async (calls) => {
+      await politeFetch("https://api.us.socrata.com/api/catalog/v1?a=1");
+      await politeFetch("https://api.us.socrata.com/api/catalog/v1?a=2");
+      const gaps = calls.slice(1).map((c, i) => c.at - calls[i].at);
+      for (const g of gaps) assert.ok(g >= 1990, `gap ${g} ms`);
+    }
+  );
+});
+
+test("a 503 with Retry-After is waited out and retried", async () => {
+  let n = 0;
+  await withStub(
+    (url) => {
+      if (url.endsWith("/robots.txt")) return new Response("", { status: 404 });
+      return ++n === 1 ? new Response("busy", { status: 503, headers: { "retry-after": "1" } }) : json({ ok: true });
+    },
+    async (calls) => {
+      const r = await politeFetch("https://d.example/api");
+      assert.equal(r.status, 200);
+      const api = calls.filter((c) => !c.url.endsWith("/robots.txt"));
+      assert.equal(api.length, 2);
+      assert.ok(api[1].at - api[0].at >= 990, `waited ${api[1].at - api[0].at} ms`);
+    }
+  );
+});
+
+test("429 on every try: two retries, then reported as blocked", async () => {
+  await withStub(
+    (url) => (url.endsWith("/robots.txt") ? new Response("", { status: 404 }) : new Response("slow down", { status: 429, headers: { "retry-after": "1" } })),
+    async (calls) => {
+      await assert.rejects(politeFetch("https://e.example/api"), (e) => e instanceof BlockedError && /HTTP 429 after 2 retries/.test(e.message));
+      assert.equal(calls.filter((c) => !c.url.endsWith("/robots.txt")).length, 3);
+    }
+  );
+});

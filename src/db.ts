@@ -332,3 +332,20 @@ export function purgePortal(db: DatabaseSync, portalId: string): number {
 export function stripHtml(s: string): string {
   return s.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
 }
+
+/** Portals in the index (with or without datasets) whose id is not in `registryIds`, with their live dataset counts. */
+export function portalsNotIn(db: DatabaseSync, registryIds: Set<string>): { portal_id: string; datasets: number }[] {
+  const rows = db
+    .prepare("SELECT p.id AS id, (SELECT COUNT(*) FROM datasets d WHERE d.portal_id = p.id AND d.removed_at IS NULL) AS n FROM portals p ORDER BY p.id")
+    .all() as { id: string; n: number }[];
+  return rows.filter((r) => !registryIds.has(r.id)).map((r) => ({ portal_id: r.id, datasets: Number(r.n) }));
+}
+
+/** Remove a portal entirely: its datasets (as purgePortal), its change history and its row. */
+export function dropPortal(db: DatabaseSync, portalId: string): number {
+  const n = purgePortal(db, portalId);
+  db.prepare("DELETE FROM changes WHERE portal_id = ?").run(portalId);
+  db.prepare("DELETE FROM tags WHERE portal_id = ?").run(portalId);
+  db.prepare("DELETE FROM portals WHERE id = ?").run(portalId);
+  return n;
+}

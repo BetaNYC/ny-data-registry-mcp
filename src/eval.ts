@@ -94,7 +94,7 @@ function invariants(tool: string, body: any): string[] {
   return v;
 }
 
-export async function runEval(): Promise<{ markdown: string; passed: boolean; score: number }> {
+export async function runEval(): Promise<{ markdown: string; passed: boolean; score: number; questions: number; passed_questions: number; violations: number }> {
   const qs: Question[] = JSON.parse(readFileSync(fileURLToPath(new URL("../eval/questions.json", import.meta.url)), "utf8")).questions;
   const rows: string[] = [];
   let pass = 0;
@@ -136,5 +136,5 @@ export async function runEval(): Promise<{ markdown: string; passed: boolean; sc
     violations.length ? violations.map((v) => `- ${v}`).join("\n") : "None.",
     ``,
   ].join("\n");
-  return { markdown, passed, score };
+  return { markdown, passed, score, questions: qs.length, passed_questions: pass, violations: violations.length };
 }

@@ -1,67 +1,194 @@
-# Nightly harvest of the NY open data catalog index.
+# Nightly harvest of the New York open data catalog index (issue #14, epic #7).
 #
-# NOT ENABLED. The schedule is commented out and this repo has not been pushed anywhere.
-# Turning it on is a separate decision (Noel). When enabled it:
-#   1. builds the package and runs the offline tests,
-#   2. downloads the previous index from the index-latest release (so first_seen / whats_new
-#      carry over and unchanged ArcGIS layers are skipped),
-#   3. runs `ny-data-registry harvest` (read-only, throttled, robots.txt honored),
-#   4. runs the question set against the new index, and
-#   5. publishes ny-data-index.sqlite.gz + SHA256SUMS + harvest stats to index-latest,
-#      the fixed release the server downloads on first run.
+# Each run:
+#   1. checks its setup (Socrata token, certificate file, publishing only from the default branch),
+#   2. builds the package and runs the offline tests,
+#   3. downloads and verifies the published index (fails closed: no silent fresh start),
+#   4. harvests (read-only, throttled, robots.txt honored; county ArcGIS servers weekly), first
+#      dropping portals whose ids left the registry (issue #21),
+#   5. runs the question set and the quality gate against the published index,
+#   6. builds the files to publish (rollback-journal SQLite, .gz, SHA256SUMS, index.json),
+#   7. publishes a dated snapshot, then updates index-latest, relabels older snapshots
+#      "superseded" and applies retention (14 newest + first of each month),
+#   8. on failure, opens a `harvest-failure` issue (or comments on the open one); on the next
+#      successful publish, closes it.
+# Index releases are never marked "Latest" (src/publish/releases.ts).
+#
+# Manual runs: `gh workflow run harvest.yml -f publish=false` is a dry run (artifact only).
+# A scheduled run always publishes when the gate passes. Schedule: 07:17 UTC daily.
 name: harvest
 
 on:
+  schedule:
+    - cron: "17 7 * * *" # 07:17 UTC daily (02:17 / 03:17 New York); off the hour, when GitHub queues are long
   workflow_dispatch:
-  # schedule:
-  #   - cron: "17 7 * * *"   # 07:17 UTC daily (02:17 / 03:17 New York)
+    inputs:
+      publish:
+        description: "Publish the new index (off = dry run: build and check only, files in the run's artifact)"
+        type: boolean
+        default: true
+      fresh:
+        description: "Start without the published index (first_seen resets for every dataset). Only for a first run or a rebuild."
+        type: boolean
+        default: false
+      ignore_cadence:
+        description: "Read every portal tonight, including the weekly county ArcGIS servers"
+        type: boolean
+        default: false
+      force_publish:
+        description: "Publish even if the quality gate fails. Needs force_reason; the reason is recorded in the release."
+        type: boolean
+        default: false
+      force_reason:
+        description: "Why the gate is being overridden (required with force_publish)"
+        type: string
+        default: ""
 
 permissions:
-  contents: write
+  contents: write # releases and their tags
+  issues: write # the harvest-failure issue and its label
 
 concurrency:
   group: harvest
   cancel-in-progress: false
 
+defaults:
+  run:
+    shell: bash # bash --noprofile --norc -eo pipefail: a failed command in a pipe fails the step
+
 jobs:
   harvest:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 150
     env:
       NY_DATA_CACHE_DIR: ${{ github.workspace }}/.cache
       NY_DATA_INDEX: ${{ github.workspace }}/.cache/ny-data-index.sqlite
-      # Optional: a Socrata app token raises the shared-pool throttle limit.
+      OUT: ${{ github.workspace }}/out
+      GH_TOKEN: ${{ github.token }}
+      # A scheduled run has no inputs: it publishes, starts from the published index, keeps the cadence.
+      PUBLISH: ${{ github.event_name == 'schedule' || inputs.publish }}
+      FRESH: ${{ github.event_name != 'schedule' && inputs.fresh }}
+      IGNORE_CADENCE: ${{ github.event_name != 'schedule' && inputs.ignore_cadence }}
+      FORCE_PUBLISH: ${{ github.event_name != 'schedule' && inputs.force_publish }}
+      FORCE_REASON: ${{ inputs.force_reason }}
+      # Scheduled runs only ever run on the default branch (GitHub docs, "schedule" event).
+      ON_DEFAULT_BRANCH: ${{ github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch }}
       SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+      EXTRA_CA_CERTS: certs/sectigo-public-server-authentication-ca-ov-r36.pem
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100 # the snapshot tag target is picked from recent history (src/publish/releases.ts)
       - uses: actions/setup-node@v4
         with:
           node-version: "22.x"
-      - run: npm ci
-      - run: npm test
-      - name: Fetch previous index (if any)
-        env:
-          GH_TOKEN: ${{ github.token }}
+
+      - name: Preflight
+        id: preflight
         run: |
-          mkdir -p .cache
-          if gh release download index-latest --pattern ny-data-index.sqlite.gz --dir .cache; then
-            gunzip -f .cache/ny-data-index.sqlite.gz
-          else
-            echo "no previous index"
+          fail() { echo "::error::$1"; exit 1; }
+          [ -n "$SOCRATA_APP_TOKEN" ] || fail "The SOCRATA_APP_TOKEN repository secret is not set. Socrata calls must send an app token."
+          [ -s "$EXTRA_CA_CERTS" ] || fail "$EXTRA_CA_CERTS is missing. Node would ignore NODE_EXTRA_CA_CERTS with only a warning."
+          if [ "$PUBLISH" = "true" ] && [ "$ON_DEFAULT_BRANCH" != "true" ]; then
+            fail "Publishing runs only on the default branch. Use publish=false on $GITHUB_REF_NAME."
           fi
-      - name: Harvest
-        run: node dist/cli.js harvest --stats-out .cache/harvest-stats.json
-      - name: Question set
-        run: node dist/cli.js eval --out .cache/eval.md || echo "question set below target; see eval.md"
-      - name: Publish index
-        env:
-          GH_TOKEN: ${{ github.token }}
+          if [ "$FORCE_PUBLISH" = "true" ] && [ -z "${FORCE_REASON// }" ]; then
+            fail "force_publish needs a force_reason; it is recorded in the release."
+          fi
+          mkdir -p "$OUT" .cache
+          echo "publish=$PUBLISH fresh=$FRESH ignore_cadence=$IGNORE_CADENCE force_publish=$FORCE_PUBLISH ref=$GITHUB_REF_NAME"
+
+      - run: npm ci
+      - name: Tests
+        id: tests
+        run: npm test
+
+      - name: Previous index
+        id: previous_index
         run: |
-          # Fold the WAL into the main file, so the published .sqlite is complete on its own.
-          node -e 'const { DatabaseSync } = require("node:sqlite"); const d = new DatabaseSync(process.argv[1]); d.exec("PRAGMA wal_checkpoint(TRUNCATE)"); d.close();' .cache/ny-data-index.sqlite
-          cd .cache
-          gzip -9 -k -f ny-data-index.sqlite
-          # Servers check both sums before installing; keep both lines.
-          sha256sum ny-data-index.sqlite.gz ny-data-index.sqlite > SHA256SUMS
-          gh release view index-latest >/dev/null 2>&1 || gh release create index-latest --latest=false --title "Latest harvested index" --notes "Rebuilt by the harvest workflow."
-          gh release upload index-latest ny-data-index.sqlite.gz SHA256SUMS harvest-stats.json eval.md --clobber
+          if [ "$FRESH" = "true" ]; then
+            echo "fresh run: starting without the published index"
+            node dist/publish/cli.js summary --none --out "$OUT/previous-summary.json"
+          else
+            # The same download, checksum and schema checks every server uses. Any failure fails the job.
+            node dist/cli.js download --force
+            node dist/publish/cli.js summary --index "$NY_DATA_INDEX" --out "$OUT/previous-summary.json"
+          fi
+
+      - name: Harvest
+        id: harvest
+        env:
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/certs/sectigo-public-server-authentication-ca-ov-r36.pem
+        run: |
+          flags=()
+          [ "$IGNORE_CADENCE" = "true" ] && flags+=(--ignore-cadence)
+          node dist/cli.js harvest --stats-out "$OUT/harvest-stats.json" "${flags[@]}" 2>&1 | tee "$OUT/harvest.log"
+
+      - name: Question set
+        id: question_set
+        # A failing score is the gate's to judge; a crash leaves no eval.json, which the gate also refuses.
+        continue-on-error: true
+        run: node dist/cli.js eval --out "$OUT/eval.md" --result-out "$OUT/eval.json" > /dev/null
+
+      - name: Quality gate
+        id: gate
+        run: |
+          node dist/publish/cli.js summary --index "$NY_DATA_INDEX" --out "$OUT/current-summary.json"
+          args=(--previous "$OUT/previous-summary.json" --current "$OUT/current-summary.json" --eval "$OUT/eval.json" --stats "$OUT/harvest-stats.json" --out "$OUT/gate.json")
+          [ "$FORCE_PUBLISH" = "true" ] && args+=(--override-reason "$FORCE_REASON" --actor "$GITHUB_ACTOR")
+          node dist/publish/cli.js gate "${args[@]}"
+
+      - name: Build files to publish
+        id: prepare
+        if: ${{ !cancelled() && steps.harvest.outcome == 'success' }}
+        run: node dist/publish/cli.js prepare --index "$NY_DATA_INDEX" --dir "$OUT" --gate "$OUT/gate.json" --stats "$OUT/harvest-stats.json"
+
+      - name: Publish
+        id: publish
+        if: ${{ env.PUBLISH == 'true' && steps.gate.outcome == 'success' && steps.prepare.outcome == 'success' }}
+        run: node dist/publish/cli.js publish --dir "$OUT"
+
+      - name: Retention
+        id: prune
+        if: ${{ steps.publish.outcome == 'success' }}
+        run: node dist/publish/cli.js prune --published "$OUT/published.json"
+
+      - name: Run summary
+        if: ${{ always() }}
+        run: node dist/publish/cli.js report --stats "$OUT/harvest-stats.json" --gate "$OUT/gate.json" --publish "$PUBLISH" --published "$OUT/published.json"
+
+      - name: Upload run files
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: harvest-run
+          path: |
+            out/
+            !out/*.sqlite
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Report failure
+        # Dry runs are watched by whoever started them, so they get the summary, not an issue.
+        if: ${{ failure() && env.PUBLISH == 'true' }}
+        env:
+          STEPS: >-
+            {"preflight":"${{ steps.preflight.outcome }}","tests":"${{ steps.tests.outcome }}",
+            "previous_index":"${{ steps.previous_index.outcome }}","harvest":"${{ steps.harvest.outcome }}",
+            "question_set":"${{ steps.question_set.outcome }}","gate":"${{ steps.gate.outcome }}",
+            "prepare":"${{ steps.prepare.outcome }}","publish":"${{ steps.publish.outcome }}",
+            "prune":"${{ steps.prune.outcome }}"}
+        run: |
+          if [ -f dist/publish/cli.js ]; then
+            node dist/publish/cli.js failure-issue --steps "$STEPS" --dir "$OUT"
+          else
+            # The build itself failed, so the issue writer is not there. Say so plainly.
+            body="**The build failed before the harvest could start.** The published index is unchanged. Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            gh label create harvest-failure --force --color d73a4a --description "The nightly index harvest failed or its quality gate blocked a publish"
+            n=$(gh issue list --label harvest-failure --state open --json number --jq '.[0].number')
+            if [ -n "$n" ]; then gh issue comment "$n" --body "$body"; else gh issue create --title "Nightly index harvest failed" --label harvest-failure --body "$body"; fi
+          fi
+
+      - name: Close resolved failure issue
+        if: ${{ success() && steps.publish.outcome == 'success' }}
+        run: node dist/publish/cli.js close-failures

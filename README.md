@@ -127,7 +127,7 @@ and point your client at `node /path/to/ny-data-registry-mcp/dist/index.js`.
 
 The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. It holds **metadata only**: titles, descriptions, column names and types, formats and links. No dataset contents.
 
-- **Where it comes from:** the `index-latest` release, at a fixed URL: `https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz`. Dated snapshots are kept as `index-YYYY-MM-DD` releases.
+- **Where it comes from:** the `index-latest` release, at a fixed URL: `https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz`. It is rebuilt every night (see "The nightly harvest"). Dated snapshots are kept as `index-YYYY-MM-DD` releases: the last 14, plus the first of each month for good. Each release also carries `index.json`, which describes the files (schema version, harvest time, sizes, both SHA-256 sums, dataset and portal counts, and the quality-gate result).
 - **Checked before use:** the server checks both SHA-256 sums in the release's `SHA256SUMS` file (the `.gz` and the unzipped `.sqlite`) and the schema version. A file that fails any check is never installed.
 - **Where it goes:** `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` (change with `NY_DATA_INDEX`).
 - **When:** only when the file is missing. An existing index is never replaced on its own.
@@ -151,7 +151,7 @@ The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`,
 | `NY_DATA_REGISTRY_REFRESH` | on | `0` = never fetch the published registry; use the bundled copy |
 | `NY_DATA_OFFLINE` | off | `1` = refuse every network call, including the first-run download (tests use this) |
 | `NY_DATA_MAX_LAYERS` | 250 | Per-portal cap on ArcGIS field requests per harvest |
-| `NY_DATA_MIN_INTERVAL_MS` | 1000 | Minimum gap between requests to one host (cannot be set below 1000) |
+| `NY_DATA_MIN_INTERVAL_MS` | 1000 | Minimum gap between requests to one host (cannot be set below 1000; Socrata hosts always get at least 2000) |
 | `SOCRATA_APP_TOKEN` | none | Sent as `X-App-Token` to the Socrata Discovery API |
 
 ---
@@ -187,7 +187,8 @@ Everything else (custom APIs, CKAN, GeoBlacklight, standalone ArcGIS Server dire
 - **Esri's own content is excluded** (owner `esri…`, org `P3ePLMYs2RVChkJx`). For Enterprise portals and ArcGIS Online orgs, items from another org are not counted under that portal; this is what turns Monroe's 108 search hits into its own content. Hub sites are *not* filtered by org, because a Hub's catalog is curated by its owner and aggregators like the State GIS Clearinghouse deliberately list other agencies' layers.
 - **Out-of-state guard**: an item whose extent lies wholly outside New York is dropped; a portal whose items are mostly outside New York is refused and purged. Placeholder extents (`[0,0,0,0]`) and projected coordinates (State Plane) count as *unknown*, never as outside.
 - **Stable paging**: Hub pages are requested sorted by `id`. A listing that comes back with fewer unique items than the portal's own total is treated as incomplete, so nothing is marked removed from a shaky listing.
-- **Politeness**: one descriptive User-Agent with no email address; at least 1 s between requests to a host; robots.txt Disallow **and Crawl-delay** honored (every Hub site asks for 60 s, so Hub listing is slow on purpose); conditional requests by ETag; one bounded retry on 429; a per-portal cap on layer requests. A bot block is reported, never worked around.
+- **Politeness**: one descriptive User-Agent with no email address; at least 1 s between requests to a host, and at least 2 s to Socrata (`api.us.socrata.com`), with `X-App-Token` sent when `SOCRATA_APP_TOKEN` is set; robots.txt Disallow **and Crawl-delay** honored (every Hub site asks for 60 s, so Hub listing is slow on purpose); conditional requests by ETag; up to two retries on 429 or 503, honoring `Retry-After` (otherwise 5 s, then 10 s; never more than 60 s), and a 429 doubles that host's gap for the rest of the run; a per-portal cap on layer requests. A bot block is reported, never worked around.
+- **Weekly for county servers**: self-hosted county ArcGIS Enterprise portals (Livingston, Monroe, Orange, Wayne, Yates) are read once a week, not every night; their datasets stay in the index in between. `cadence` in `data/harvest-config.json` sets this; `harvest --ignore-cadence` reads everything.
 - **Never called**: rows needing a key, ANHD, Rockland County, undocumented endpoints.
 
 The index stores metadata only (titles, descriptions, field names, links). It never downloads data.
@@ -199,7 +200,44 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 ## Refresh
 
 - **Registry**: picked up on next server start (conditional GET of the Pages copy).
-- **Index**: re-run `node dist/cli.js harvest`. `.github/workflows/harvest.yml` is written to do this nightly in GitHub Actions and publish the SQLite file as a release asset, but it is **not enabled** (schedule commented out). Index releases are published by hand for now; the first is [`index-2026-11-05`](https://github.com/BetaNYC/ny-data-registry-mcp/releases/tag/index-2026-11-05).
+- **Index**: rebuilt every night by `.github/workflows/harvest.yml` (next section). To build your own, run `node dist/cli.js harvest`.
+
+### The nightly harvest
+
+`.github/workflows/harvest.yml` runs at 07:17 UTC every day (02:17 or 03:17 in New York), and by hand from the Actions tab or `gh workflow run harvest.yml`.
+
+1. **Preflight.** It stops at once if the `SOCRATA_APP_TOKEN` secret is missing, if the certificate file below is missing, or if a publishing run was started on a branch other than `main`.
+2. **Start from the published index.** It downloads `index-latest` with the same checksum and schema checks every server uses. If that fails, the run fails. It never quietly starts from nothing, which would reset every dataset's `first_seen`. Only the `fresh` input starts empty.
+3. **Harvest**, as described above. First, portals whose ids are no longer in the registry are dropped with their datasets, since nothing would ever read them again (portal ids come from registry rows, so a changed row leaves its old id behind). Each drop is listed in the run summary and `index.json`. Nothing is dropped when the registry the run loaded is older than the one the index was built from.
+4. **Quality gate.** The new index is compared with the published one. Datasets dropped with registry removals are subtracted first (up to 5 portals; more blocks the publish). Publishing is blocked when:
+   - the question set (`eval/questions.json`) scores under 90% or finds any invariant violation;
+   - the index loses more than 10% of its datasets;
+   - more than 3 portals that had data now fail, are blocked, refused or gone;
+   - one portal with at least 20 datasets loses more than half of them;
+   - the schema version differs from the published index's or the package's;
+   - the index is empty.
+
+   The limits are `publish_gate` in `data/harvest-config.json`. The result goes to `gate.json`, published with every index. When the gate fails, nothing is published and the current index stays. To publish anyway, run the workflow by hand with `force_publish` on and a `force_reason`. The reason, the person who gave it and the failed checks are recorded in `gate.json`, in `index.json` and in the release notes.
+5. **Publish.** The published copy uses SQLite's rollback journal, not WAL, so readers do not create `-wal` and `-shm` files beside it. The run creates a dated snapshot `index-YYYY-MM-DD` titled "(current)" with all files, then updates `index-latest` (the `.gz`, `SHA256SUMS`, the side files, `index.json` last), then relabels older snapshots "(superseded)". Index releases are never marked "Latest"; the code release is.
+6. **Retention.** The 14 newest snapshots and the first snapshot of each month are kept. Older dated snapshots and their tags are deleted. `index-latest` and code releases are never touched.
+7. **Failures.** A scheduled or publishing run that fails, or whose gate blocks the publish, opens an issue labeled `harvest-failure` (or comments on the open one), with the run link, what failed and the portals that did not come back complete. The next run that publishes closes it. GitHub also emails whoever last changed the schedule line. Every run's summary page shows the portal outcomes and the gate, and its `harvest-run` artifact (kept 14 days) holds the stats, question-set results, gate result, the files built and the log.
+
+Inputs for a run by hand: `publish` (off = dry run; files in the artifact only), `fresh`, `ignore_cadence`, `force_publish` with `force_reason`.
+
+**Roll back a bad index** by copying a snapshot's files over `index-latest`:
+
+```sh
+gh release download index-YYYY-MM-DD --dir rollback
+gh release upload index-latest rollback/* --clobber
+```
+
+`index-2026-11-05` predates `index.json`; after rolling back to it, also run `gh release delete-asset index-latest index.json --yes`, `gate.json` likewise.
+
+Or pin one machine to a snapshot with `NY_DATA_INDEX_URL`. **Stop the nightly run** with `gh workflow disable harvest.yml`; servers keep the index they have.
+
+GitHub turns off scheduled workflows in a public repository after 60 days with no repository activity. A stale `index.json` (`last_harvest` more than a few days old) is the sign.
+
+**Orange County.** Its GIS server sends its own certificate but not the intermediate one that signed it, which Node needs. The harvest step adds that one public Sectigo intermediate with `NODE_EXTRA_CA_CERTS`; certificate checks stay on for every host. Where it came from, how it was checked, and when to remove it: [`certs/README.md`](certs/README.md).
 
 ---
 
@@ -225,7 +263,7 @@ Latest results (2026-11-05, office-mac), all in `eval/runs/`:
 - **Columns for ArcGIS are capped** at 250 layer requests per portal per run; the rest show `columns_status: not-fetched` and fill in on later runs.
 - **Search is keyword search** (SQLite FTS5 with a small synonym list), not semantic search.
 - **Join keys are by column name only**; values are not compared.
-- Orange County's portal is unreachable from Node because its server does not send its intermediate TLS certificate. Certificate checks are not disabled.
+- Orange County's server does not send its intermediate TLS certificate. The nightly harvest adds it (`certs/`); a harvest run elsewhere without `NODE_EXTRA_CA_CERTS` set to that file still fails on that portal. Certificate checks are never disabled.
 - Syracuse's Hub returned 126 unique items of 136 on one run even with sorted paging; the guard kept the index whole, but a short listing can still miss new items until the next run.
 - The index is about 110 MB uncompressed, larger than the scoping estimate (low tens of MB), mostly Socrata column metadata and the full-text index.
 

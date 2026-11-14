@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+The index is rebuilt every night on GitHub Actions, and a quality gate keeps a worse index
+from being published. See [#14](https://github.com/BetaNYC/ny-data-registry-mcp/issues/14)
+(epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- `harvest.yml` runs every night at 07:17 UTC (`workflow_dispatch` inputs: `publish`,
+  `fresh`, `ignore_cadence`, `force_publish`, `force_reason`). It starts from the published
+  index and fails if that cannot be downloaded and verified, instead of starting from nothing.
+- Quality gate (`src/publish/gate.ts`, limits in `harvest-config.json` `publish_gate`): the
+  question set must pass; no more than a 10% drop in datasets, no more than 3 portals lost, no
+  portal of 20+ datasets losing over half, no schema change, no empty index. A failed gate
+  blocks the publish. `force_publish` with a `force_reason` overrides it, and the reason and
+  who gave it are recorded in `gate.json`, `index.json` and the release notes.
+- Each publish makes a dated snapshot `index-YYYY-MM-DD` titled "(current)" and relabels older
+  ones "(superseded)". Retention keeps the 14 newest snapshots plus the first of each month.
+- `index.json`, a manifest beside every index: schema version, harvest time, registry date,
+  both SHA-256 sums and sizes, dataset and portal counts, run link, commit, gate result.
+- A failed scheduled or publishing run opens a `harvest-failure` issue, or comments on the open
+  one; the next run that publishes closes it.
+- `cadence` in `harvest-config.json`: self-hosted county ArcGIS Enterprise portals are read
+  weekly, not nightly. New `not-due` portal outcome and `not_due` count in the harvest stats;
+  `harvest --ignore-cadence` reads everything.
+- The harvest drops portals whose ids are no longer in the registry, with their datasets,
+  columns and change history ([#21](https://github.com/BetaNYC/ny-data-registry-mcp/issues/21)).
+  Portal ids come from registry rows, so when a row changes its old id was left behind,
+  never read again: on the 224-row registry, DEC's old id kept 834 stale datasets next to the
+  842 under its new id. Each drop (portal id, dataset count) is listed in the harvest stats
+  (`dropped_portals`), the run summary, `index.json` and the snapshot's release notes. The
+  registry records no id changes, so nothing is re-keyed. Nothing is dropped when the loaded
+  registry is older than the index's (a failed refresh falling back to the bundled copy). The
+  gate subtracts these drops before its drop checks, up to 5 portals
+  (`max_registry_removed_portals`); any other drop is judged as before.
+- `eval --result-out file.json`: the question-set result as JSON.
+- `certs/sectigo-public-server-authentication-ca-ov-r36.pem`: the intermediate certificate
+  Orange County's server leaves out, added for the harvest step with `NODE_EXTRA_CA_CERTS`.
+  Certificate checks stay on. Provenance and removal steps in `certs/README.md`.
+
+### Changed
+
+- The published index uses SQLite's rollback journal instead of WAL, so readers no longer
+  create `-wal` and `-shm` files beside it.
+- Socrata hosts get at least 2 s between requests (was 1 s). 429 and 503 are retried up to
+  twice, honoring `Retry-After` in seconds or as a date (otherwise 5 s, then 10 s; capped at
+  60 s), and a 429 doubles that host's gap for the rest of the run. Before, only one retry on
+  429.
+- Code releases (`vX.Y.Z`) are now created as the repository's "Latest" release; index
+  releases never are.
+
 ## [0.3.0] — 2026-11-13
 
 `search_datasets` gives the whole answer in one call. Its reply has a new shape, which is
