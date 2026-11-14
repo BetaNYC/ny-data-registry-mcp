@@ -36,9 +36,10 @@ test("each skipped row says why, with a fixed code", () => {
   assert.equal(row(r, "association-for-neighborhood-and-housing-development-anhd").skip_code, "policy");
   assert.equal(row(r, "rockland-county").skip_code, "policy");
   assert.equal(row(r, "new-york-state-senate").skip_code, "policy", "key required");
-  const greene = row(r, "greene-county");
-  assert.equal(greene.skip_code, "no-portal");
-  assert.equal(greene.documented_endpoint, "https://gis.gcgovny.com/arcgis/rest/services", "the registry's endpoint, verbatim");
+  const kingston = row(r, "city-of-kingston");
+  assert.equal(kingston.skip_code, "no-portal");
+  assert.equal(kingston.documented_endpoint, "https://services9.arcgis.com/lURKWeSyTPF2wvVs/arcgis/rest/services", "the registry's endpoint, verbatim");
+  assert.equal(row(r, "greene-county").adapter, "hand-kept", "no portal, but the hand-kept list has its parcel links");
   for (const x of r.rows) {
     assert.equal(x.adapter === null, x.state === "not-harvested", x.source_id);
     if (x.state === "not-harvested") assert.ok(x.reason && x.skip_code, x.source_id);
@@ -64,7 +65,7 @@ test("the markdown report lists the totals and the reasons", () => {
   assert.match(md, /^# Harvest coverage/);
   assert.match(md, /\| not-harvested \| \d+ \|/);
   assert.match(md, /### Registry says no portal \(\d+\)/);
-  assert.match(md, /greene-county/);
+  assert.match(md, /city-of-kingston/);
 });
 
 test("`coverage --json` runs offline from the registry and an index", async () => {

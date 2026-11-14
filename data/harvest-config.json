@@ -53,6 +53,10 @@
     "arcgis-server": {
       "enabled": true,
       "note": "ArcGIS Server REST directories with no catalog in front (issue #16, milestone 4). Read weekly per host, within arcgis_server.max_requests_per_host."
+    },
+    "hand-kept": {
+      "enabled": true,
+      "note": "data/hand-kept.json: what rows with no data link offer (issue #16, milestone 5, D6). No network calls."
     }
   },
   "allow_no_portal": {

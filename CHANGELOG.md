@@ -150,6 +150,11 @@ Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data
   weekly per host (D5), at most 400 requests and 30 minutes per host, 2 s apart (or the
   robots.txt Crawl-delay), `Utilities` and `System` folders skipped, robots.txt honored.
   Settings in `arcgis_server` in `harvest-config.json`. Switched on.
+- Hand-kept list (`data/hand-kept.json`, milestone 5, D6): for rows with no data link, what the
+  place does offer (pages, viewers, search pages, request forms). The `hand-kept` adapter adds
+  each link to the index as type `hand-kept <kind>`, with no endpoint or columns, and makes no
+  network call. Seeded with 82 parcel links the State's parcel page lists for 30 counties
+  (not yet checked). Switched on.
 - The publish gate needs nothing new for the first run with the new adapters: its drop checks
   compare only what the published index had, so growth passes. The question set must still
   pass.

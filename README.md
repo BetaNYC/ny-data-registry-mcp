@@ -210,7 +210,9 @@ If anything fails, the server keeps the index it has and tries again at the next
 | ArcGIS Online org (agency REST directories such as DEC, Parks, DCP) | `www.arcgis.com/sharing/rest/search?q=orgid:<id>` | same second hop |
 | ArcGIS Server REST directory (the State's GIS servers, DOT, DEC, Broome, Ulster) | `<root>/rest/services?f=json`, then each folder and each `MapServer`, `FeatureServer` or `ImageServer` `?f=json`; one dataset per service | each layer `?f=json` (up to 5 per service) |
 
-Everything else (custom APIs, CKAN, pages with no API) is described by the registry tools but not harvested. `coverage` lists each row and why.
+| Hand-kept list (rows with no data link) | `data/hand-kept.json`, edited by hand; no network call | none |
+
+Everything else (custom APIs, CKAN, pages with no API and no hand-kept entry) is described by the registry tools but not harvested. `coverage` lists each row and why.
 
 **Guards**
 - **Esri's own content is excluded** (owner `esri…`, org `P3ePLMYs2RVChkJx`). For Enterprise portals and ArcGIS Online orgs, items from another org are not counted under that portal; this is what turns Monroe's 108 search hits into its own content. Hub sites are *not* filtered by org, because a Hub's catalog is curated by its owner and aggregators like the State GIS Clearinghouse deliberately list other agencies' layers.
@@ -249,6 +251,8 @@ For a not-harvested row, `documented_endpoint` is the registry's `api_endpoint`,
 **Adapter switches.** `adapters` in `data/harvest-config.json` holds one `enabled` switch per adapter. Turning one off stops that adapter alone; its portals show as `adapter-off`, and their datasets stay in the index as last read, so the publish gate does not count them as lost.
 
 **"No portal" rows with a data endpoint.** Three rows the registry marks "no portal" still document a public data endpoint, and are read: the City of Utica and Wyoming County (their ArcGIS Online orgs) and the City of Mount Vernon (its ArcGIS Enterprise portal). Each was checked to be New York: Utica's org is "The City of Utica, NY", not the Utica, Minnesota Hub; Wyoming County's org centers on Warsaw, NY, not Wyoming County, Pennsylvania. The list is `allow_no_portal` in `data/harvest-config.json`. Each entry names its adapter and endpoint; if the registry row's endpoint changes, the row is skipped until someone checks it again. Other "no portal" rows with an endpoint show in `coverage` under `no-portal`, with the endpoint.
+
+**Hand-kept list.** Some places have no data link at all: no portal, or only pages, viewers and downloads. `data/hand-kept.json` records what they do offer, one entry per registry row, with each link's kind (`page`, `viewer`, `search`, `download-page`, `dashboard`, `pdf`, `request-form`), where it came from, when it was added, and whether a person has opened it. The harvest adds each link to the index as type `hand-kept <kind>`, with no endpoint and no columns, so search can point to it. An entry is used only while its `source_id` and `entity` both match a registry row, and only while no adapter reads that row. It was seeded on 2026-11-14 with the parcel pages and viewers the State's parcel page lists for 30 counties whose own row has no data link (82 links, not yet checked). Edit it in a pull request.
 
 ### Tax parcel coverage
 

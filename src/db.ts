@@ -114,7 +114,7 @@ export interface HarvestedDataset {
   /** null = not fetched this run (keep what the index already has). */
   columns: HarvestedColumn[] | null;
   columns_status: "from-search" | "fetched" | "not-fetched" | "none" | "error";
-  provenance: Record<string, "portal" | "derived">;
+  provenance: Record<string, "portal" | "derived" | "hand-kept">;
 }
 
 export interface PortalRecord {

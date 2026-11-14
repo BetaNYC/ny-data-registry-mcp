@@ -91,7 +91,7 @@ test("harvest plan: adapters, skips and reasons", () => {
   assert.equal(planFor(src("rockland-county"), cfg).kind, "skip");
   assert.equal(planFor(src("columbia-university-libraries--geodata-library-columbia-edu"), cfg).kind, "skip");
   assert.equal(planFor(src("association-for-neighborhood-and-housing-development-anhd"), cfg).kind, "skip");
-  assert.equal(planFor(src("erie-county"), cfg).kind, "skip");
+  assert.equal(planFor(src("erie-county"), cfg).kind, "hand-kept", "no portal: only the hand-kept links (D6), never a call");
   assert.equal(planFor(src("new-york-state-senate"), cfg).kind, "skip");
   assert.deepEqual(planFor(src("nys-department-of-environmental-conservation--services6-arcgis-com"), cfg), { kind: "agol-org", orgId: "DZHaqZm9cxOD4CWM" });
   assert.equal(agolOrgOf(src("tioga-county")), "PvkAiSMFS7cpxnJP");
@@ -99,7 +99,9 @@ test("harvest plan: adapters, skips and reasons", () => {
     const p = planFor(s, cfg);
     if (s.key_required === "Y") assert.equal(p.kind, "skip", `${s.source_id} needs a key and must never be called`);
     // Only the "no portal" rows on allow_no_portal (D4) are read without status 'live'.
-    if (s.status !== "live" && !(s.status === "no-portal" && cfg.allow_no_portal?.[s.entity])) assert.equal(p.kind, "skip");
+    // Hand-kept rows (D6) are not read at all: their entries come from data/hand-kept.json.
+    if (s.status !== "live" && !(s.status === "no-portal" && cfg.allow_no_portal?.[s.entity]) && p.kind !== "hand-kept") assert.equal(p.kind, "skip");
+    if (p.kind === "hand-kept") assert.notEqual(s.status, "dead");
   }
 });
 

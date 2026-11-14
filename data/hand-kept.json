@@ -1,0 +1,928 @@
+{
+  "_readme": [
+    "Hand-kept list (issue #16, milestone 5; epic #7, decision D6). For registry rows with no data link (no portal, or pages, viewers and downloads only), what the place does offer. The harvest turns each resource into an index entry of type 'hand-kept <kind>', so search can point to it. Nothing here is fetched.",
+    "Edit by hand and review in a pull request. An entry is used only while its source_id and entity both match a registry row (a test checks this), and only while no adapter reads that row.",
+    "kind: page | viewer | search | download-page | dashboard | pdf | request-form. source: where the link comes from. recorded: when it was added. checked: true only after a person has opened the link.",
+    "Seeded 2026-11-14 from the State's parcel page (https://gis.ny.gov/parcels) for counties whose own registry row has no data link. Those links are the State's, not yet checked by us."
+  ],
+  "entries": [
+    {
+      "source_id": "allegany-county",
+      "entity": "Allegany County",
+      "resources": [
+        {
+          "title": "Allegany County parcel data (county page)",
+          "url": "https://www.alleganyco.com/departments/real-property/",
+          "kind": "page",
+          "description": "The page the State lists for Allegany County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Allegany County parcel viewer",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=AlleganyCountyNY&PageType=Map",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Allegany County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Allegany County, more parcel resources",
+          "url": "https://allegany.sdgnys.com/search.aspx",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Allegany County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "cayuga-county",
+      "entity": "Cayuga County",
+      "resources": [
+        {
+          "title": "Cayuga County parcel data (county page)",
+          "url": "https://www.cayugacounty.gov/1268/Tax-Maps",
+          "kind": "page",
+          "description": "The page the State lists for Cayuga County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Cayuga County parcel viewer",
+          "url": "https://experience.arcgis.com/experience/9fd0043afb8949a1aedbff99ab1ab32e",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Cayuga County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Cayuga County, more parcel resources",
+          "url": "https://cayugacounty.prosgar.com/",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Cayuga County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "chautauqua-county",
+      "entity": "Chautauqua County",
+      "resources": [
+        {
+          "title": "Chautauqua County parcel data (county page)",
+          "url": "https://chqgov.com/information-services/Geographic-Information-Systems",
+          "kind": "page",
+          "description": "The page the State lists for Chautauqua County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Chautauqua County parcel viewer",
+          "url": "https://chautauquacounty.maps.arcgis.com/apps/webappviewer/index.html?id=82233170274a4e3a8f79f94ea90f278f",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Chautauqua County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Chautauqua County, more parcel resources",
+          "url": "https://chautauqua.ny.us/349/Real-Property-Tax",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Chautauqua County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "chemung-county",
+      "entity": "Chemung County",
+      "resources": [
+        {
+          "title": "Chemung County parcel data (county page)",
+          "url": "https://www.chemungcountyny.gov/1382/GIS-Mapping-Data",
+          "kind": "page",
+          "description": "The page the State lists for Chemung County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Chemung County parcel viewer",
+          "url": "https://chemungcgc.maps.arcgis.com/apps/webappviewer/index.html?id=7900479f2de747d981e01b362f5ba3da",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Chemung County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Chemung County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=ChemungCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Chemung County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "chenango-county",
+      "entity": "Chenango County",
+      "resources": [
+        {
+          "title": "Chenango County parcel data (county page)",
+          "url": "https://www.chenangocountyny.gov/323/Online-GIS-Information",
+          "kind": "page",
+          "description": "The page the State lists for Chenango County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Chenango County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=ChenangoCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Chenango County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "clinton-county",
+      "entity": "Clinton County",
+      "resources": [
+        {
+          "title": "Clinton County parcel data (county page)",
+          "url": "https://www.clintoncountyny.gov/realproperty",
+          "kind": "page",
+          "description": "The page the State lists for Clinton County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Clinton County parcel viewer",
+          "url": "https://experience.arcgis.com/experience/fe5bd2d3891a4792ab3c2a49880e0ec4/page/Page?org=ClinCo%2CClinCo",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Clinton County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Clinton County, more parcel resources",
+          "url": "https://clinton.sdgnys.com/index.aspx",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Clinton County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "delaware-county",
+      "entity": "Delaware County",
+      "resources": [
+        {
+          "title": "Delaware County parcel data (county page)",
+          "url": "https://www.delcony.gov/rpt/",
+          "kind": "page",
+          "description": "The page the State lists for Delaware County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Delaware County parcel viewer",
+          "url": "https://spatial.vhb.com/comit/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Delaware County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Delaware County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=DelawareCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Delaware County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "erie-county",
+      "entity": "Erie County",
+      "resources": [
+        {
+          "title": "Erie County parcel data (county page)",
+          "url": "https://www3.erie.gov/gis/press/erie-county-tax-parcel-data-now-available",
+          "kind": "page",
+          "description": "The page the State lists for Erie County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Erie County parcel viewer",
+          "url": "https://erieny.maps.arcgis.com/apps/webappviewer/index.html?id=66e6b18a741948918ff55873edd333d9",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Erie County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Erie County, more parcel resources",
+          "url": "https://paytax.erie.gov/(S(li0fm4vlh1p2sirpwpzdapbf))/WebPortal/WEB_PT_MAIN.aspx?command=REPORTPARAMETERSTYLE&style=&group=Group2",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Erie County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "essex-county",
+      "entity": "Essex County",
+      "resources": [
+        {
+          "title": "Essex County parcel data (county page)",
+          "url": "https://rpts.essexcountyny.gov/",
+          "kind": "page",
+          "description": "The page the State lists for Essex County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Essex County parcel viewer",
+          "url": "https://essex-gis.co.essex.ny.us/viewer/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Essex County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Essex County, more parcel resources",
+          "url": "https://essexcounty.prosgar.com/",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Essex County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "franklin-county",
+      "entity": "Franklin County",
+      "resources": [
+        {
+          "title": "Franklin County parcel data (county page)",
+          "url": "https://www.franklincountyny.gov/departments/finance/real_property_tax_services/",
+          "kind": "page",
+          "description": "The page the State lists for Franklin County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Franklin County parcel viewer",
+          "url": "https://maps.dancgis.org/ima/?IMA=Franklin",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Franklin County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Franklin County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=FranklinCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Franklin County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "fulton-county",
+      "entity": "Fulton County",
+      "resources": [
+        {
+          "title": "Fulton County parcel data (county page)",
+          "url": "https://www.fultoncountyny.gov/real-property-tax-service-agency",
+          "kind": "page",
+          "description": "The page the State lists for Fulton County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Fulton County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=1343&LayerID=45641&PageTypeID=2&PageID=18146",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Fulton County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "greene-county",
+      "entity": "Greene County",
+      "resources": [
+        {
+          "title": "Greene County parcel data (county page)",
+          "url": "https://greenecountyny.gov/departments/rpts/",
+          "kind": "page",
+          "description": "The page the State lists for Greene County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Greene County parcel viewer",
+          "url": "https://gis.gcgovny.com/greenewebmap/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Greene County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Greene County, more parcel resources",
+          "url": "https://greenecounty.prosgar.com/",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Greene County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "hamilton-county",
+      "entity": "Hamilton County",
+      "resources": [
+        {
+          "title": "Hamilton County parcel data (county page)",
+          "url": "https://www.hamiltoncountyny.gov/real-property",
+          "kind": "page",
+          "description": "The page the State lists for Hamilton County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Hamilton County parcel viewer",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=HamiltonCountyNY&PageType=Map",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Hamilton County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Hamilton County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=HamiltonCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Hamilton County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "herkimer-county",
+      "entity": "Herkimer County",
+      "resources": [
+        {
+          "title": "Herkimer County parcel data (county page)",
+          "url": "https://www.herkimercountyny.gov/government/real-property-tax-service/",
+          "kind": "page",
+          "description": "The page the State lists for Herkimer County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Herkimer County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=HerkimerCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Herkimer County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "jefferson-county",
+      "entity": "Jefferson County",
+      "resources": [
+        {
+          "title": "Jefferson County parcel data (county page)",
+          "url": "https://www.jeffersoncountyny.gov/gis-maps-property-search",
+          "kind": "page",
+          "description": "The page the State lists for Jefferson County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Jefferson County parcel viewer",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=1336&LayerID=45587&PageTypeID=1",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Jefferson County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Jefferson County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=JeffersonCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Jefferson County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "lewis-county",
+      "entity": "Lewis County",
+      "resources": [
+        {
+          "title": "Lewis County parcel data (county page)",
+          "url": "https://lewiscountyny.gov/departments/real-property/real-property-search/",
+          "kind": "page",
+          "description": "The page the State lists for Lewis County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Lewis County parcel viewer",
+          "url": "https://lewiscountyny.giscloud.com/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Lewis County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "madison-county",
+      "entity": "Madison County",
+      "resources": [
+        {
+          "title": "Madison County parcel data (county page)",
+          "url": "https://www.madisoncounty.ny.gov/254/Prices-for-Map-Copies-GIS-Data",
+          "kind": "page",
+          "description": "The page the State lists for Madison County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Madison County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=MadisonCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Madison County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "montgomery-county",
+      "entity": "Montgomery County",
+      "resources": [
+        {
+          "title": "Montgomery County parcel data (county page)",
+          "url": "https://data.gis.ny.gov/datasets/14712aa7795440c399bcba0f0b5bf48f_0/explore?location=42.910223%2C-74.423430%2C11",
+          "kind": "page",
+          "description": "The page the State lists for Montgomery County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Montgomery County, more parcel resources",
+          "url": "https://www.montgomerycountyny.gov/web/sites/departments/realproperty/gis.asp",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Montgomery County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "niagara-county",
+      "entity": "Niagara County",
+      "resources": [
+        {
+          "title": "Niagara County parcel data (county page)",
+          "url": "https://www.niagaracounty.gov/departments/m-r/real_property/index.php",
+          "kind": "page",
+          "description": "The page the State lists for Niagara County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Niagara County parcel viewer",
+          "url": "https://experience.arcgis.com/experience/b6036d1586dd47399d4482824ac845b4",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Niagara County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Niagara County, more parcel resources",
+          "url": "https://niagaracounty.prosgar.com/",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Niagara County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "oneida-county",
+      "entity": "Oneida County",
+      "resources": [
+        {
+          "title": "Oneida County parcel data (county page)",
+          "url": "https://oneidacountyny.gov/departments/finance/real-property-services/",
+          "kind": "page",
+          "description": "The page the State lists for Oneida County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Oneida County parcel viewer",
+          "url": "https://experience.arcgis.com/experience/228579a27118422f85af50361048145b",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Oneida County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Oneida County, more parcel resources",
+          "url": "https://countyoneida.digitaltowpathny.gov:10203/content/RealProperty",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Oneida County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "onondaga-county",
+      "entity": "Onondaga County",
+      "resources": [
+        {
+          "title": "Onondaga County parcel data (county page)",
+          "url": "https://onondaga.gov/rpts/",
+          "kind": "page",
+          "description": "The page the State lists for Onondaga County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Onondaga County parcel viewer",
+          "url": "https://spatial.vhb.com/onondaga/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Onondaga County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Onondaga County, more parcel resources",
+          "url": "https://ocfintax.ongov.net/Imate/index.aspx",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Onondaga County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "orleans-county",
+      "entity": "Orleans County",
+      "resources": [
+        {
+          "title": "Orleans County parcel data (county page)",
+          "url": "https://www.orleanscountyny.gov/departments/real_property.php",
+          "kind": "page",
+          "description": "The page the State lists for Orleans County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Orleans County parcel viewer",
+          "url": "https://experience.arcgis.com/experience/74e119dcc89a4cde9a00f470e9410a8c",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Orleans County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Orleans County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=OrleansCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Orleans County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "rensselaer-county",
+      "entity": "Rensselaer County",
+      "resources": [
+        {
+          "title": "Rensselaer County parcel data (county page)",
+          "url": "https://data.gis.ny.gov/datasets/8843fe1f0f3a4a4fba2b0158c5b58405_0/explore?location=42.711424%2C-73.524866%2C10",
+          "kind": "page",
+          "description": "The page the State lists for Rensselaer County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Rensselaer County, more parcel resources",
+          "url": "https://www.arcgis.com/home/item.html?id=8843fe1f0f3a4a4fba2b0158c5b58405",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Rensselaer County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "st-lawrence-county",
+      "entity": "St. Lawrence County",
+      "resources": [
+        {
+          "title": "St. Lawrence County parcel data (county page)",
+          "url": "https://www.stlawco.gov/Departments/RealProperty",
+          "kind": "page",
+          "description": "The page the State lists for St. Lawrence County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "St. Lawrence County parcel viewer",
+          "url": "https://maps.dancgis.org/ima/?IMA=St.%20Lawrence",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for St. Lawrence County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "St. Lawrence County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=StLawrenceCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for St. Lawrence County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "saratoga-county",
+      "entity": "Saratoga County",
+      "resources": [
+        {
+          "title": "Saratoga County parcel data (county page)",
+          "url": "https://www.saratogacountyny.gov/departments/real-property-tax-service/",
+          "kind": "page",
+          "description": "The page the State lists for Saratoga County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Saratoga County parcel viewer",
+          "url": "https://spatial.vhb.com/SaratogaMapViewer/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Saratoga County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Saratoga County, more parcel resources",
+          "url": "https://saratogacounty.prosgar.com/",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Saratoga County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "schenectady-county",
+      "entity": "Schenectady County",
+      "resources": [
+        {
+          "title": "Schenectady County parcel data (county page)",
+          "url": "https://www.schenectadycountyny.gov/taxmaps",
+          "kind": "page",
+          "description": "The page the State lists for Schenectady County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Schenectady County parcel viewer",
+          "url": "https://www.simsgis.org/lite/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Schenectady County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Schenectady County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?AppID=1277&LayerID=43686&PageTypeID=2&PageID=15972",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Schenectady County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "schoharie-county",
+      "entity": "Schoharie County",
+      "resources": [
+        {
+          "title": "Schoharie County parcel data (county page)",
+          "url": "https://cms2.revize.com/revize/schohariecountyny/departments/real_property_tax_office/index.php",
+          "kind": "page",
+          "description": "The page the State lists for Schoharie County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Schoharie County parcel viewer",
+          "url": "https://spatial.vhb.com/SchoharieMapViewer/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Schoharie County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Schoharie County, more parcel resources",
+          "url": "https://www2.schohariecounty-ny.gov/CountyWebSiteApp/faces/TaxLookUpIndex.xhtml",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Schoharie County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "schuyler-county",
+      "entity": "Schuyler County",
+      "resources": [
+        {
+          "title": "Schuyler County parcel data (county page)",
+          "url": "https://www.schuylercountyny.gov/1066/GIS-Shapefile",
+          "kind": "page",
+          "description": "The page the State lists for Schuyler County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Schuyler County parcel viewer",
+          "url": "https://schuylerco.maps.arcgis.com/apps/webappviewer/index.html?id=b65af3edbf494b64883ec238d0206d22",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Schuyler County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Schuyler County, more parcel resources",
+          "url": "https://schuylercounty.prosgar.com/",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Schuyler County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "seneca-county",
+      "entity": "Seneca County",
+      "resources": [
+        {
+          "title": "Seneca County parcel data (county page)",
+          "url": "https://www.senecacountyny.gov/gov/admin/property-tax/",
+          "kind": "page",
+          "description": "The page the State lists for Seneca County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Seneca County, more parcel resources",
+          "url": "https://beacon.schneidercorp.com/Application.aspx?App=SenecaCountyNY&PageType=Search",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Seneca County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "source_id": "washington-county",
+      "entity": "Washington County",
+      "resources": [
+        {
+          "title": "Washington County parcel data (county page)",
+          "url": "https://www.washingtoncountyny.gov/263/Real-Property-Tax-Service",
+          "kind": "page",
+          "description": "The page the State lists for Washington County's own tax parcel data.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Washington County parcel viewer",
+          "url": "https://gis.washingtoncountyny.gov/webmap/",
+          "kind": "viewer",
+          "description": "The tax parcel viewer the State lists for Washington County. A map viewer, not a data download.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        },
+        {
+          "title": "Washington County, more parcel resources",
+          "url": "https://imo.washingtoncountyny.gov/index.aspx",
+          "kind": "page",
+          "description": "Other tax parcel resources the State lists for Washington County.",
+          "source": "NYS GIS Clearinghouse parcels page, County Parcel Data Resources table (revised May 2026), https://gis.ny.gov/parcels",
+          "recorded": "2026-11-14",
+          "checked": false
+        }
+      ]
+    }
+  ]
+}

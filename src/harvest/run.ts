@@ -9,6 +9,7 @@ import { refuseReason } from "../check.js";
 import { bboxIntersectsNY } from "../places.js";
 import { harvestSocrata } from "./socrata.js";
 import { DEFAULT_SERVER_CONFIG, harvestArcgisServer, serverRootOf, type ServerConfig } from "./arcgis-server.js";
+import { handKeptEntry, mapHandKept, type HandKeptEntry } from "./hand-kept.js";
 import { buildTopics } from "../topics.js";
 import {
   dcatByItem, fetchServiceColumns, filterItems, itemsFromDcat, listHubItems, mapArcgisItem, mergeDcat, mostCommonOrg,
@@ -95,6 +96,7 @@ export type Plan =
   | { kind: "enterprise"; portalBase: string }
   | { kind: "agol-org"; orgId: string }
   | { kind: "arcgis-server"; root: string }
+  | { kind: "hand-kept"; entry: HandKeptEntry }
   | { kind: "skip"; reason: string; code: SkipCode };
 
 /**
@@ -127,8 +129,15 @@ export function enterprisePortalBase(s: Source): string | null {
   return null;
 }
 
+/** Rows with no data link: the hand-kept list (D6) may describe what they offer instead. */
+const HAND_KEPT_CODES = new Set<SkipCode>(["no-portal", "no-api", "unconfirmed"]);
+
 export function planFor(s: Source, cfg: HarvestConfig): Plan {
-  const p = basePlan(s, cfg);
+  let p = basePlan(s, cfg);
+  if (p.kind === "skip" && HAND_KEPT_CODES.has(p.code) && !refuseReason(s) && !cfg.skip.by_entity[s.entity]) {
+    const e = handKeptEntry(s);
+    if (e) p = { kind: "hand-kept", entry: e };
+  }
   if (p.kind !== "skip" && !adapterEnabled(p.kind, cfg)) {
     const note = cfg.adapters?.[p.kind]?.note;
     return { kind: "skip", code: "adapter-off", reason: `the '${p.kind}' adapter is switched off in harvest-config.json${note ? `: ${note}` : ""}` };
@@ -394,6 +403,10 @@ export async function runHarvest(opts: RunOpts = {}) {
         datasets = h.datasets;
         complete = h.complete;
         Object.assign(st, { listed: h.resultSetSize, requests: h.requests, error: h.error, columns_fetched_for: datasets.filter((d) => d.columns_status === "from-search").length });
+      } else if (plan.kind === "hand-kept") {
+        datasets = plan.entry.resources.map(mapHandKept);
+        complete = true;
+        Object.assign(st, { listed: datasets.length, requests: 0 });
       } else if (plan.kind === "arcgis-server") {
         const h = await harvestArcgisServer(plan.root, { ...DEFAULT_SERVER_CONFIG, ...(cfg.arcgis_server ?? {}) });
         // The out-of-state guard, as for ArcGIS items: drop services whose extent is outside New York.
