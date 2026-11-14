@@ -8,6 +8,7 @@
  * ny-data-registry topics [--crosswalk-out file.csv]
  * ny-data-registry coverage [--json] [--out file] [--index path] [--refresh]
  * ny-data-registry parcels [--json] [--out file] [--index path] [--refresh]
+ * ny-data-registry standards [--out-dir dir]
  *
  * `update` exit codes: UPDATE_EXIT_CODES in refresh.ts (2 is a usage error).
  */
@@ -22,7 +23,8 @@ import { runEval } from "./eval.js";
 import { downloadIndex, indexUrl } from "./fetchindex.js";
 import { checkForUpdate, UPDATE_EXIT_CODES } from "./refresh.js";
 import { openDb, indexExists } from "./db.js";
-import { DATA_DIR, indexPath, readDataJson } from "./paths.js";
+import { cacheDir, DATA_DIR, indexPath, readDataJson } from "./paths.js";
+import { writeStatewide } from "./standards/statewide.js";
 import { buildTopics, computeTopics, crosswalkCsv } from "./topics.js";
 
 function arg(name: string): string | undefined {
@@ -32,7 +34,7 @@ function arg(name: string): string | undefined {
 
 
 const cmd = process.argv[2];
-const OFFLINE_CMDS = new Set(["download", "update", "topics", "coverage", "parcels"]);
+const OFFLINE_CMDS = new Set(["download", "update", "topics", "coverage", "parcels", "standards"]);
 if (!OFFLINE_CMDS.has(cmd)) await refreshRegistry();
 if (cmd === "update") {
   const extra = process.argv.slice(3).filter((a) => a !== "--check");
@@ -122,9 +124,19 @@ if (cmd === "update") {
     writeFileSync(out, text + "\n");
   }
   console.log(text);
+} else if (cmd === "standards") {
+  // The statewide Croissant and DCAT-US files, from the installed index (the nightly publish makes the same files).
+  if (!indexExists()) {
+    console.error(`no index at ${indexPath()}; run download or harvest first`);
+    process.exitCode = 1;
+  } else {
+    const dir = arg("out-dir") ?? join(cacheDir(), "standards");
+    const stats = writeStatewide(indexPath(), dir);
+    console.log(JSON.stringify({ out_dir: dir, ...stats }, null, 2));
+  }
 } else if (cmd === "stats") {
   console.log(JSON.stringify(indexInfo(), null, 2));
 } else {
-  console.error("usage: ny-data-registry <update|download|harvest|eval|stats|topics|coverage|parcels> [options]");
+  console.error("usage: ny-data-registry <update|download|harvest|eval|stats|topics|coverage|parcels|standards> [options]");
   process.exitCode = 2;
 }

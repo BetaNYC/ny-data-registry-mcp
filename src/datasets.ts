@@ -13,6 +13,8 @@ import { expandTerms, placeMatches, tokenize } from "./sources.js";
 import { resolvePlace, places, type ResolvedPlace } from "./places.js";
 import { registry, type Source } from "./registry.js";
 import { hasTopics, resolveTopic, topicRules, coveragePercent, CROSSWALK_NAME, type TopicDef } from "./topics.js";
+import { CROISSANT_CONFORMS_TO, DCAT_US_TITLE, indexHarvestTime, loadRecords, toCroissant, toDcatUs, type Standard } from "./standards/build.js";
+import { CROISSANT_FILE, DCAT_FILE, RELEASE_BASE } from "./standards/statewide.js";
 
 export class NoIndexError extends Error {
   constructor(detail?: string) {
@@ -728,6 +730,41 @@ export function getDatasetColumns(ref: string) {
     first_seen: full.first_seen,
     last_seen: full.last_seen,
     provenance: JSON.parse(full.provenance ?? "{}"),
+  };
+}
+
+/**
+ * One dataset's description as Croissant 1.1 or DCAT-US 3.0 (issue #17). Required fields the
+ * portal does not give are left out and listed in `missing`; the license is never inferred.
+ */
+export function datasetStandard(ref: string, standard: Standard) {
+  const r = findDataset(ref);
+  if (!r) return { error: `no dataset '${ref}' in the index. Use search_datasets to find its dataset_id.` };
+  const d = db();
+  const rec = loadRecords(d, [r.id])[0];
+  const built = standard === "croissant" ? toCroissant(rec, { harvestedAt: indexHarvestTime(d) }) : toDcatUs(rec);
+  const file = standard === "croissant" ? CROISSANT_FILE : DCAT_FILE;
+  return {
+    dataset_id: r.id,
+    standard,
+    conforms_to: standard === "croissant" ? CROISSANT_CONFORMS_TO : DCAT_US_TITLE,
+    document: built.document,
+    license: {
+      kind: built.license.kind,
+      license: built.license.license,
+      terms_page: built.license.terms_page,
+      note:
+        built.license.kind === "license"
+          ? "License as the portal states it."
+          : built.license.kind === "terms-page"
+          ? "No license from the portal. The link is a terms page, not a license."
+          : built.license.kind === "statement"
+          ? "No license from the portal. Its own use terms are included word for word; they are not a license."
+          : "No license from the portal and no checked terms page. None is inferred.",
+    },
+    missing: built.missing,
+    statewide_file: { name: file, url: `${RELEASE_BASE}/${file}`, note: "Every dataset in the index, in this standard, published with each nightly index." },
+    note: "Metadata only. Values come from the portal's catalog; links marked as built by BetaNYC follow the portal's documented URL pattern.",
   };
 }
 

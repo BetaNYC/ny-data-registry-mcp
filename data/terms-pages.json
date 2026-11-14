@@ -1,0 +1,4 @@
+{
+  "about": "One terms-of-use page per portal, used when a dataset has no license (issue #17). Add a portal only after opening its terms page: record the URL and the date it was checked. The registry has no terms field, and the two portal terms URLs tried on 2026-11-05 returned 404 (docs/terms.md), so this starts empty. Every link is labeled 'terms page, not a license'.",
+  "portals": {}
+}
