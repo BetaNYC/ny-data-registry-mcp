@@ -98,7 +98,8 @@ test("harvest plan: adapters, skips and reasons", () => {
   for (const s of registry().sources) {
     const p = planFor(s, cfg);
     if (s.key_required === "Y") assert.equal(p.kind, "skip", `${s.source_id} needs a key and must never be called`);
-    if (s.status !== "live") assert.equal(p.kind, "skip");
+    // Only the "no portal" rows on allow_no_portal (D4) are read without status 'live'.
+    if (s.status !== "live" && !(s.status === "no-portal" && cfg.allow_no_portal?.[s.entity])) assert.equal(p.kind, "skip");
   }
 });
 
