@@ -20,7 +20,7 @@
       "@id": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
       "@type": "Dataset",
       "title": "New York Data Portal Registry (BetaNYC, grounding-ai-with-ny-open-data)",
-      "description": "New York Data Portal Registry (BetaNYC, grounding-ai-with-ny-open-data), published by New York open data portals.",
+      "description": "New York Data Portal Registry (BetaNYC, grounding-ai-with-ny-open-data), published by BetaNYC.",
       "identifier": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
       "contactPoint": {
         "@type": "Kind",
@@ -29,7 +29,8 @@
       },
       "publisher": {
         "@type": "Organization",
-        "name": "New York open data portals"
+        "name": "BetaNYC",
+        "@id": "https://www.beta.nyc/"
       },
       "landingPage": {
         "@type": "Document",
@@ -53,16 +54,16 @@
       "@id": "https://dev.socrata.com/docs/other/discovery",
       "@type": "Dataset",
       "title": "Socrata Discovery API (the catalog of each Socrata portal)",
-      "description": "Socrata Discovery API (the catalog of each Socrata portal), published by New York open data portals.",
+      "description": "Socrata Discovery API (the catalog of each Socrata portal), published by New York State, New York City and other New York governments.",
       "identifier": "https://dev.socrata.com/docs/other/discovery",
       "contactPoint": {
         "@type": "Kind",
-        "fn": "BetaNYC (lists this dataset; report errors in the data to New York open data portals: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html)",
+        "fn": "BetaNYC (lists this dataset; report errors in the data to New York State, New York City and other New York governments: https://support.socrata.com/hc/en-us/articles/202949748-How-to-Contact-a-Dataset-Owner)",
         "hasEmail": "mailto:lab@beta.nyc"
       },
       "publisher": {
         "@type": "Organization",
-        "name": "New York open data portals"
+        "name": "New York State, New York City and other New York governments"
       },
       "landingPage": {
         "@type": "Document",
@@ -85,16 +86,16 @@
       "@id": "https://doc.arcgis.com/en/hub/content/federate-data.htm",
       "@type": "Dataset",
       "title": "ArcGIS Hub catalog feeds and ArcGIS portal search (the catalog of each ArcGIS portal)",
-      "description": "ArcGIS Hub catalog feeds and ArcGIS portal search (the catalog of each ArcGIS portal), published by New York open data portals.",
+      "description": "ArcGIS Hub catalog feeds and ArcGIS portal search (the catalog of each ArcGIS portal), published by New York State, New York City and other New York governments.",
       "identifier": "https://doc.arcgis.com/en/hub/content/federate-data.htm",
       "contactPoint": {
         "@type": "Kind",
-        "fn": "BetaNYC (lists this dataset; report errors in the data to New York open data portals: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html)",
+        "fn": "BetaNYC (lists this dataset; report errors in the data to New York State, New York City and other New York governments: https://doc.esri.com/en/arcgis-online/latest/get-started/item-details.html)",
         "hasEmail": "mailto:lab@beta.nyc"
       },
       "publisher": {
         "@type": "Organization",
-        "name": "New York open data portals"
+        "name": "New York State, New York City and other New York governments"
       },
       "landingPage": {
         "@type": "Document",
@@ -141,7 +142,7 @@
           "@id": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
           "@type": "Dataset",
           "title": "New York Data Portal Registry (BetaNYC, grounding-ai-with-ny-open-data)",
-          "description": "New York Data Portal Registry (BetaNYC, grounding-ai-with-ny-open-data), published by New York open data portals.",
+          "description": "New York Data Portal Registry (BetaNYC, grounding-ai-with-ny-open-data), published by BetaNYC.",
           "identifier": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
           "contactPoint": {
             "@type": "Kind",
@@ -150,7 +151,8 @@
           },
           "publisher": {
             "@type": "Organization",
-            "name": "New York open data portals"
+            "name": "BetaNYC",
+            "@id": "https://www.beta.nyc/"
           },
           "landingPage": {
             "@type": "Document",
@@ -172,7 +174,7 @@
         }
       ],
       "provenance": [
-        "Not an official record: curated by BetaNYC from material published by New York open data portals.",
+        "Not an official record: curated by BetaNYC from material published by BetaNYC.",
         "BetaNYC visits each source's website and records what it finds. A copy ships in the package (data/ny-data-portal-registry.json); when the server starts it checks BetaNYC's published copy for a newer one and keeps it in a cache on your computer. check_source makes one request to a portal's web page when asked and compares the answer with the registry row.",
         "Changed by BetaNYC: The registry is BetaNYC's own work, checked by hand. This server adds to each row an id, a platform family from a hand-made table (data/platform-families.json), and the place it covers, from a hand-made list of New York's counties, cities, boroughs and regions (data/ny-places.json)."
       ],
@@ -195,6 +197,10 @@
         {
           "@type": "Activity",
           "label": "merged"
+        },
+        {
+          "@type": "Activity",
+          "label": "address-matched"
         }
       ],
       "accrualPeriodicity": "asNeeded",
@@ -213,7 +219,7 @@
       "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#socrata-catalogs",
       "contactPoint": {
         "@type": "Kind",
-        "fn": "BetaNYC (serves this dataset; report errors in these figures to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues; errors in the original records to New York open data portals: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html)",
+        "fn": "BetaNYC (serves this dataset; report errors in this data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues; errors in the original records to New York State, New York City and other New York governments: https://support.socrata.com/hc/en-us/articles/202949748-How-to-Contact-a-Dataset-Owner)",
         "hasEmail": "mailto:lab@beta.nyc"
       },
       "publisher": {
@@ -232,16 +238,16 @@
           "@id": "https://dev.socrata.com/docs/other/discovery",
           "@type": "Dataset",
           "title": "Socrata Discovery API (the catalog of each Socrata portal)",
-          "description": "Socrata Discovery API (the catalog of each Socrata portal), published by New York open data portals.",
+          "description": "Socrata Discovery API (the catalog of each Socrata portal), published by New York State, New York City and other New York governments.",
           "identifier": "https://dev.socrata.com/docs/other/discovery",
           "contactPoint": {
             "@type": "Kind",
-            "fn": "BetaNYC (lists this dataset; report errors in the data to New York open data portals: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html)",
+            "fn": "BetaNYC (lists this dataset; report errors in the data to New York State, New York City and other New York governments: https://support.socrata.com/hc/en-us/articles/202949748-How-to-Contact-a-Dataset-Owner)",
             "hasEmail": "mailto:lab@beta.nyc"
           },
           "publisher": {
             "@type": "Organization",
-            "name": "New York open data portals"
+            "name": "New York State, New York City and other New York governments"
           },
           "landingPage": {
             "@type": "Document",
@@ -262,8 +268,8 @@
         }
       ],
       "provenance": [
-        "Official source: yes. These figures are BetaNYC's, derived from it, not an official New York open data portals report.",
-        "BetaNYC's harvester reads each portal's catalog through the Socrata Discovery API, read-only, and builds an index file. The index is published as a GitHub release, and the server downloads it on first run into a cache on your computer. Answers come from that file, with no request to the portals.",
+        "Official source: yes. This data is BetaNYC's, derived from it, not an official New York State, New York City and other New York governments record.",
+        "BetaNYC's harvester reads each portal's catalog through the Socrata Discovery API (Socrata is now the Data and Insights division of Tyler Technologies, per dev.socrata.com), read-only, and builds an index file. The index is published as a GitHub release, and the server downloads it on first run into a cache on your computer. Answers come from that file, with no request to the portals.",
         "Changed by BetaNYC: Only datasets, maps, files and links are kept. Each dataset is joined to its registry row (place, platform family, portal), and gets download links worked out from Socrata's documented endpoints. find_joinable labels columns as join keys (such as BBL or census tract) from BetaNYC's hand-made table of column names (data/key-columns.json)."
       ],
       "page": [
@@ -296,7 +302,7 @@
         "License: None stated for the catalog; a dataset's own license, when its portal gives one, is shown with the dataset",
         "Credit: Dataset descriptions from each portal's own catalog, indexed by BetaNYC."
       ],
-      "scopeNote": "Known gap: Only portals in the registry that run Socrata. Datasets added after the last harvest are missing until the index is rebuilt. Caveat: This is a catalog of datasets, not the data. Every dataset row links to its page on its own portal: check a dataset's details there. Caveat: whats_new compares harvests of this index; a dataset is new to the index, which may not be the day the portal published it. Caveat: An empty answer means not in this index, not that the data does not exist."
+      "scopeNote": "Known gap: Only portals in the registry that run Socrata. Datasets added after the last harvest are missing until the index is rebuilt. Caveat: This is a catalog of datasets, not the data. Every dataset row links to its page on its own portal: check a dataset's details there. Caveat: To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner). Caveat: whats_new compares harvests of this index; a dataset is new to the index, which may not be the day the portal published it. Caveat: An empty answer means not in this index, not that the data does not exist."
     },
     {
       "@id": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#arcgis-catalogs",
@@ -306,7 +312,7 @@
       "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#arcgis-catalogs",
       "contactPoint": {
         "@type": "Kind",
-        "fn": "BetaNYC (serves this dataset; report errors in these figures to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues; errors in the original records to New York open data portals: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html)",
+        "fn": "BetaNYC (serves this dataset; report errors in this data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues; errors in the original records to New York State, New York City and other New York governments: https://doc.esri.com/en/arcgis-online/latest/get-started/item-details.html)",
         "hasEmail": "mailto:lab@beta.nyc"
       },
       "publisher": {
@@ -325,16 +331,16 @@
           "@id": "https://doc.arcgis.com/en/hub/content/federate-data.htm",
           "@type": "Dataset",
           "title": "ArcGIS Hub catalog feeds and ArcGIS portal search (the catalog of each ArcGIS portal)",
-          "description": "ArcGIS Hub catalog feeds and ArcGIS portal search (the catalog of each ArcGIS portal), published by New York open data portals.",
+          "description": "ArcGIS Hub catalog feeds and ArcGIS portal search (the catalog of each ArcGIS portal), published by New York State, New York City and other New York governments.",
           "identifier": "https://doc.arcgis.com/en/hub/content/federate-data.htm",
           "contactPoint": {
             "@type": "Kind",
-            "fn": "BetaNYC (lists this dataset; report errors in the data to New York open data portals: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html)",
+            "fn": "BetaNYC (lists this dataset; report errors in the data to New York State, New York City and other New York governments: https://doc.esri.com/en/arcgis-online/latest/get-started/item-details.html)",
             "hasEmail": "mailto:lab@beta.nyc"
           },
           "publisher": {
             "@type": "Organization",
-            "name": "New York open data portals"
+            "name": "New York State, New York City and other New York governments"
           },
           "landingPage": {
             "@type": "Document",
@@ -356,7 +362,7 @@
         }
       ],
       "provenance": [
-        "Official source: yes. These figures are BetaNYC's, derived from it, not an official New York open data portals report.",
+        "Official source: yes. This data is BetaNYC's, derived from it, not an official New York State, New York City and other New York governments record.",
         "BetaNYC's harvester reads each portal's public catalog (its Hub feed or its portal search, and each layer's field list), read-only and spaced out as each site's robots.txt asks, and builds an index file. The index is published as a GitHub release, and the server downloads it on first run into a cache on your computer. Answers come from that file, with no request to the portals.",
         "Changed by BetaNYC: Esri's own national layers and items owned by other organizations are left out, as are portals that block automated clients. Each dataset is joined to its registry row (place, platform family, portal). find_joinable labels columns as join keys from BetaNYC's hand-made table of column names (data/key-columns.json)."
       ],
@@ -391,7 +397,7 @@
         "Credit: Dataset descriptions from each portal's own catalog, indexed by BetaNYC.",
         "Terms of use: https://doc.arcgis.com/en/arcgis-online/reference/terms-of-use.htm"
       ],
-      "scopeNote": "Known gap: Only portals in the registry that run ArcGIS and allow automated reading; a portal can be partly harvested when it has more layers than the harvester asks about. Known gap: Datasets added after the last harvest are missing until the index is rebuilt. Caveat: This is a catalog of datasets, not the data. Every dataset row links to its page on its own portal: check a dataset's details there. Caveat: ArcGIS Online's terms say public content is typically for personal or noncommercial use, under each item's own terms of use. Check an item's terms before reusing its data. Caveat: An empty answer means not in this index, not that the data does not exist."
+      "scopeNote": "Known gap: Only portals in the registry that run ArcGIS and allow automated reading; a portal can be partly harvested when it has more layers than the harvester asks about. Known gap: Datasets added after the last harvest are missing until the index is rebuilt. Caveat: This is a catalog of datasets, not the data. Every dataset row links to its page on its own portal: check a dataset's details there. Caveat: To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner). Caveat: ArcGIS Online's terms say public content is typically for personal or noncommercial use, under each item's own terms of use. Check an item's terms before reusing its data. Caveat: An empty answer means not in this index, not that the data does not exist."
     }
   ]
 }

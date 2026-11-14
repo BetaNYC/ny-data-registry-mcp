@@ -260,4 +260,6 @@ Read before any adapter was written; details and quotes in [`docs/terms.md`](doc
 
 ## License
 
-MIT
+MIT, for the code and the package.
+
+Data license: `data/ny-data-portal-registry.json` is CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/), adapted from BetaNYC's [grounding-ai-with-ny-open-data](https://github.com/BetaNYC/grounding-ai-with-ny-open-data) registry, and ships inside the MIT-licensed package. Credit: "Source: BetaNYC, New York Data Portal Registry."

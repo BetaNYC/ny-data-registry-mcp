@@ -109,3 +109,22 @@ test("an unknown topic is an error that lists the topics", async () => {
   assert.equal(r.isError, true);
   assert.match(r.content[0].text, /portal-registry/);
 });
+
+test("the registry is published by BetaNYC; the catalogs by New York's governments", async () => {
+  const { structuredContent: body } = await ask();
+  assert.equal(one(body, "portal-registry").publisher, "BetaNYC");
+  for (const topic of ["socrata-catalogs", "arcgis-catalogs"]) {
+    assert.equal(one(body, topic).publisher, "New York State, New York City and other New York governments", topic);
+  }
+});
+
+test("an error in a portal's catalog record goes to the portal, not to BetaNYC", async () => {
+  for (const topic of ["socrata-catalogs", "arcgis-catalogs"]) {
+    const s = one((await ask({ topic })).structuredContent, topic);
+    assert.equal(s.report_errors.in_the_data_handled_by, "publisher", topic);
+    assert.ok(s.caveats.some((c) => /contact on that dataset's own portal page/.test(c)), topic);
+  }
+  const soc = one((await ask({ topic: "socrata-catalogs" })).structuredContent, "socrata-catalogs");
+  assert.match(soc.report_errors.in_the_data, /support\.socrata\.com\/.*Contact-a-Dataset-Owner/);
+  assert.match(soc.how_gathered, /Data and Insights division of Tyler Technologies/);
+});

@@ -18,9 +18,11 @@ BetaNYC/betanyc-ai-workspace#1655 (epic #1652).
   current it is on this machine, its terms, where to check it and where to report an error,
   with BetaNYC's contact address for data questions (lab@beta.nyc). Optional `topic`: a source
   id or a tool name. No network request.
-- `DATA-SOURCES.json`, three sources: `portal-registry` (BetaNYC's registry, marked as
-  BetaNYC's curation, not an official record), `socrata-catalogs` and `arcgis-catalogs` (the
-  portals' own catalogs the harvested index is built from). How current: the `generated` date
+- `DATA-SOURCES.json`, three sources: `portal-registry` (BetaNYC's registry, published by
+  BetaNYC and marked as BetaNYC's curation, not an official record), `socrata-catalogs` and
+  `arcgis-catalogs` (the catalogs of the portals run by New York State, New York City and other
+  New York governments, which the harvested index is built from). An error in a dataset or its
+  description goes to the contact on that dataset's own portal page. How current: the `generated` date
   of the registry copy this server loaded, and the index's `last_harvest` (or "not fetched yet"
   when there is no index on this machine).
 - `data.json`, a DCAT-US 3.0 catalog built from `DATA-SOURCES.json` by
@@ -37,8 +39,10 @@ BetaNYC/betanyc-ai-workspace#1655 (epic #1652).
 
 ### Changed
 
-- `src/betanyc-tools.ts` updated to shared module 1.3.6 (from 1.2.4), copied unchanged.
-  `scripts/whats_changed.py` updated to 1.3.5, copied unchanged.
+- `src/betanyc-tools.ts` and `scripts/whats_changed.py` updated to shared module 1.3.7
+  (from 1.2.4), copied unchanged.
+- README: the data license of `data/ny-data-portal-registry.json` (CC BY-SA 4.0, adapted
+  from grounding-ai-with-ny-open-data) inside the MIT package.
 
 ## [0.3.0] — 2026-11-13
 

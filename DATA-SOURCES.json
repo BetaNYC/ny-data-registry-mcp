@@ -31,7 +31,8 @@
       "what": "One row per New York data source: the government or organization, its region, its portal and platform, how to reach its API, whether a key is needed, and whether BetaNYC found it live, offline, not yet confirmed, or with no data site.",
       "source_name": "New York Data Portal Registry (BetaNYC, grounding-ai-with-ny-open-data)",
       "publisher": {
-        "name": "New York open data portals"
+        "name": "BetaNYC",
+        "url": "https://www.beta.nyc/"
       },
       "source_url": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
       "official": false,
@@ -40,7 +41,8 @@
         "changed": true,
         "steps": [
           "curated",
-          "merged"
+          "merged",
+          "address-matched"
         ],
         "detail": "The registry is BetaNYC's own work, checked by hand. This server adds to each row an id, a platform family from a hand-made table (data/platform-families.json), and the place it covers, from a hand-made list of New York's counties, cities, boroughs and regions (data/ny-places.json)."
       },
@@ -86,11 +88,11 @@
       "what": "Titles, descriptions, tags, column names and types, formats, update dates and links for the datasets on New York's Socrata portals, such as NYC Open Data and data.ny.gov.",
       "source_name": "Socrata Discovery API (the catalog of each Socrata portal)",
       "publisher": {
-        "name": "New York open data portals"
+        "name": "New York State, New York City and other New York governments"
       },
       "source_url": "https://dev.socrata.com/docs/other/discovery",
       "official": true,
-      "how_gathered": "BetaNYC's harvester reads each portal's catalog through the Socrata Discovery API, read-only, and builds an index file. The index is published as a GitHub release, and the server downloads it on first run into a cache on your computer. Answers come from that file, with no request to the portals.",
+      "how_gathered": "BetaNYC's harvester reads each portal's catalog through the Socrata Discovery API (Socrata is now the Data and Insights division of Tyler Technologies, per dev.socrata.com), read-only, and builds an index file. The index is published as a GitHub release, and the server downloads it on first run into a cache on your computer. Answers come from that file, with no request to the portals.",
       "changes": {
         "changed": true,
         "steps": [
@@ -119,7 +121,7 @@
         "credit_line": "Dataset descriptions from each portal's own catalog, indexed by BetaNYC."
       },
       "report_errors": {
-        "upstream_url": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+        "upstream_url": "https://support.socrata.com/hc/en-us/articles/202949748-How-to-Contact-a-Dataset-Owner"
       },
       "tools": [
         "search_datasets",
@@ -130,6 +132,7 @@
       ],
       "caveats": [
         "This is a catalog of datasets, not the data. Every dataset row links to its page on its own portal: check a dataset's details there.",
+        "To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner).",
         "whats_new compares harvests of this index; a dataset is new to the index, which may not be the day the portal published it.",
         "An empty answer means not in this index, not that the data does not exist."
       ]
@@ -140,7 +143,7 @@
       "what": "Titles, descriptions, tags, field names and types, formats, update dates and links for the map layers and files on New York's ArcGIS Hub, ArcGIS Online and ArcGIS Enterprise portals, mostly county and city sites.",
       "source_name": "ArcGIS Hub catalog feeds and ArcGIS portal search (the catalog of each ArcGIS portal)",
       "publisher": {
-        "name": "New York open data portals"
+        "name": "New York State, New York City and other New York governments"
       },
       "source_url": "https://doc.arcgis.com/en/hub/content/federate-data.htm",
       "official": true,
@@ -175,7 +178,7 @@
         "credit_line": "Dataset descriptions from each portal's own catalog, indexed by BetaNYC."
       },
       "report_errors": {
-        "upstream_url": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+        "upstream_url": "https://doc.esri.com/en/arcgis-online/latest/get-started/item-details.html"
       },
       "tools": [
         "search_datasets",
@@ -186,6 +189,7 @@
       ],
       "caveats": [
         "This is a catalog of datasets, not the data. Every dataset row links to its page on its own portal: check a dataset's details there.",
+        "To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner).",
         "ArcGIS Online's terms say public content is typically for personal or noncommercial use, under each item's own terms of use. Check an item's terms before reusing its data.",
         "An empty answer means not in this index, not that the data does not exist."
       ]
