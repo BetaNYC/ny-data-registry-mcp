@@ -24,6 +24,19 @@ interface HarvestConfig {
   skip: { by_entity: Record<string, string> };
   cadence?: CadenceConfig;
   adapters?: Record<string, AdapterSwitch>;
+  allow_no_portal?: Record<string, AllowNoPortal | string>;
+}
+
+/**
+ * A registry row marked "no portal" that still has a documented data endpoint, let through to
+ * one named adapter (epic #7, decision D4). `endpoint` must still appear in the row's
+ * api_endpoint, so a changed row is skipped until someone checks it again.
+ */
+export interface AllowNoPortal {
+  adapter: "agol-org" | "enterprise" | "arcgis-server";
+  endpoint: string;
+  /** How the row was checked to be New York, not a look-alike. */
+  checked_new_york: string;
 }
 
 /** One adapter's on/off switch in harvest-config.json (`adapters`). Missing means on. */
@@ -119,8 +132,34 @@ export function planFor(s: Source, cfg: HarvestConfig): Plan {
   return p;
 }
 
+/** The plan for a "no portal" row on the allow list, or null when the row is not on it. */
+export function allowedNoPortalPlan(s: Source, cfg: HarvestConfig): Plan | null {
+  const a = cfg.allow_no_portal?.[s.entity];
+  if (!a || typeof a === "string") return null;
+  if (!(s.api_endpoint ?? "").includes(a.endpoint)) {
+    return { kind: "skip", code: "no-portal", reason: `on allow_no_portal, but the registry row's api_endpoint no longer contains ${a.endpoint}; check the row again` };
+  }
+  if (a.adapter === "agol-org") {
+    const org = agolOrgOf(s);
+    return org ? { kind: "agol-org", orgId: org } : { kind: "skip", code: "incomplete-row", reason: "on allow_no_portal, but no ArcGIS Online org in the row" };
+  }
+  if (a.adapter === "enterprise") {
+    const b = enterprisePortalBase(s);
+    return b ? { kind: "enterprise", portalBase: b } : { kind: "skip", code: "incomplete-row", reason: "on allow_no_portal, but no portal URL in the row" };
+  }
+  return { kind: "skip", code: "incomplete-row", reason: `on allow_no_portal with adapter '${a.adapter}', which this row cannot use` };
+}
+
 function basePlan(s: Source, cfg: HarvestConfig): Plan {
-  if (s.status === "no-portal") return { kind: "skip", code: "no-portal", reason: "registry status 'no-portal'" };
+  if (s.status === "no-portal") {
+    const allowed = allowedNoPortalPlan(s, cfg);
+    if (!allowed) return { kind: "skip", code: "no-portal", reason: "registry status 'no-portal'" };
+    if (allowed.kind === "skip") return allowed;
+    const refuse = refuseReason(s);
+    if (refuse) return { kind: "skip", code: "policy", reason: refuse };
+    if (cfg.skip.by_entity[s.entity]) return { kind: "skip", code: "policy", reason: cfg.skip.by_entity[s.entity] };
+    return allowed;
+  }
   if (s.status !== "live") return { kind: "skip", code: "not-live", reason: `registry status '${s.status}'` };
   const refuse = refuseReason(s);
   if (refuse) return { kind: "skip", code: "policy", reason: refuse };

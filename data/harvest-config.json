@@ -51,6 +51,24 @@
       "enabled": true
     }
   },
+  "allow_no_portal": {
+    "_note": "Registry rows marked 'no-portal' that still document a data endpoint, let through to one adapter (epic #7, decision D4). `endpoint` must still appear in the row's api_endpoint, or the row is skipped until checked again. Each was checked to be New York, not a look-alike.",
+    "City of Utica": {
+      "adapter": "agol-org",
+      "endpoint": "https://services1.arcgis.com/MBcb1JDktb5ipmv9/arcgis/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): the city's own GIS Maps page links an Experience in org MBcb1JDktb5ipmv9, named 'The City of Utica, NY'. The 'Lead Safe Community - Utica' Hub (lead-service-line-inventory-uticamn) is Utica, Minnesota, and is not used."
+    },
+    "Wyoming County": {
+      "adapter": "agol-org",
+      "endpoint": "https://services3.arcgis.com/Sq7KUOgahdDkqoAp/arcgis/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): org wyco (Sq7KUOgahdDkqoAp) is named 'Wyoming County GIS'; its items' median center is -78.22, 42.69 (Warsaw, NY). The old Hub www-wyomingcounty-wycopa belonged to Wyoming County, Pennsylvania, and is not used."
+    },
+    "City of Mount Vernon": {
+      "adapter": "enterprise",
+      "endpoint": "https://gis.cmvny.com/portal/sharing/rest/search",
+      "checked_new_york": "Registry evidence (2026-11-05): the city's own Infrastructure Dashboard page (mountvernonny.gov/2052) links gis.cmvny.com/portal; its City_Boundary layer returns NAME 'Mount Vernon', 4.40 sq mi, in NAD83 / New York East."
+    }
+  },
   "cadence": {
     "_note": "Days between reads. Self-hosted county ArcGIS servers (the `enterprise` adapter) are read weekly, to be gentle on small county servers (epic #7, decision D5). Everything else nightly. A portal is due `slack_hours` early so a late scheduled start does not slip a whole week. `harvest --ignore-cadence` reads everything.",
     "days_by_adapter": {

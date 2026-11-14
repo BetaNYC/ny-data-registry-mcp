@@ -246,6 +246,8 @@ For a not-harvested row, `documented_endpoint` is the registry's `api_endpoint`,
 
 **Adapter switches.** `adapters` in `data/harvest-config.json` holds one `enabled` switch per adapter. Turning one off stops that adapter alone; its portals show as `adapter-off`, and their datasets stay in the index as last read, so the publish gate does not count them as lost.
 
+**"No portal" rows with a data endpoint.** Three rows the registry marks "no portal" still document a public data endpoint, and are read: the City of Utica and Wyoming County (their ArcGIS Online orgs) and the City of Mount Vernon (its ArcGIS Enterprise portal). Each was checked to be New York: Utica's org is "The City of Utica, NY", not the Utica, Minnesota Hub; Wyoming County's org centers on Warsaw, NY, not Wyoming County, Pennsylvania. The list is `allow_no_portal` in `data/harvest-config.json`. Each entry names its adapter and endpoint; if the registry row's endpoint changes, the row is skipped until someone checks it again. Other "no portal" rows with an endpoint show in `coverage` under `no-portal`, with the endpoint.
+
 ### Tax parcel coverage
 
 `node dist/cli.js parcels` builds a table of all 62 counties. For each it says whether the county shares its tax parcels with the State's public layer, and whether the county (for the five boroughs, New York City) publishes its own parcel layer that the index or the registry knows about. It is offline, like `coverage`, and takes the same options.
