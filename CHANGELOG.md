@@ -56,6 +56,50 @@ from being published. See [#14](https://github.com/BetaNYC/ny-data-registry-mcp/
 - Code releases (`vX.Y.Z`) are now created as the repository's "Latest" release; index
   releases never are.
 
+Each install now picks up the new index by itself, and an `update` command gets it on
+demand. See [#15](https://github.com/BetaNYC/ny-data-registry-mcp/issues/15) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- Automatic index updates, on by default. A running server checks 5 minutes after it starts
+  and then every 24 hours, on timers that never block startup or a tool call. When the
+  installed index is at least 5 days old, it reads the release's `index.json` and downloads
+  the index only if the published one is newer and this package can read its schema. The
+  download is checked against both SHA-256 sums (and the size) in `index.json` before the
+  installed index is touched, then renamed into place. Any failure keeps the installed index.
+  The server's open database handle reopens after a swap (it also notices a file replaced by
+  another process, checking at most once a minute), so no restart is needed.
+- On Windows, where a file another process has open cannot be renamed over (`EBUSY` or
+  `EPERM`), the checked file waits as `<index>.next` and is installed the next time the index
+  is opened with nothing holding it.
+- `<index>.source.json` beside the index: the URL, SHA-256 and harvest time of what was
+  installed. An index installed by an older version is hashed once to make one.
+- `ny-data-registry update` (download if a newer index is published, regardless of age or
+  the automatic-update setting) and `update --check` (report only). Exit codes: 0 current or
+  updated, 1 failed, 2 usage, 3 needs a newer package, 4 a newer index is published
+  (`--check`), 5 downloaded but waiting for the index to be free.
+- Settings: `NY_DATA_INDEX_AUTO_UPDATE` (`0` = off), `NY_DATA_INDEX_REFRESH_DAYS` (5),
+  `NY_DATA_INDEX_STALE_DAYS` (14), `NY_DATA_INDEX_CHECK_HOURS` (24),
+  `NY_DATA_INDEX_CHECK_DELAY_SECONDS` (300). A setting that cannot be read falls back to its
+  default and is reported. Automatic updates are also off when `NY_DATA_INDEX` is set (a file
+  you manage), when `NY_DATA_INDEX_URL` names a dated snapshot, when
+  `NY_DATA_INDEX_AUTO_DOWNLOAD=0`, and in offline mode.
+- `registry_info.index_status`: the index's age, whether it is stale, whether automatic
+  updates are on and what turned them off, the last check's result and time, and the
+  published harvest time.
+- `search_datasets` replies carry `index_note` when the index is more than 14 days old,
+  with the `update` command. Other tools do not.
+- CI runs the whole test suite on `windows-latest` (Node 22.x) as well.
+
+### Changed
+
+- `download --force` refuses to start while another process holds the download lock,
+  instead of going ahead without it.
+- A release without `index.json` (from before the nightly harvest) is still read: the
+  sqlite sum in `SHA256SUMS` decides whether the installed index is current. An automatic
+  check then leaves alone a file it did not install itself.
+
 ## [0.3.0] — 2026-11-13
 
 `search_datasets` gives the whole answer in one call. Its reply has a new shape, which is

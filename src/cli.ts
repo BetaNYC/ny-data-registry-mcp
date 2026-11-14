@@ -4,6 +4,9 @@
  * ny-data-registry eval [--out file] [--result-out file.json]
  * ny-data-registry stats
  * ny-data-registry download [--force]
+ * ny-data-registry update [--check]
+ *
+ * `update` exit codes: UPDATE_EXIT_CODES in refresh.ts (2 is a usage error).
  */
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -12,15 +15,27 @@ import { refreshRegistry } from "./registry.js";
 import { indexInfo } from "./datasets.js";
 import { runEval } from "./eval.js";
 import { downloadIndex, indexUrl } from "./fetchindex.js";
+import { checkForUpdate, UPDATE_EXIT_CODES } from "./refresh.js";
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
   return i > 0 ? process.argv[i + 1] : undefined;
 }
 
+
 const cmd = process.argv[2];
-if (cmd !== "download") await refreshRegistry();
-if (cmd === "download") {
+if (cmd !== "download" && cmd !== "update") await refreshRegistry();
+if (cmd === "update") {
+  const extra = process.argv.slice(3).filter((a) => a !== "--check");
+  if (extra.length) {
+    console.error(`unknown option(s) for update: ${extra.join(" ")}\nusage: ny-data-registry update [--check]`);
+    process.exitCode = 2;
+  } else {
+    const r = await checkForUpdate({ manual: true, checkOnly: process.argv.includes("--check") });
+    (r.outcome === "failed" ? console.error : console.log)(r.message);
+    process.exitCode = UPDATE_EXIT_CODES[r.outcome];
+  }
+} else if (cmd === "download") {
   const force = process.argv.includes("--force");
   console.error(`downloading ${indexUrl()} ...`);
   const r = await downloadIndex({ force });
@@ -58,6 +73,6 @@ if (cmd === "download") {
 } else if (cmd === "stats") {
   console.log(JSON.stringify(indexInfo(), null, 2));
 } else {
-  console.error("usage: ny-data-registry <download|harvest|eval|stats> [options]");
+  console.error("usage: ny-data-registry <update|download|harvest|eval|stats> [options]");
   process.exitCode = 2;
 }

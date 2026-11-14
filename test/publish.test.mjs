@@ -231,7 +231,7 @@ test("index releases are never marked Latest: every create and edit says --lates
   // Also in the workflow files: an index release made with gh anywhere must say --latest=false.
   for (const f of readdirSync(new URL(".github/workflows/", ROOT))) {
     const y = readFileSync(new URL(`.github/workflows/${f}`, ROOT), "utf8");
-    for (const line of y.split("\n").filter((l) => /gh release (create|edit)/.test(l) && /index-/.test(l))) assert.match(line, /--latest=false/, `${f}: ${line}`);
+    for (const line of y.split(/\r?\n/).filter((l) => /gh release (create|edit)/.test(l) && /index-/.test(l))) assert.match(line, /--latest=false/, `${f}: ${line}`);
   }
 });
 
@@ -242,13 +242,16 @@ test("publish order: snapshot first, then index-latest .gz, SHA256SUMS, side fil
     { tagName: "index-2026-11-12", name: "Index 2026-11-12 (superseded)", body: "c" },
   ]);
   const a = cmds.map((c) => c.args.join(" "));
-  assert.match(a[0], /^release create index-2026-11-14 --target abc123 --title Index 2026-11-14 \(current\) --latest=false \/o\/ny-data-index\.sqlite\.gz \/o\/SHA256SUMS .*\/o\/index\.json$/);
+  // File paths are joined with the platform's separator (path.join), so build the expected ones the same way.
+  const o = (n) => join("/o", n);
+  const re = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.match(a[0], new RegExp(`^release create index-2026-11-14 --target abc123 --title Index 2026-11-14 \\(current\\) --latest=false ${re(o("ny-data-index.sqlite.gz"))} ${re(o("SHA256SUMS"))} .*${re(o("index.json"))}$`));
   assert.match(cmds[0].notes, /metadata only/);
   assert.deepEqual(a.slice(1, 6), [
-    "release upload index-latest /o/ny-data-index.sqlite.gz --clobber",
-    "release upload index-latest /o/SHA256SUMS --clobber",
-    "release upload index-latest /o/harvest-stats.json /o/eval.md /o/gate.json --clobber",
-    "release upload index-latest /o/index.json --clobber",
+    `release upload index-latest ${o("ny-data-index.sqlite.gz")} --clobber`,
+    `release upload index-latest ${o("SHA256SUMS")} --clobber`,
+    `release upload index-latest ${o("harvest-stats.json")} ${o("eval.md")} ${o("gate.json")} --clobber`,
+    `release upload index-latest ${o("index.json")} --clobber`,
     "release edit index-latest --latest=false",
   ]);
   assert.match(cmds[5].notes, /index-2026-11-14/);
@@ -402,7 +405,8 @@ test("the Orange County intermediate is the pinned Sectigo CA, signed by a root 
 
 test("the harvest step, and only that step, gets NODE_EXTRA_CA_CERTS pointing at the committed file", () => {
   const y = readFileSync(new URL(".github/workflows/harvest.yml", ROOT), "utf8");
-  const lines = y.split("\n").filter((l) => /NODE_EXTRA_CA_CERTS:/.test(l));
+  // Git on Windows checks text files out with CRLF line endings.
+  const lines = y.split(/\r?\n/).filter((l) => /NODE_EXTRA_CA_CERTS:/.test(l));
   assert.equal(lines.length, 1);
   assert.match(lines[0], /certs\/sectigo-public-server-authentication-ca-ov-r36\.pem$/);
   assert.doesNotMatch(y, /NODE_TLS_REJECT_UNAUTHORIZED|rejectUnauthorized/, "verification is never turned off");

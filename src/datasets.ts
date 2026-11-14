@@ -7,6 +7,8 @@ import { pathToFileURL } from "node:url";
 import { slugFor, writeExport } from "./exportcsv.js";
 import { openDb, indexExists, stripHtml } from "./db.js";
 import { indexPath } from "./paths.js";
+import { installPendingIndex } from "./fetchindex.js";
+import { staleNote } from "./indexage.js";
 import { expandTerms, placeMatches, tokenize } from "./sources.js";
 import { resolvePlace, places, type ResolvedPlace } from "./places.js";
 import { registry, type Source } from "./registry.js";
@@ -27,18 +29,55 @@ export class NoIndexError extends Error {
 
 let cached: DatabaseSync | null = null;
 let cachedPath: string | null = null;
+let cachedId: string | null = null;
+let checkedAt = 0;
+/**
+ * How often an open handle checks that the file at its path is still the one it opened. An
+ * update renames a new file over the index; on macOS and Linux a handle keeps reading the old
+ * file until it reopens. Calls run one at a time and prepare their statements per call, so no
+ * query is mid-flight when the handle is swapped.
+ */
+let identityCheckMs = 60_000;
+/** For tests. */
+export function setIdentityCheckMs(ms: number): void {
+  identityCheckMs = ms;
+}
+
+function fileId(p: string): string | null {
+  try {
+    const st = statSync(p);
+    return `${st.ino}:${st.size}:${st.mtimeMs}`;
+  } catch {
+    return null;
+  }
+}
+
 export function db(): DatabaseSync {
   const p = indexPath();
-  if (cached && cachedPath === p) return cached;
+  if (cached && cachedPath === p) {
+    if (Date.now() - checkedAt < identityCheckMs) return cached;
+    checkedAt = Date.now();
+    if (fileId(p) === cachedId) return cached;
+    closeDb(); // replaced (or removed): open the file that is there now
+  } else if (cached) closeDb();
+  // A verified update that could not be swapped in while the file was open (Windows).
+  try {
+    installPendingIndex(p);
+  } catch {
+    /* keep the current index; the next update check reports the problem */
+  }
   if (!indexExists(p)) throw new NoIndexError();
   cached = openDb(p, { readOnly: true });
   cachedPath = p;
+  cachedId = fileId(p);
+  checkedAt = Date.now();
   return cached;
 }
 export function closeDb(): void {
   cached?.close();
   cached = null;
   cachedPath = null;
+  cachedId = null;
 }
 
 export function indexInfo(): Record<string, unknown> | null {
@@ -357,6 +396,9 @@ export function searchDatasets(a: SearchArgs) {
       : { size: pool.length, capped: false },
   };
   const lastHarvest = (d.prepare("SELECT value FROM meta WHERE key = 'last_harvest'").get() as { value: string } | undefined)?.value ?? null;
+  // Only dataset searches carry the age warning (issue #15), and only when the index is old.
+  const note = staleNote(lastHarvest);
+  const staleField = note ? { index_note: note } : {};
   const coverage = coverageNote(resolved);
 
   const exportMode: ExportMode = a.export ?? "auto";
@@ -376,6 +418,7 @@ export function searchDatasets(a: SearchArgs) {
       note: groupNote(a.group_by),
       coverage,
       index_last_harvest: lastHarvest,
+      ...staleField,
     };
     // No rows are listed in group mode, so the CSV is the full list.
     if (exportMode === "always" || (exportMode === "auto" && total > 0)) attachExport(ctx, resp);
@@ -402,6 +445,7 @@ export function searchDatasets(a: SearchArgs) {
     results,
     coverage,
     index_last_harvest: lastHarvest,
+    ...staleField,
   });
   if (offset >= scored.length && scored.length > 0) resp.note = `offset ${offset} is past the last ranked match (${scored.length}).`;
   // One call should carry the whole answer. When the matches do not all fit in the reply

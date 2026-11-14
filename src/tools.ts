@@ -6,6 +6,7 @@ import { checkSource } from "./check.js";
 import { DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
+import { indexStatus } from "./refresh.js";
 import { createBetanycTools } from "./betanyc-tools.js";
 import { VERSION } from "./paths.js";
 
@@ -107,7 +108,7 @@ export const TOOLS = [
   },
   {
     name: "registry_info",
-    description: "Registry row counts by status, tier and platform family; when the registry was generated and where this copy came from (bundled or refreshed from GitHub Pages); unmapped platform strings; and the harvested index's size and last harvest date.",
+    description: "Registry row counts by status, tier and platform family; when the registry was generated and where this copy came from (bundled or refreshed from GitHub Pages); unmapped platform strings; and the harvested index's size and last harvest date. index_status says how old the index is, whether automatic updates are on (and if not, which setting turned them off), and what the last update check found.",
     inputSchema: { type: "object", additionalProperties: false, properties: {} },
   },
   {
@@ -117,7 +118,8 @@ export const TOOLS = [
       "One call gives the whole answer. total_matches is the true number of matching datasets. When they all fit, the reply lists them. When they do not, the reply summarizes every match by portal (count and top titles per portal, auto_grouped: true), lists the best-ranked rows that fit, and writes every match to a CSV file on this machine (export.path, export.rows; also a resource_link). " +
       "Use group_by to summarize by entity, county or platform_family instead. " +
       "Rows are compact (id, name, portal, type, update date, link, formats); detail: 'full' adds description, API endpoint, views, column count and, for Socrata, the domain + 4x4 to hand to the `socrata` MCP. " +
-      `Replies stay under about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists.`,
+      `Replies stay under about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
+      "When the index is more than 14 days old (NY_DATA_INDEX_STALE_DAYS), the reply carries index_note saying so and how to update it.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -260,7 +262,7 @@ export async function callTool(name: string, args: unknown) {
       }
       case "registry_info":
         parseToolArgs("registry_info", args);
-        return text({ ...registryInfo(indexInfo()), index_download: downloadState() });
+        return text({ ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() });
       case "search_datasets": {
         const r = searchDatasets(parseToolArgs("search_datasets", args)) as Record<string, any>;
         const out = text(r);

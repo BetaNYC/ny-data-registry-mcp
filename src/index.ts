@@ -6,6 +6,7 @@ import { TOOLS, callTool } from "./tools.js";
 import { refreshRegistry } from "./registry.js";
 import { VERSION } from "./paths.js";
 import { ensureIndex } from "./fetchindex.js";
+import { startAutoUpdate } from "./refresh.js";
 
 const server = new Server({ name: "ny-data-registry-mcp", version: VERSION }, { capabilities: { tools: {} } });
 
@@ -26,3 +27,9 @@ await server.connect(transport);
 // dataset tools work without a manual step. Never blocks startup; errors surface in
 // registry_info and in the dataset tools' replies.
 void ensureIndex();
+
+// Keep the index current (issue #15): a first check a few minutes after startup, then daily,
+// on timers that never block a tool call or keep the process alive. A download happens only
+// when the installed index is at least NY_DATA_INDEX_REFRESH_DAYS (5) old and a newer one is
+// published. NY_DATA_INDEX_AUTO_UPDATE=0, or a NY_DATA_INDEX of your own, turns it off.
+startAutoUpdate();

@@ -130,26 +130,48 @@ The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`,
 - **Where it comes from:** the `index-latest` release, at a fixed URL: `https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz`. It is rebuilt every night (see "The nightly harvest"). Dated snapshots are kept as `index-YYYY-MM-DD` releases: the last 14, plus the first of each month for good. Each release also carries `index.json`, which describes the files (schema version, harvest time, sizes, both SHA-256 sums, dataset and portal counts, and the quality-gate result).
 - **Checked before use:** the server checks both SHA-256 sums in the release's `SHA256SUMS` file (the `.gz` and the unzipped `.sqlite`) and the schema version. A file that fails any check is never installed.
 - **Where it goes:** `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` (change with `NY_DATA_INDEX`).
-- **When:** only when the file is missing. An existing index is never replaced on its own.
+- **When:** on first run when the file is missing, and then whenever it is more than **5 days** old and a newer one is published (see "Keeping the index current").
 - **Get or refresh it by hand:**
 
   ```bash
-  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download          # if missing
-  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download --force  # replace with the newest
+  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry update            # install, or update if a newer one is published
+  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry update --check    # only say whether a newer one is published
+  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download --force  # replace it with the published one, no questions
   ```
 
 - **Turn the download off:** set `NY_DATA_INDEX_AUTO_DOWNLOAD=0`. Then the dataset tools reply with these steps instead. Or build your own index with `ny-data-registry harvest` (see "Refresh").
+
+### Keeping the index current
+
+A running server checks for a newer index 5 minutes after it starts and then once a day. It never makes you wait: the check runs in the background, and a question asked during a download is answered from the index you have.
+
+1. **Is it due?** If your index is less than 5 days old (`NY_DATA_INDEX_REFRESH_DAYS`), nothing happens and nothing is fetched.
+2. **Is there a newer one?** The server reads `index.json`, the small file published beside each index (under 1 KB). It does nothing when that is the file you have, when yours is as new or newer (an index you built yourself, say), or when the published index needs a newer version of this package. In that last case it says so and keeps your index.
+3. **Download and check.** The new index is saved beside the old one as `ny-data-index.sqlite.part`, and both SHA-256 sums in `index.json` (the `.gz` and the unzipped file) and the schema version are checked. A file that fails any check is deleted. Your index is not touched until the new one passes.
+4. **Swap.** The checked file is renamed over the old one, and the server reopens it. `ny-data-index.sqlite.source.json` records what was installed, from where, and its SHA-256. If the old index was in WAL mode, its empty `-wal` and `-shm` files are removed; a `-wal` with data in it is kept and reported.
+5. **On Windows**, a file that another program has open cannot be replaced. Then the checked file waits as `ny-data-index.sqlite.next`, and it is installed the next time the index is opened with nothing holding it (usually the next start). `registry_info` says `ready-on-restart`.
+
+If anything fails, the server keeps the index it has and tries again at the next check. `registry_info` shows `index_status`: the index's age, whether automatic updates are on (and if not, which setting turned them off), and what the last check found. When your index is more than **14 days** old, every `search_datasets` reply carries an `index_note` saying so, with the `update` command.
+
+**Turn automatic updates off** with `NY_DATA_INDEX_AUTO_UPDATE=0`. They are also off when you set `NY_DATA_INDEX` (the index is then a file you manage), when `NY_DATA_INDEX_URL` names a dated snapshot (`.../download/index-YYYY-MM-DD/...`, a pin), when `NY_DATA_INDEX_AUTO_DOWNLOAD=0`, and in offline mode. The `update` command still works in all of these but offline mode.
+
+**`update` exit codes:** 0 already current, updated, or yours was left alone because it is as new as the published one; 1 failed (nothing changed), or another process is downloading; 2 usage error; 3 the published index needs a newer version of this package; 4 (`--check`) a newer index is published; 5 downloaded and checked, but the index is in use (Windows), so it is installed when nothing holds it.
 
 ### Environment variables (all optional)
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `NY_DATA_INDEX` | `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` | Where the index lives |
+| `NY_DATA_INDEX` | `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` | Where the index lives. Setting it turns automatic updates off |
 | `NY_DATA_INDEX_AUTO_DOWNLOAD` | on | `0` = never download the index on first run |
-| `NY_DATA_INDEX_URL` | the `index-latest` release | Download the index from somewhere else (it must have a `SHA256SUMS` beside it) |
+| `NY_DATA_INDEX_URL` | the `index-latest` release | Download the index from somewhere else (it must have `index.json` or `SHA256SUMS` beside it). A dated snapshot URL pins the index and turns automatic updates off |
+| `NY_DATA_INDEX_AUTO_UPDATE` | on | `0` = never replace an installed index on its own (`update` still can) |
+| `NY_DATA_INDEX_REFRESH_DAYS` | 5 | Automatic updates download only when the installed index is at least this many days old |
+| `NY_DATA_INDEX_STALE_DAYS` | 14 | Past this age, `search_datasets` replies carry an `index_note` |
+| `NY_DATA_INDEX_CHECK_HOURS` | 24 | How often a running server checks (at least 1) |
+| `NY_DATA_INDEX_CHECK_DELAY_SECONDS` | 300 | When a server makes its first check after starting |
 | `NY_DATA_CACHE_DIR` | `${HOME}/.cache/betanyc/ny-data-registry` | Registry refresh cache and HTTP cache |
 | `NY_DATA_REGISTRY_REFRESH` | on | `0` = never fetch the published registry; use the bundled copy |
-| `NY_DATA_OFFLINE` | off | `1` = refuse every network call, including the first-run download (tests use this) |
+| `NY_DATA_OFFLINE` | off | `1` = refuse every network call, including the first-run download and update checks (tests use this) |
 | `NY_DATA_MAX_LAYERS` | 250 | Per-portal cap on ArcGIS field requests per harvest |
 | `NY_DATA_MIN_INTERVAL_MS` | 1000 | Minimum gap between requests to one host (cannot be set below 1000; Socrata hosts always get at least 2000) |
 | `SOCRATA_APP_TOKEN` | none | Sent as `X-App-Token` to the Socrata Discovery API |
@@ -200,7 +222,7 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 ## Refresh
 
 - **Registry**: picked up on next server start (conditional GET of the Pages copy).
-- **Index**: rebuilt every night by `.github/workflows/harvest.yml` (next section). To build your own, run `node dist/cli.js harvest`.
+- **Index**: rebuilt every night by `.github/workflows/harvest.yml` (next section). Each server picks up the new one within about 6 days, or at once with `ny-data-registry update` (see "Keeping the index current"). To build your own, run `node dist/cli.js harvest`.
 
 ### The nightly harvest
 
@@ -233,7 +255,7 @@ gh release upload index-latest rollback/* --clobber
 
 `index-2026-11-05` predates `index.json`; after rolling back to it, also run `gh release delete-asset index-latest index.json --yes`, `gate.json` likewise.
 
-Or pin one machine to a snapshot with `NY_DATA_INDEX_URL`. **Stop the nightly run** with `gh workflow disable harvest.yml`; servers keep the index they have.
+Servers move to a new index only when its harvest time is newer than theirs, so a machine that already took the bad index keeps it until a newer one is published, or until its owner runs `ny-data-registry download --force`. Or pin one machine to a snapshot with `NY_DATA_INDEX_URL`. **Stop the nightly run** with `gh workflow disable harvest.yml`; servers keep the index they have.
 
 GitHub turns off scheduled workflows in a public repository after 60 days with no repository activity. A stale `index.json` (`last_harvest` more than a few days old) is the sign.
 
