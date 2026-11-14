@@ -2,10 +2,16 @@
  * Polite HTTP for every network call this package makes.
  *
  * - One descriptive User-Agent, no email address.
- * - At least `minIntervalMs` (default 1000 ms) between requests to the same host.
+ * - At least `minIntervalMs` (default 1000 ms) between requests to the same host, and at
+ *   least 2000 ms to a Socrata host (`*.socrata.com`; the harvest calls only
+ *   api.us.socrata.com). Workspace engineering standard § 6, "Polite Socrata querying".
  * - robots.txt is read once per host and honored for our agent and for `*`.
  * - Conditional requests (If-None-Match / If-Modified-Since) against an on-disk cache.
- * - One bounded retry on 429, honoring Retry-After (max 60 s). No other retries.
+ * - Up to two retries on 429 or 503, honoring Retry-After (delay-seconds or an HTTP-date,
+ *   RFC 9110 § 10.2.3), otherwise backing off 5 s then 10 s; every wait is capped at 60 s.
+ *   A 429 also doubles that host's gap for the rest of the run (capped at 10 s).
+ *   Socrata sends 429 and 503 when throttling (https://dev.socrata.com/docs/response-codes).
+ *   No other retries.
  * - A bot block (403/429 challenge, or an HTML page where JSON was expected) is
  *   reported as `blocked` and never worked around.
  * - NY_DATA_OFFLINE=1 makes every call fail fast, so tests can never reach the network.
@@ -57,11 +63,42 @@ const lastRequestAt = new Map<string, number>();
 const hostLocks = new Map<string, Promise<void>>();
 const robotsCache = new Map<string, RobotsRules>();
 const hostDelayMs = new Map<string, number>();
+const widenedGapMs = new Map<string, number>();
 export const requestLog: { url: string; status: number; at: string }[] = [];
 
 export function minIntervalMs(): number {
   const v = Number(process.env.NY_DATA_MIN_INTERVAL_MS);
   return Number.isFinite(v) && v >= 1000 ? v : 1000;
+}
+
+/** Floor for Socrata hosts (engineering standard § 6: at least 2 s between requests). */
+export const SOCRATA_MIN_INTERVAL_MS = 2000;
+const MAX_WAIT_MS = 60_000;
+const MAX_WIDENED_GAP_MS = 10_000;
+const RETRY_STATUSES = new Set([429, 503]);
+const MAX_RETRIES = 2;
+
+export function isSocrataHost(host: string): boolean {
+  return /(^|\.)socrata\.com$/i.test(host);
+}
+
+/** The minimum gap this client keeps between two requests to `host`, before any Crawl-delay. */
+export function hostFloorMs(host: string): number {
+  return Math.max(minIntervalMs(), isSocrataHost(host) ? SOCRATA_MIN_INTERVAL_MS : 0, widenedGapMs.get(host) ?? 0);
+}
+
+/**
+ * How long to wait before retry number `attempt` (1-based) after a 429 or 503.
+ * Retry-After may be delay-seconds or an HTTP-date (RFC 9110 § 10.2.3). Capped at 60 s.
+ */
+export function retryWaitMs(retryAfter: string | null, attempt: number, now = Date.now()): number {
+  const backoff = Math.min(5000 * 2 ** (attempt - 1), MAX_WAIT_MS);
+  if (!retryAfter) return backoff;
+  const v = retryAfter.trim();
+  if (/^\d+$/.test(v)) return Math.min(Number(v) * 1000, MAX_WAIT_MS);
+  const at = Date.parse(v);
+  if (Number.isFinite(at)) return Math.min(Math.max(at - now, 0), MAX_WAIT_MS);
+  return backoff;
 }
 
 function isOffline(): boolean {
@@ -78,7 +115,7 @@ async function withHostSlot<T>(host: string, fn: () => Promise<T>): Promise<T> {
   hostLocks.set(host, prev.then(() => mine));
   await prev;
   try {
-    const wait = (lastRequestAt.get(host) ?? 0) + Math.max(minIntervalMs(), hostDelayMs.get(host) ?? 0) - Date.now();
+    const wait = (lastRequestAt.get(host) ?? 0) + Math.max(hostFloorMs(host), hostDelayMs.get(host) ?? 0) - Date.now();
     if (wait > 0) await sleep(wait);
     return await fn();
   } finally {
@@ -203,13 +240,12 @@ export async function politeFetch(url: string, opts: PoliteOptions = {}): Promis
     });
 
   let { res, body, elapsed } = await doFetch();
-  if (res.status === 429) {
-    const ra = Number(res.headers.get("retry-after"));
-    const waitMs = Math.min(Number.isFinite(ra) && ra > 0 ? ra * 1000 : 5000, 60000);
-    await sleep(waitMs);
+  for (let attempt = 1; RETRY_STATUSES.has(res.status) && attempt <= MAX_RETRIES; attempt++) {
+    if (res.status === 429) widenedGapMs.set(u.host, Math.min(hostFloorMs(u.host) * 2, MAX_WIDENED_GAP_MS));
+    await sleep(retryWaitMs(res.headers.get("retry-after"), attempt));
     ({ res, body, elapsed } = await doFetch());
-    if (res.status === 429) throw new BlockedError(url, "HTTP 429 twice (rate limited); stopped");
   }
+  if (res.status === 429) throw new BlockedError(url, `HTTP 429 after ${MAX_RETRIES} retries (rate limited); stopped`);
   const hdrs: Record<string, string> = {};
   res.headers.forEach((v, k) => (hdrs[k] = v));
 
@@ -254,5 +290,6 @@ export function resetHttpState(): void {
   hostLocks.clear();
   robotsCache.clear();
   hostDelayMs.clear();
+  widenedGapMs.clear();
   requestLog.length = 0;
 }

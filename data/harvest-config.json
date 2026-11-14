@@ -1,7 +1,8 @@
 {
   "_readme": [
     "Per-portal harvest rules, keyed by source id (see `registry_info` or `find_sources`). Anything not listed uses the defaults.",
-    "`skip` means never call this portal, with the reason reported in every harvest's stats."
+    "`skip` means never call this portal, with the reason reported in every harvest's stats.",
+    "`cadence` sets how often each portal is read. `publish_gate` sets when the harvest workflow refuses to publish a new index (see README, \"The nightly harvest\")."
   ],
   "defaults": {
     "min_interval_ms_per_host": 1000,
@@ -34,5 +35,24 @@
       "Rockland County": "Blocks automated clients (Scout eval, 2026-11-05). Skipped; never worked around.",
       "Columbia University Libraries": "GeoBlacklight with 104,570 records, mostly not New York. Excluded from the harvest."
     }
+  },
+  "cadence": {
+    "_note": "Days between reads. Self-hosted county ArcGIS servers (the `enterprise` adapter) are read weekly, to be gentle on small county servers (epic #7, decision D5). Everything else nightly. A portal is due `slack_hours` early so a late scheduled start does not slip a whole week. `harvest --ignore-cadence` reads everything.",
+    "days_by_adapter": {
+      "socrata": 1,
+      "hub": 1,
+      "agol-org": 1,
+      "enterprise": 7
+    },
+    "days_by_source": {},
+    "slack_hours": 6
+  },
+  "publish_gate": {
+    "_note": "The workflow publishes only when every check passes (or a person overrides it with a written reason, which is recorded in gate.json, index.json and the release notes). Compared with the index that is published now.",
+    "eval_must_pass": true,
+    "max_total_drop_pct": 10,
+    "max_ok_portals_lost": 3,
+    "max_portal_drop_pct": 50,
+    "portal_drop_min_datasets": 20
   }
 }

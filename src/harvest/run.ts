@@ -21,6 +21,43 @@ interface HarvestConfig {
     esri_owner_pattern: string;
   };
   skip: { by_entity: Record<string, string> };
+  cadence?: CadenceConfig;
+}
+
+/**
+ * How often each portal is read. Nightly by default; self-hosted county ArcGIS servers
+ * (the `enterprise` adapter) weekly, to be gentle on small county servers (epic #7, D5).
+ */
+export interface CadenceConfig {
+  /** Days between reads, by plan kind (`socrata`, `hub`, `agol-org`, `enterprise`). Missing = 1. */
+  days_by_adapter: Record<string, number>;
+  /** Per-portal overrides, by source id. */
+  days_by_source?: Record<string, number>;
+  /** A portal is due this many hours early, so a scheduled run that starts late does not slip a whole cycle. */
+  slack_hours?: number;
+}
+
+/** Days between reads for one portal. */
+export function cadenceDays(sourceId: string, planKind: string, cfg?: CadenceConfig): number {
+  const v = cfg?.days_by_source?.[sourceId] ?? cfg?.days_by_adapter?.[planKind] ?? 1;
+  return Number.isFinite(v) && v >= 1 ? v : 1;
+}
+
+/**
+ * Whether a portal is due tonight. `lastHarvested` is when it was last read (any outcome),
+ * from the previous index. A portal never read, or with cadence 1, is always due.
+ */
+export function cadenceDue(
+  lastHarvested: string | null,
+  days: number,
+  now: Date,
+  slackHours = 6
+): { due: boolean; next_due?: string } {
+  if (days <= 1 || !lastHarvested) return { due: true };
+  const last = Date.parse(lastHarvested);
+  if (!Number.isFinite(last)) return { due: true };
+  const nextDue = last + days * 86_400_000 - slackHours * 3_600_000;
+  return now.getTime() >= nextDue ? { due: true } : { due: false, next_due: new Date(nextDue).toISOString() };
 }
 
 export type Plan =
@@ -105,7 +142,7 @@ export interface PortalStats {
   source_id: string;
   entity: string;
   adapter: string;
-  outcome: "ok" | "partial" | "failed" | "refused" | "blocked" | "skipped";
+  outcome: "ok" | "partial" | "failed" | "refused" | "blocked" | "skipped" | "not-due";
   reason?: string;
   listed?: number | null;
   kept?: number;
@@ -130,6 +167,8 @@ interface RunOpts {
   only?: string[];
   maxLayers?: number;
   concurrency?: number;
+  /** Read every portal tonight, whatever its cadence. */
+  ignoreCadence?: boolean;
   log?: (s: string) => void;
 }
 
@@ -201,6 +240,18 @@ export async function runHarvest(opts: RunOpts = {}) {
     if (plan.kind === "skip") {
       if (s.status === "live") stats.push({ source_id: s.source_id, entity: s.entity, adapter: "none", outcome: "skipped", reason: plan.reason });
       continue;
+    }
+    const days = cadenceDays(s.source_id, plan.kind, cfg.cadence);
+    if (!opts.ignoreCadence && days > 1) {
+      const last = (db.prepare("SELECT last_harvested FROM portals WHERE id = ?").get(s.source_id) as { last_harvested: string | null } | undefined)?.last_harvested ?? null;
+      const c = cadenceDue(last, days, started, cfg.cadence?.slack_hours);
+      if (!c.due) {
+        stats.push({
+          source_id: s.source_id, entity: s.entity, adapter: plan.kind, outcome: "not-due",
+          reason: `read every ${days} days; last read ${last}; next due after ${c.next_due}`,
+        });
+        continue;
+      }
     }
     work.push({ s, plan });
   }
@@ -364,6 +415,7 @@ export async function runHarvest(opts: RunOpts = {}) {
     blocked: stats.filter((x) => x.outcome === "blocked").length,
     refused_out_of_state: stats.filter((x) => x.outcome === "refused").length,
     skipped_live_rows: stats.filter((x) => x.outcome === "skipped").length,
+    not_due: stats.filter((x) => x.outcome === "not-due").length,
     datasets_in_index: totals.datasets,
     columns_in_index: totals.columns,
     key_columns_in_index: totals.key_columns,

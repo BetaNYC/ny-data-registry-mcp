@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * ny-data-registry harvest [--only id,id] [--max-layers N] [--concurrency N] [--stats-out file]
- * ny-data-registry eval [--out file]
+ * ny-data-registry harvest [--only id,id] [--max-layers N] [--concurrency N] [--stats-out file] [--ignore-cadence]
+ * ny-data-registry eval [--out file] [--result-out file.json]
  * ny-data-registry stats
  * ny-data-registry download [--force]
  */
@@ -30,6 +30,7 @@ if (cmd === "download") {
     only: arg("only")?.split(","),
     maxLayers: arg("max-layers") ? Number(arg("max-layers")) : undefined,
     concurrency: arg("concurrency") ? Number(arg("concurrency")) : undefined,
+    ignoreCadence: process.argv.includes("--ignore-cadence"),
   });
   const out = arg("stats-out");
   if (out) {
@@ -45,6 +46,12 @@ if (cmd === "download") {
   if (out) {
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, res.markdown);
+  }
+  const resultOut = arg("result-out");
+  if (resultOut) {
+    mkdirSync(dirname(resultOut), { recursive: true });
+    const { markdown, ...result } = res;
+    writeFileSync(resultOut, JSON.stringify(result, null, 2));
   }
   console.log(res.markdown);
   process.exitCode = res.passed ? 0 : 1;
