@@ -16,6 +16,11 @@
 #
 # Manual runs: `gh workflow run harvest.yml -f publish=false` is a dry run (artifact only).
 # A scheduled run always publishes when the gate passes. Schedule: 07:17 UTC daily.
+#
+# Rollback: `gh workflow run harvest.yml -f rollback_to=index-YYYY-MM-DD -f rollback_reason="..."`
+# skips the harvest and runs the `rollback` job instead: it re-points index-latest at that kept
+# snapshot and marks index.json `rolled_back`, so servers holding a newer index go back to it
+# (src/publish/rollback.ts). With publish=false it only checks. The next nightly publish clears it.
 name: harvest
 
 on:
@@ -43,6 +48,14 @@ on:
         description: "Why the gate is being overridden (required with force_publish)"
         type: string
         default: ""
+      rollback_to:
+        description: "Roll index-latest back to this kept snapshot (index-YYYY-MM-DD) instead of harvesting. Needs rollback_reason."
+        type: string
+        default: ""
+      rollback_reason:
+        description: "Why the index is being rolled back (required with rollback_to); published in index.json and the release notes"
+        type: string
+        default: ""
 
 permissions:
   contents: write # releases and their tags
@@ -58,6 +71,8 @@ defaults:
 
 jobs:
   harvest:
+    # A run started with rollback_to does the rollback job instead. Scheduled runs have no inputs.
+    if: ${{ github.event_name == 'schedule' || inputs.rollback_to == '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 150
     env:
@@ -192,3 +207,41 @@ jobs:
       - name: Close resolved failure issue
         if: ${{ success() && steps.publish.outcome == 'success' }}
         run: node dist/publish/cli.js close-failures
+
+  rollback:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.rollback_to != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PUBLISH: ${{ inputs.publish }}
+      ROLLBACK_TO: ${{ inputs.rollback_to }}
+      ROLLBACK_REASON: ${{ inputs.rollback_reason }}
+      FORCE_PUBLISH: ${{ inputs.force_publish }}
+      FRESH: ${{ inputs.fresh }}
+      ON_DEFAULT_BRANCH: ${{ github.ref_name == github.event.repository.default_branch }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+
+      - name: Preflight
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          [ -n "${ROLLBACK_REASON// }" ] || fail "rollback_to needs a rollback_reason; it is published in index.json and the release notes."
+          [[ "$ROLLBACK_TO" =~ ^index-[0-9]{4}-[0-9]{2}-[0-9]{2}(-[0-9]+)?$ ]] || fail "rollback_to must be a dated snapshot tag, index-YYYY-MM-DD"
+          if [ "$FORCE_PUBLISH" = "true" ] || [ "$FRESH" = "true" ]; then
+            fail "rollback_to cannot be combined with force_publish or fresh; a rollback runs no harvest."
+          fi
+          if [ "$PUBLISH" = "true" ] && [ "$ON_DEFAULT_BRANCH" != "true" ]; then
+            fail "A rollback that publishes runs only on the default branch. Use publish=false on $GITHUB_REF_NAME."
+          fi
+
+      - run: npm ci
+
+      - name: Roll back index-latest
+        run: |
+          args=(--to "$ROLLBACK_TO" --reason "$ROLLBACK_REASON" --actor "$GITHUB_ACTOR")
+          [ "$PUBLISH" = "true" ] || args+=(--dry-run)
+          node dist/publish/cli.js rollback "${args[@]}"

@@ -10,8 +10,11 @@
  * - The server checks NY_DATA_INDEX_CHECK_DELAY_SECONDS (300) after it starts, then every
  *   NY_DATA_INDEX_CHECK_HOURS (24), on unref'ed timers. A check never blocks a tool call: a
  *   call made during a download answers from the old index.
- * - An automatic check downloads only when the installed index is at least
- *   NY_DATA_INDEX_REFRESH_DAYS (5) old, and asks nothing of the network before that.
+ * - An automatic check downloads a newer index only when the installed one is at least
+ *   NY_DATA_INDEX_REFRESH_DAYS (5) old. Before that it reads only index.json, for a rollback.
+ * - A rollback: the publisher re-pointed `index-latest` at an older snapshot and said so in
+ *   index.json (`rolled_back`). An installed index newer than that snapshot is the bad one (or
+ *   newer still), so it is replaced with the snapshot at the next check, whatever its age.
  * - `ny-data-registry update` checks now, regardless of age or the automatic-update switch.
  * When automatic updates are off: src/indexage.ts.
  */
@@ -24,7 +27,7 @@ import { closeDb, db } from "./datasets.js";
 import {
   downloadIndex, indexUrl, installPendingIndex, isLoopback, pendingPath, readSource, sourcePath, writeSource, SQLITE_NAME, type IndexSource,
 } from "./fetchindex.js";
-import { ageDays, updateConfig, UPDATE_COMMAND } from "./indexage.js";
+import { ageDays, getSeenRollback, rollbackSentence, setSeenRollback, updateConfig, UPDATE_COMMAND, type RollbackNotice } from "./indexage.js";
 
 const MANIFEST_NAME = "index.json";
 const MANIFEST_TIMEOUT_MS = 20_000;
@@ -37,6 +40,8 @@ export interface PublishedManifest {
   sqlite_sha256: string;
   gz_sha256: string;
   sqlite_bytes?: number;
+  /** Set when `index-latest` was rolled back to an older snapshot (src/publish/rollback.ts). */
+  rolled_back: RollbackNotice | null;
 }
 
 export type Outcome =
@@ -47,13 +52,14 @@ export type Outcome =
   | "package-too-old" // the published index needs a newer package
   | "available" // a newer index is published (update --check)
   | "updated" // a newer index was downloaded, verified and installed
+  | "rolled-back" // the index was rolled back upstream; the installed copy was replaced with the rollback target
   | "ready-on-restart" // downloaded and verified, waiting as <index>.next because the index is in use
   | "busy" // another process is downloading
   | "failed"; // nothing changed; see error
 
 /**
- * Exit codes of `ny-data-registry update`: 0 current, updated, or left alone because the
- * installed index is as new as the published one; 1 failed (nothing changed) or another process
+ * Exit codes of `ny-data-registry update`: 0 current, updated, rolled back, or left alone
+ * because the installed index is as new as the published one; 1 failed (nothing changed) or another process
  * is downloading; 2 usage (cli.ts); 3 the published index needs a newer package; 4 (--check) a
  * newer index is published; 5 downloaded and verified but the index is in use, so it waits as
  * `<index>.next` until nothing holds it.
@@ -61,6 +67,7 @@ export type Outcome =
 export const UPDATE_EXIT_CODES: Record<Outcome, number> = {
   current: 0,
   updated: 0,
+  "rolled-back": 0,
   "kept-local": 0,
   "not-due": 0,
   failed: 1,
@@ -76,6 +83,8 @@ export interface CheckResult {
   message: string;
   installed_last_harvest: string | null;
   published_last_harvest: string | null;
+  /** The published index.json's rollback notice, when there is one. */
+  rolled_back?: RollbackNotice | null;
   error?: string;
 }
 
@@ -94,6 +103,17 @@ function manifestUrl(url: string): string {
   return url.replace(/[^/]+$/, MANIFEST_NAME);
 }
 
+function parseRollback(v: unknown): RollbackNotice | null {
+  const r = v as Record<string, unknown> | null;
+  if (!r || typeof r !== "object" || typeof r.to !== "string" || !r.to) return null;
+  return {
+    from: typeof r.from === "string" ? r.from : null,
+    to: r.to,
+    reason: typeof r.reason === "string" && r.reason.trim() ? r.reason.trim() : "no reason given",
+    at: typeof r.at === "string" ? r.at : null,
+  };
+}
+
 function parseManifest(v: unknown): PublishedManifest {
   const m = v as Record<string, unknown>;
   if (!m || typeof m !== "object") throw new Error("index.json is not a JSON object");
@@ -106,6 +126,7 @@ function parseManifest(v: unknown): PublishedManifest {
     sqlite_sha256: m.sqlite_sha256.toLowerCase(),
     gz_sha256: m.gz_sha256.toLowerCase(),
     sqlite_bytes: typeof m.sqlite_bytes === "number" ? m.sqlite_bytes : undefined,
+    rolled_back: parseRollback(m.rolled_back),
   };
 }
 
@@ -170,6 +191,16 @@ const newer = (a: string | null, b: string | null) => {
   return Number.isFinite(x) && Number.isFinite(y) && x > y;
 };
 
+/**
+ * The published index was rolled back and the installed one is newer than the rollback
+ * target: it is the bad index (or one newer still), so it should be replaced.
+ */
+function rollbackApplies(m: PublishedManifest, local: string | null): boolean {
+  return !!m.rolled_back && newer(local, m.last_harvest);
+}
+
+const rolledBackWhy = (m: PublishedManifest) => (m.rolled_back ? `. ${rollbackSentence(m.rolled_back)}` : "");
+
 function record(r: CheckResult): CheckResult {
   status.checked_at = new Date().toISOString();
   if (r.published_last_harvest) status.published_last_harvest = r.published_last_harvest;
@@ -220,22 +251,39 @@ export async function checkForUpdate(
     const local = fileLastHarvest(path);
     const age = ageDays(local, opts.now);
     const base = { installed_last_harvest: local };
-    if (!manual && age !== null && age < cfg.refresh_days) {
-      return res("not-due", `the index is ${age} days old; automatic updates download after ${cfg.refresh_days}`, base);
+    const young = !manual && age !== null && age < cfg.refresh_days;
+    const notDue = `the index is ${age} days old; automatic updates download after ${cfg.refresh_days}`;
+
+    let m: PublishedManifest | null;
+    try {
+      m = await fetchManifest(url);
+    } catch (e) {
+      // A young index has nothing to download unless there is a rollback; a failed read is not a failed update.
+      if (young) return res("not-due", `${notDue} (could not read index.json to check for a rollback)`, { ...base, error: e instanceof Error ? e.message : String(e) });
+      throw e;
+    }
+    setSeenRollback(m?.rolled_back ?? null);
+    // Young and not rolled back past it: nothing to do until the index is REFRESH_DAYS old.
+    if (young && !(m && m.schema_version === SCHEMA_VERSION && rollbackApplies(m, local))) {
+      return res("not-due", notDue, { ...base, published_last_harvest: m?.last_harvest ?? null, rolled_back: m?.rolled_back ?? null });
     }
 
-    const m = await fetchManifest(url);
     let expect: PublishedManifest | undefined;
+    let rollingBack = false;
     if (m) {
-      const pub = { ...base, published_last_harvest: m.last_harvest };
+      const pub = { ...base, published_last_harvest: m.last_harvest, rolled_back: m.rolled_back };
       if (m.schema_version !== SCHEMA_VERSION) {
         return res("package-too-old", `the published index has schema version ${m.schema_version ?? "(none)"} and this package reads ${SCHEMA_VERSION}; update the package (npx -y @betanyc/ny-data-registry-mcp@latest). The installed index stays.`, pub);
       }
-      if ((await installedSum(path)) === m.sqlite_sha256) return res("current", `already current (harvested ${local ?? m.last_harvest})`, pub);
-      if (!newer(m.last_harvest, local)) {
+      if ((await installedSum(path)) === m.sqlite_sha256) return res("current", `already current (harvested ${local ?? m.last_harvest})${rolledBackWhy(m)}`, pub);
+      if (rollbackApplies(m, local)) {
+        rollingBack = true;
+        if (opts.checkOnly) {
+          return res("available", `the published index was rolled back to ${m.rolled_back!.to} (harvested ${m.last_harvest}); \`update\` replaces the installed one (harvested ${local}). Reason: ${m.rolled_back!.reason}`, pub);
+        }
+      } else if (!newer(m.last_harvest, local)) {
         return res("kept-local", `the installed index (harvested ${local ?? "unknown"}) is as new as or newer than the published one (${m.last_harvest ?? "unknown"}); left alone. \`download --force\` replaces it anyway.`, pub);
-      }
-      if (opts.checkOnly) return res("available", `a newer index is published (harvested ${m.last_harvest}); installed: ${local ?? "unknown"}`, pub);
+      } else if (opts.checkOnly) return res("available", `a newer index is published (harvested ${m.last_harvest}); installed: ${local ?? "unknown"}`, pub);
       expect = m;
     } else {
       // A release from before index.json: compare the sqlite sum in SHA256SUMS.
@@ -259,9 +307,15 @@ export async function checkForUpdate(
       rename: opts.rename,
       expect: expect ? { gz_sha256: expect.gz_sha256, sqlite_sha256: expect.sqlite_sha256, sqlite_bytes: expect.sqlite_bytes } : undefined,
     });
-    const done = { installed_last_harvest: r.pending ? local : (r.last_harvest ?? null), published_last_harvest: expect?.last_harvest ?? r.last_harvest ?? null };
+    const done = {
+      installed_last_harvest: r.pending ? local : (r.last_harvest ?? null),
+      published_last_harvest: expect?.last_harvest ?? r.last_harvest ?? null,
+      rolled_back: expect?.rolled_back ?? null,
+    };
+    const rb = rollingBack && expect?.rolled_back ? ` (a rollback to ${expect.rolled_back.to}; reason: ${expect.rolled_back.reason})` : "";
     if (r.busy) return res("busy", "another process is downloading the index; try again in a minute", done);
-    if (r.pending) return res("ready-on-restart", `downloaded and verified the index harvested ${r.last_harvest}, but ${r.note}. Restart the server (or close what has the file open) to use it.`, done);
+    if (r.pending) return res("ready-on-restart", `downloaded and verified the index harvested ${r.last_harvest}${rb}, but ${r.note}. Restart the server (or close what has the file open) to use it.`, done);
+    if (rollingBack) return res("rolled-back", `replaced the installed index (harvested ${local}) with the index harvested ${r.last_harvest}${rb}, checksums verified${r.note ? `; ${r.note}` : ""}`, done);
     return res("updated", `updated to the index harvested ${r.last_harvest}, checksums verified${r.note ? `; ${r.note}` : ""}`, done);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -323,6 +377,7 @@ export function indexStatus(now = Date.now()): Record<string, unknown> {
     published_last_harvest: status.published_last_harvest,
     last_error: status.last_error,
     note: status.note,
+    rolled_back: getSeenRollback(),
     installed_from: rec?.url ?? null,
     pending_update: existsSync(pendingPath(path)) && existsSync(sourcePath(pendingPath(path))),
     settings_warnings: cfg.warnings,

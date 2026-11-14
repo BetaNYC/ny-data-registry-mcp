@@ -8,23 +8,28 @@
  *   node dist/publish/cli.js report --stats <json> --gate <json> [--publish true|false] [--published <json>]
  *   node dist/publish/cli.js publish --dir <dir> [--dry-run]
  *   node dist/publish/cli.js prune [--dry-run]
+ *   node dist/publish/cli.js rollback --to <index-YYYY-MM-DD> --reason <text> [--actor <login>] [--dry-run]
  *   node dist/publish/cli.js failure-issue --steps <json> --dir <dir>
  *   node dist/publish/cli.js close-failures
  *
- * `publish`, `prune`, `failure-issue` and `close-failures` call `gh` and `git`, with
- * GH_TOKEN from the workflow. Exit codes: 0 ok, 1 gate blocked or a step failed, 2 usage.
+ * `publish`, `prune`, `rollback`, `failure-issue` and `close-failures` call `gh` and `git`, with
+ * GH_TOKEN from the workflow. Exit codes: 0 ok, 1 gate blocked, rollback refused or a step
+ * failed, 2 usage. `rollback --dry-run` downloads and checks the snapshot but changes nothing.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readDataJson } from "../paths.js";
 import { SCHEMA_VERSION } from "../db.js";
 import { indexSummary, type IndexSummary } from "./summary.js";
 import { evaluateGate, gateMarkdown, type EvalResult, type GateResult, type GateThresholds } from "./gate.js";
-import { preparePublish, MANIFEST_NAME, type Manifest } from "./prepare.js";
+import { preparePublish, publishedManifest, MANIFEST_NAME, type Manifest } from "./prepare.js";
 import {
-  newYorkDate, nextSnapshotTag, pickTagTarget, planRetention, publishCommands, retentionCommands, type GhCommand, type ReleaseInfo,
+  findSnapshotTag, rollbackCommands, rollbackProblems, rollbackRecord, rollbackSummaryMarkdown, rolledBackManifest, verifySnapshotFiles,
+} from "./rollback.js";
+import {
+  LATEST_TAG, parseSnapshotTag, newYorkDate, nextSnapshotTag, pickTagTarget, planRetention, publishCommands, retentionCommands, type GhCommand, type ReleaseInfo,
 } from "./releases.js";
 import { FAILURE_LABEL, FAILURE_TITLE, failureIssueBody, runSummaryMarkdown, type HarvestStats } from "./report.js";
 
@@ -98,6 +103,17 @@ function tagTarget(): string {
   return t;
 }
 
+/** Download a release's assets (all, or one by pattern) into `dir`; false when it has none that match. Runs in dry runs too. */
+function download(tag: string, dir: string, pattern?: string): boolean {
+  mkdirSync(dir, { recursive: true });
+  try {
+    gh(["release", "download", tag, "--dir", dir, ...(pattern ? ["--pattern", pattern] : []), "--clobber"], { capture: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const cmd = process.argv[2];
 
 if (cmd === "summary") {
@@ -150,12 +166,15 @@ if (cmd === "summary") {
   const releases = listReleases();
   // Bodies are needed only for snapshots about to be relabeled superseded.
   for (const r of releases) {
-    if (/^index-\d{4}-\d{2}-\d{2}/.test(r.tagName) && !/\(superseded\)\s*$/.test(r.name)) {
+    if (/^index-\d{4}-\d{2}-\d{2}/.test(r.tagName) && !/\((superseded|rolled back)\)\s*$/.test(r.name)) {
       r.body = JSON.parse(gh(["release", "view", r.tagName, "--json", "body"], { capture: true })).body ?? "";
     }
   }
   const date = newYorkDate(new Date());
   const tag = nextSnapshotTag(date, releases.map((r) => r.tagName));
+  // Record the tag in index.json, so a later rollback can name the snapshot index-latest holds.
+  // A fresh index.json also clears any rollback: prepare never writes `rolled_back`.
+  writeFileSync(join(dir, MANIFEST_NAME), JSON.stringify(publishedManifest(manifest, tag), null, 2) + "\n");
   runAll(publishCommands({ tag, date, target: tagTarget(), dir, sideFiles: SIDE_FILES, manifest, releases }));
   if (dryRun) console.log(`[dry run] would publish ${tag}`);
   else {
@@ -170,6 +189,53 @@ if (cmd === "summary") {
   if (pub && existsSync(pub)) {
     const p = JSON.parse(readFileSync(pub, "utf8"));
     writeFileSync(pub, JSON.stringify({ ...p, deleted: plan.delete }, null, 2));
+  }
+} else if (cmd === "rollback") {
+  const to = need("to");
+  const reason = arg("reason") ?? "";
+  const releases = listReleases();
+  const tmp = mkdtempSync(join(tmpdir(), "ndr-rollback-"));
+  const targetDir = join(tmp, "target");
+  const exists = releases.some((r) => r.tagName === to) && !!parseSnapshotTag(to);
+  if (exists) download(to, targetDir);
+  const target = readJson<Manifest>(join(targetDir, MANIFEST_NAME));
+  const current = download(LATEST_TAG, join(tmp, "latest"), MANIFEST_NAME) ? readJson<Manifest>(join(tmp, "latest", MANIFEST_NAME)) : null;
+  const problems = rollbackProblems({
+    to,
+    reason,
+    releases,
+    current,
+    target,
+    targetFiles: existsSync(targetDir) ? readdirSync(targetDir) : [],
+    sideFiles: SIDE_FILES,
+    schemaVersion: SCHEMA_VERSION,
+  });
+  if (!problems.length && target) problems.push(...(await verifySnapshotFiles(targetDir, target)));
+  if (problems.length) {
+    summaryOut(rollbackSummaryMarkdown({ rec: null, problems, dryRun }));
+    process.exitCode = 1;
+  } else {
+    // Which snapshot index-latest holds now: its index.json says, or else match the sum, newest first.
+    let from = current?.snapshot_tag ?? null;
+    if (!from && current) {
+      const snaps = releases.map((r) => parseSnapshotTag(r.tagName)).filter((s) => !!s && s.tag !== to).map((s) => s!.tag).sort().reverse();
+      const found: { tag: string; manifest: Manifest | null }[] = [];
+      for (const tag of snaps) {
+        const d = join(tmp, "snap", tag);
+        found.push({ tag, manifest: download(tag, d, MANIFEST_NAME) ? readJson<Manifest>(join(d, MANIFEST_NAME)) : null });
+        if (findSnapshotTag(current, found)) break;
+      }
+      from = findSnapshotTag(current, found);
+    }
+    const rec = rollbackRecord({ to, reason, at: new Date().toISOString(), by: arg("actor") ?? null, current, from });
+    const manifest = rolledBackManifest(target!, rec);
+    writeFileSync(join(targetDir, MANIFEST_NAME), JSON.stringify(manifest, null, 2) + "\n");
+    for (const tag of [rec.from, rec.to]) {
+      const r = releases.find((x) => x.tagName === tag);
+      if (r) r.body = JSON.parse(gh(["release", "view", r.tagName, "--json", "body"], { capture: true })).body ?? "";
+    }
+    runAll(rollbackCommands({ dir: targetDir, sideFiles: SIDE_FILES, manifest, rec, releases }));
+    summaryOut(rollbackSummaryMarkdown({ rec, problems: [], dryRun }));
   }
 } else if (cmd === "failure-issue") {
   const dir = need("dir");
@@ -193,6 +259,6 @@ if (cmd === "summary") {
   const open = JSON.parse(gh(["issue", "list", "--label", FAILURE_LABEL, "--state", "open", "--json", "number"], { capture: true }) || "[]") as { number: number }[];
   for (const i of open) gh(["issue", "close", String(i.number), "--reason", "completed", "--comment", `Fixed: ${runUrl() ?? "a later run"} published a new index.`]);
 } else {
-  console.error("usage: node dist/publish/cli.js <summary|gate|prepare|report|publish|prune|failure-issue|close-failures> [options]");
+  console.error("usage: node dist/publish/cli.js <summary|gate|prepare|report|publish|prune|rollback|failure-issue|close-failures> [options]");
   process.exitCode = 2;
 }

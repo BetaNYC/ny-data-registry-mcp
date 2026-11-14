@@ -18,6 +18,7 @@ import { createGzip } from "node:zlib";
 import { DatabaseSync } from "node:sqlite";
 import { indexSummary, type IndexSummary } from "./summary.js";
 import type { GateResult } from "./gate.js";
+import type { RollbackRecord } from "./rollback.js";
 
 export const SQLITE_NAME = "ny-data-index.sqlite";
 export const GZ_NAME = "ny-data-index.sqlite.gz";
@@ -42,6 +43,10 @@ export interface Manifest {
   gate: { passed: boolean; overridden: boolean; override_reason: string | null; override_by: string | null; reasons: string[] } | null;
   /** Portals this harvest dropped because their ids left the registry (issue #21). */
   dropped_portals: { portal_id: string; datasets: number; reason: string }[];
+  /** The dated snapshot these files were published as. Added by `publish`, so `prepare` output lacks it. */
+  snapshot_tag?: string;
+  /** Only in `index-latest`'s copy, and only after a rollback (src/publish/rollback.ts). A normal publish never sets it. */
+  rolled_back?: RollbackRecord;
 }
 
 export function buildManifest(
@@ -64,6 +69,15 @@ export function buildManifest(
     gate: g ? { passed: g.passed, overridden: g.overridden, override_reason: g.override_reason, override_by: g.override_by, reasons: g.reasons } : null,
     dropped_portals: meta.dropped_portals ?? [],
   };
+}
+
+/**
+ * The index.json `publish` uploads: prepare's, with the snapshot's tag, and never `rolled_back`.
+ * A normal publish therefore clears a rollback (src/publish/rollback.ts).
+ */
+export function publishedManifest(m: Manifest, tag: string): Manifest {
+  const { rolled_back: _cleared, ...rest } = m;
+  return { ...rest, snapshot_tag: tag };
 }
 
 /** Lines in the format `sha256sum` writes and the server's downloader reads. */
