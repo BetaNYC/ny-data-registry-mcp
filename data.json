@@ -174,7 +174,7 @@
         }
       ],
       "provenance": [
-        "Not an official record: curated by BetaNYC from material published by BetaNYC.",
+        "Not an official record: curated by BetaNYC.",
         "BetaNYC visits each source's website and records what it finds. A copy ships in the package (data/ny-data-portal-registry.json); when the server starts it checks BetaNYC's published copy for a newer one and keeps it in a cache on your computer. check_source makes one request to a portal's web page when asked and compares the answer with the registry row.",
         "Changed by BetaNYC: The registry is BetaNYC's own work, checked by hand. This server adds to each row an id, a platform family from a hand-made table (data/platform-families.json), and the place it covers, from a hand-made list of New York's counties, cities, boroughs and regions (data/ny-places.json)."
       ],

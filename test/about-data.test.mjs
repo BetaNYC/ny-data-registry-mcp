@@ -62,7 +62,7 @@ test("the registry is BetaNYC's curation, not an official record, with errors re
   const s = one(r.structuredContent, "portal-registry");
   assert.equal(s.official, false);
   assert.equal(s.figures_official, false);
-  assert.match(r.content[0].text, /Not an official record: curated by BetaNYC/);
+  assert.match(r.content[0].text, /^Not an official record: curated by BetaNYC\.$/m, "BetaNYC as publisher is not named twice (module 1.3.7)");
   assert.equal(s.report_errors.in_the_data_handled_by, "betanyc");
 });
 
