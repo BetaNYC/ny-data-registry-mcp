@@ -46,6 +46,8 @@ export interface AllowNoPortal {
   endpoint: string;
   /** How the row was checked to be New York, not a look-alike. */
   checked_new_york: string;
+  /** One live read of the endpoint when the row was added: URL, time, status and what it showed. */
+  checked_live?: { url: string; at: string; http_status: number; result: string };
 }
 
 /** One adapter's on/off switch in harvest-config.json (`adapters`). Missing means on. */

@@ -39,7 +39,8 @@ test("each skipped row says why, with a fixed code", () => {
   const kingston = row(r, "city-of-kingston");
   assert.equal(kingston.skip_code, "no-portal");
   assert.equal(kingston.documented_endpoint, "https://services9.arcgis.com/lURKWeSyTPF2wvVs/arcgis/rest/services", "the registry's endpoint, verbatim");
-  assert.equal(row(r, "greene-county").adapter, "hand-kept", "no portal, but the hand-kept list has its parcel links");
+  assert.equal(row(r, "st-lawrence-county").adapter, "hand-kept", "no portal, but the hand-kept list has its parcel links");
+  assert.equal(row(r, "greene-county").adapter, "arcgis-server", "no portal, but on allow_no_portal (D4)");
   for (const x of r.rows) {
     assert.equal(x.adapter === null, x.state === "not-harvested", x.source_id);
     if (x.state === "not-harvested") assert.ok(x.reason && x.skip_code, x.source_id);

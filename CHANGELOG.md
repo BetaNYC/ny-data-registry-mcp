@@ -163,6 +163,14 @@ Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data
   (ArcGIS Online org, ArcGIS Online org, ArcGIS Enterprise). Each was checked to be New York,
   not Utica, Minnesota or Wyoming County, Pennsylvania. A changed registry endpoint stops the
   row until it is checked again.
+- Five more `allow_no_portal` rows, read by the `arcgis-server` adapter: Greene, Washington,
+  Cayuga, Essex and Chautauqua counties. Each is New York, not the same-named county in Ohio,
+  Wisconsin (and four other states), Ontario or Kansas. Each server answered one read of its
+  services directory root on 2026-11-14 and lists the service or folder the registry says holds
+  parcels; the entry records the URL, time, status and result (`checked_live`). St. Lawrence
+  County was left out: its server is the Development Authority of the North Country's, shared
+  with five other counties, so reading it would file their layers under St. Lawrence. The parcel
+  table does not change until a harvest reads the five servers.
 - ArcGIS Server REST directory adapter (`arcgis-server`, milestone 4): the State's GIS servers
   (`nysgeohub`, `gisservices`, `orthos`, `elevation`), DOT, DEC's server, Broome and Ulster.
   One dataset per map, feature or image service; layer fields for up to 5 layers each. Read
@@ -184,8 +192,13 @@ Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data
 - Hand-kept list (`data/hand-kept.json`, milestone 5, D6): for rows with no data link, what the
   place does offer (pages, viewers, search pages, request forms). The `hand-kept` adapter adds
   each link to the index as type `hand-kept <kind>`, with no endpoint or columns, and makes no
-  network call. Seeded with 82 parcel links the State's parcel page lists for 30 counties
-  (not yet checked). Switched on.
+  network call. Seeded with 82 parcel links the State's parcel page lists for 30 counties.
+  Switched on.
+- Each hand-kept link was checked once on 2026-11-14 (`link_check`: date, final URL, HTTP status,
+  result): 48 ok, 3 redirected, 2 broken, 29 blocked (bot challenges, mostly Beacon's; logins;
+  robots.txt; and one TLS error on our side). HEAD first, GET only if HEAD was refused; 2 s
+  apart per host; robots.txt honored; no login or CAPTCHA bypassed. A broken link stays in the
+  file but is left out of the index; other results are noted in the entry's description.
 - The publish gate needs nothing new for the first run with the new adapters: its drop checks
   compare only what the published index had, so growth passes. The question set must still
   pass.

@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { tempIndexPath } from "./helpers.mjs";
-import { handKept, handKeptEntry, mapHandKept, RESOURCE_KINDS } from "../dist/harvest/hand-kept.js";
+import { handKept, handKeptEntry, mapHandKept, linkUsable, LINK_RESULTS, RESOURCE_KINDS } from "../dist/harvest/hand-kept.js";
 import { planFor, runHarvest } from "../dist/harvest/run.js";
 import { loadBundled } from "../dist/registry.js";
 import { readDataJson } from "../dist/paths.js";
@@ -79,4 +79,31 @@ test("the harvest writes hand-kept entries with no network call", async () => {
   assert.equal(p.outcome, "ok", "NY_DATA_OFFLINE=1: any request would have failed it");
   assert.equal(p.requests, 0);
   assert.equal(p.datasets, planFor(src("allegany-county"), cfg).entry.resources.length);
+});
+
+test("link checks: every link has one, a broken link is kept in the file but left out of the index, others are flagged", () => {
+  for (const e of handKept().entries) {
+    for (const r of e.resources) {
+      assert.ok(r.link_check, `${r.url} has no link check`);
+      assert.ok(LINK_RESULTS.includes(r.link_check.result), r.link_check.result);
+      assert.match(r.link_check.checked, /^\d{4}-\d{2}-\d{2}$/);
+      assert.equal(r.checked, false, "an automated check is not a person opening the link");
+    }
+  }
+  const row = src("allegany-county");
+  const base = { title: "t", kind: "page", description: "d", source: "s", recorded: "2026-11-14", checked: false };
+  const ok = { ...base, url: "https://example.gov/ok", link_check: { checked: "2026-11-14", final_url: "https://example.gov/ok", http_status: 200, result: "ok" } };
+  const broken = { ...base, url: "https://example.gov/gone", link_check: { checked: "2026-11-14", final_url: "https://example.gov/gone", http_status: 404, result: "broken" } };
+  const blocked = { ...base, url: "https://example.gov/login", link_check: { checked: "2026-11-14", final_url: null, http_status: 401, result: "blocked", note: "login required (401)" } };
+  const e = handKeptEntry(row, { entries: [{ source_id: row.source_id, entity: row.entity, resources: [ok, broken, blocked] }] });
+  assert.deepEqual(e.resources.map((r) => r.url), [ok.url, blocked.url]);
+  assert.equal(handKeptEntry(row, { entries: [{ source_id: row.source_id, entity: row.entity, resources: [broken] }] }), null, "all broken: nothing to list");
+  assert.ok(!linkUsable(broken) && linkUsable(ok) && linkUsable(blocked) && linkUsable(base));
+  assert.match(mapHandKept(blocked).description, /Link check 2026-11-14: blocked, login required \(401\)\.$/);
+  assert.doesNotMatch(mapHandKept(ok).description, /Link check/);
+  // The real file: Seneca County's 404 page is kept but not indexed.
+  const seneca = handKept().entries.find((x) => x.source_id === "seneca-county");
+  const gone = seneca.resources.find((r) => r.link_check.result === "broken");
+  assert.ok(gone);
+  assert.ok(!handKeptEntry(src("seneca-county")).resources.some((r) => r.url === gone.url));
 });

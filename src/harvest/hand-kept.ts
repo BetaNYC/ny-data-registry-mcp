@@ -22,6 +22,24 @@ export interface HandKeptResource {
   recorded: string;
   /** Whether a person has opened the link. */
   checked: boolean;
+  /** The last automated check of the link, if any. A person opening it is `checked`, not this. */
+  link_check?: LinkCheck;
+}
+
+export const LINK_RESULTS = ["ok", "redirected", "broken", "blocked"] as const;
+
+/** One automated request (HEAD, or GET when HEAD was refused); robots.txt honored, no login or CAPTCHA bypassed. */
+export interface LinkCheck {
+  checked: string;
+  final_url: string | null;
+  http_status: number | null;
+  result: (typeof LINK_RESULTS)[number];
+  note?: string;
+}
+
+/** A link the last check found broken is kept in the file but left out of the index. */
+export function linkUsable(r: HandKeptResource): boolean {
+  return r.link_check?.result !== "broken";
 }
 
 export interface HandKeptEntry {
@@ -40,10 +58,20 @@ export function handKept(): HandKeptDoc {
   return (doc ??= readDataJson<HandKeptDoc>("hand-kept.json"));
 }
 
-/** The entry for a row, matched by source id and entity both, and only if it lists something. */
+/**
+ * The entry for a row, matched by source id and entity both, with broken links left out, and
+ * only if something is left.
+ */
 export function handKeptEntry(s: Source, d: HandKeptDoc = handKept()): HandKeptEntry | null {
   const e = d.entries.find((x) => x.source_id === s.source_id && x.entity === s.entity);
-  return e && e.resources.length ? e : null;
+  const resources = e ? e.resources.filter(linkUsable) : [];
+  return e && resources.length ? { ...e, resources } : null;
+}
+
+function linkNote(c: LinkCheck | undefined): string {
+  if (!c || c.result === "ok") return "";
+  const why = c.note ?? (c.result === "redirected" && c.final_url ? `moves to ${c.final_url}` : c.http_status ? `HTTP ${c.http_status}` : "");
+  return ` Link check ${c.checked}: ${c.result}${why ? `, ${why}` : ""}.`;
 }
 
 export function mapHandKept(r: HandKeptResource): HarvestedDataset {
@@ -51,7 +79,7 @@ export function mapHandKept(r: HandKeptResource): HarvestedDataset {
     // Stable per URL: the same link keeps its id when its title or description is edited.
     native_id: `hand-kept:${createHash("sha256").update(r.url.trim()).digest("hex").slice(0, 16)}`,
     name: r.title,
-    description: `${r.description} (${r.checked ? "Checked by a person" : "Not yet checked"}; from ${r.source}, ${r.recorded}.)`,
+    description: `${r.description} (${r.checked ? "Checked by a person" : "Not yet checked"}; from ${r.source}, ${r.recorded}.)${linkNote(r.link_check)}`,
     department: null,
     categories: [],
     tags: [r.kind],

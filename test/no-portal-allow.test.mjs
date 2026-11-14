@@ -1,7 +1,7 @@
 // "No portal" rows with a documented data endpoint (issue #16, milestone 3; epic #7, D4).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { planFor } from "../dist/harvest/run.js";
+import { allowedNoPortalPlan, planFor } from "../dist/harvest/run.js";
 import { loadBundled } from "../dist/registry.js";
 import { readDataJson } from "../dist/paths.js";
 
@@ -29,6 +29,50 @@ test("each allowed row is New York: it names the New York org, never the look-al
     assert.ok(row.api_endpoint.includes(a.endpoint), `${entity}: endpoint is the registry's own`);
     assert.ok(!/uticamn|wycopa/.test(a.endpoint));
   }
+});
+
+// Added 2026-11-14 after one live read of each services directory root.
+const COUNTY_SERVERS = {
+  "greene-county": "https://gis.gcgovny.com/arcgis/rest/services",
+  "washington-county": "https://gis.washingtoncountyny.gov/arcgis/rest/services",
+  "cayuga-county": "https://ccgis2.cayugacounty.us/arcgis/rest/services",
+  "essex-county": "https://essex-gis.co.essex.ny.us/arcgis/rest/services",
+  "chautauqua-county": "https://maps.chautauquacounty.com/server/rest/services",
+};
+
+test("five county ArcGIS servers are read by the arcgis-server adapter, each with its live check recorded", () => {
+  for (const [id, root] of Object.entries(COUNTY_SERVERS)) {
+    const row = src(id);
+    assert.equal(row.status, "no-portal", id);
+    assert.deepEqual(planFor(row, cfg), { kind: "arcgis-server", root }, id);
+    const a = cfg.allow_no_portal[row.entity];
+    assert.equal(a.adapter, "arcgis-server");
+    assert.equal(a.checked_live.url, `${root}?f=json`);
+    assert.equal(a.checked_live.http_status, 200);
+    assert.match(a.checked_live.at, /^\d{4}-\d{2}-\d{2}T/);
+    assert.match(a.checked_new_york, /NY|New York/, id);
+  }
+  // Each names the same-named county it is not.
+  assert.match(cfg.allow_no_portal["Greene County"].checked_new_york, /Ohio/);
+  assert.match(cfg.allow_no_portal["Washington County"].checked_new_york, /Wisconsin/);
+  assert.match(cfg.allow_no_portal["Essex County"].checked_new_york, /Ontario/);
+  assert.match(cfg.allow_no_portal["Chautauqua County"].checked_new_york, /Kansas/);
+});
+
+test("St. Lawrence County is left out: its server is shared with other counties", () => {
+  assert.equal(cfg.allow_no_portal["St. Lawrence County"], undefined);
+  assert.match(cfg.allow_no_portal["_left_out_2026-11-14"], /St\. Lawrence/);
+  assert.notEqual(planFor(src("st-lawrence-county"), cfg).kind, "arcgis-server");
+});
+
+test("a moved county server stops its row too; its hand-kept links take over", () => {
+  const essex = src("essex-county");
+  const movedRow = { ...essex, api_endpoint: "https://gis.essexcountyva.gov/arcgis/rest/services" };
+  const a = allowedNoPortalPlan(movedRow, cfg);
+  assert.equal(a.kind, "skip");
+  assert.match(a.reason, /no longer contains/);
+  assert.equal(planFor(movedRow, cfg).kind, "hand-kept");
+  assert.equal(planFor(essex, { ...cfg, adapters: { ...cfg.adapters, "arcgis-server": { enabled: false } } }).code, "adapter-off");
 });
 
 test("other 'no portal' rows stay skipped, even with an endpoint", () => {

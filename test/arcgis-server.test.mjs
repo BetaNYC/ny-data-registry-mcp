@@ -35,7 +35,7 @@ test("standalone ArcGIS Server rows get the adapter; ArcGIS Online orgs and 'no 
   assert.deepEqual(planFor(src("ulster-county"), cfg), { kind: "arcgis-server", root: "https://gis.ulstercountyny.gov/server/rest/services" });
   assert.equal(planFor(src("nys-department-of-environmental-conservation--gisservices-dec-ny-gov"), cfg).kind, "arcgis-server");
   assert.equal(planFor(src("nys-department-of-environmental-conservation--services6-arcgis-com"), cfg).kind, "agol-org");
-  assert.equal(planFor(src("greene-county"), cfg).kind, "hand-kept", "a no-portal county server is read only if put on allow_no_portal");
+  assert.equal(planFor(src("st-lawrence-county"), cfg).kind, "hand-kept", "a no-portal county server is read only if put on allow_no_portal");
   assert.equal(cadenceDays("broome-county", "arcgis-server", cfg.cadence), 7, "weekly per host (D5)");
   assert.equal(cfg.adapters["arcgis-server"].enabled, true);
 });
