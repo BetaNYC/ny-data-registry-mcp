@@ -1,4 +1,107 @@
 {
-  "about": "One terms-of-use page per portal, used when a dataset has no license (issue #17). Add a portal only after opening its terms page: record the URL and the date it was checked. The registry has no terms field, and the two portal terms URLs tried on 2026-11-05 returned 404 (docs/terms.md), so this starts empty. Every link is labeled 'terms page, not a license'.",
-  "portals": {}
+  "about": "One terms-of-use page per portal, used when a dataset has no license of its own (issue #17). Every link is labeled 'terms page, not a license'. A portal is listed only after its page was opened: `url` is the page, `title` its exact title, `checked` the date it was opened, `found` how it was found. `kind` is 'portal' for a page the government body publishes, or 'platform' for a vendor's page that the portal itself links to. Only pages the portal links to, or that its government body publishes, are listed. `checked_without_terms` lists portals that were checked and have none, with the reason, so nobody has to check them again from scratch.",
+  "portals": {
+    "new-york-city": {
+      "url": "https://www.nyc.gov/main/terms-of-use",
+      "title": "Terms of Use - nyc.gov",
+      "checked": "2026-11-14",
+      "found": "Footer link 'Terms of use' on the portal home page (data.cityofnewyork.us now redirects to www.nyc.gov/opendata).",
+      "kind": "portal"
+    },
+    "nys-office-of-information-technology-services-open-ny-progra": {
+      "url": "https://data.ny.gov/dataset/OPEN-NY-Terms-Of-Use/77gx-ii52",
+      "title": "OPEN- NY Terms Of Use | State of New York",
+      "checked": "2026-11-14",
+      "found": "Footer link 'Terms of Use' on the data.ny.gov home page.",
+      "kind": "portal"
+    },
+    "nys-department-of-health": {
+      "url": "https://data.ny.gov/download/77gx-ii52/application/pdf",
+      "title": "OPEN-NY Terms of Use.pdf",
+      "checked": "2026-11-14",
+      "found": "Footer link 'Terms of Service' on the health.data.ny.gov home page.",
+      "kind": "portal",
+      "note": "A PDF, so it has no HTML title; the title is the file name it downloads as. It is the file attached to the data.ny.gov 'OPEN- NY Terms Of Use' page. The footer's other link, 'DATA POLICY' (www.health.ny.gov/about/data_use.htm), returned 403 to our request on 2026-11-14 and was not read."
+    },
+    "city-of-buffalo": {
+      "url": "https://data.buffalony.gov/stories/s/City-of-Buffalo-Open-Data-Policy/xhgt-q9im/",
+      "title": "City of Buffalo Open Data Policy | OpenData Buffalo",
+      "checked": "2026-11-14",
+      "found": "Footer link 'Open Data Policy' on the portal home page.",
+      "kind": "portal",
+      "note": "The City's open data policy, which includes its warranty and liability disclaimer for the data. The footer's 'Terms of Service' link goes to Tyler Technologies' platform agreement instead."
+    },
+    "nys-office-of-information-technology-services-gis-program-of--data-gis-ny-gov": {
+      "url": "https://gis.ny.gov/disclaimer",
+      "title": "Disclaimer | gis",
+      "checked": "2026-11-14",
+      "found": "Footer link 'Disclaimer' on the data.gis.ny.gov home page.",
+      "kind": "portal"
+    },
+    "suffolk-county": {
+      "url": "https://opendata.suffolkcountyny.gov/pages/terms-conditions",
+      "title": "Terms & Conditions",
+      "checked": "2026-11-14",
+      "found": "Footer links 'Terms & Conditions' and 'Terms of Service' on the portal home page (both go here).",
+      "kind": "portal"
+    },
+    "city-of-syracuse": {
+      "url": "https://data.syr.gov/pages/termsofuse",
+      "title": "Terms of Use",
+      "checked": "2026-11-14",
+      "found": "Link 'Terms of Use' on the portal home page.",
+      "kind": "portal"
+    },
+    "city-of-rochester": {
+      "url": "https://data.cityofrochester.gov/pages/terms-of-use",
+      "title": "Terms of Use",
+      "checked": "2026-11-14",
+      "found": "Footer link 'Terms of Use' on the DataROC home page.",
+      "kind": "portal"
+    },
+    "otsego-county": {
+      "url": "https://otsegocountyny.maps.arcgis.com/sharing/rest/content/items/e89ba4401f6f4d379258e900de6fbbd3/data",
+      "title": "Legal_Disclaimer_for_GIS_Data_and_Mapping_Tools",
+      "checked": "2026-11-14",
+      "found": "The policy link in the portal's site notice, which opens with 'Disclaimer of Liability and Accuracy' (Hub site settings, telemetry.consentNotice.policyURL).",
+      "kind": "portal",
+      "note": "A Word document the county published on its ArcGIS organization; the title is the item's title."
+    },
+    "lehman-college-cuny": {
+      "url": "https://support.socrata.com/hc/en-us/articles/360019057154-Data-Insights-Software-As-A-Service-License-Agreement",
+      "title": "Data & Insights Software-As-A-Service License Agreement – Data & Insights Client Center",
+      "checked": "2026-11-14",
+      "found": "Footer link 'Terms of Service' (http://www.socrata.com/terms-of-service) on the portal home page, which redirects here.",
+      "kind": "platform",
+      "note": "Tyler Technologies' agreement with the governments and schools that run Socrata portals. It is the only terms link the portal gives."
+    }
+  },
+  "checked_without_terms": {
+    "_checked": "2026-11-14",
+    "nassau-county": "Blocked: robots.txt on opendata.nassaucountyny.gov disallows every page ('Disallow: /'), so no page was opened.",
+    "dutchess-county": "Footer link 'Terms and Conditions' goes to http://mydci.dcny.gov/terms.htm, whose host does not resolve. Every Dutchess dataset already links its own terms page (www.dutchessny.gov/terms-and-conditions.htm).",
+    "oswego-county": "Footer link 'Terms of Service' (/pages/terms-of-service) returned 404.",
+    "nys-department-of-environmental-conservation": "The portal is an ArcGIS REST directory with no web page or links. The ArcGIS organization profile has no terms.",
+    "nyc-department-of-city-planning--services5-arcgis-com": "The portal is an ArcGIS REST directory with no web page or links. The ArcGIS organization profile has no terms.",
+    "nys-office-of-parks-recreation-and-historic-preservation": "The portal is an ArcGIS REST directory with no web page or links. The ArcGIS organization profile has no terms.",
+    "nys-department-of-state": "No terms, policy or disclaimer link in the Hub site's header, footer or About page.",
+    "albany-county": "No terms, policy or disclaimer link in the Hub site's header or footer.",
+    "warren-county": "No terms, policy or disclaimer link in the Hub site's header or footer.",
+    "westchester-county": "No terms, policy or disclaimer link in the Hub site's header, footer or About page.",
+    "tioga-county": "Only the Hub template's empty 'Terms of Use' link (href '#').",
+    "cattaraugus-county": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "columbia-county": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "tompkins-county": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "cortland-county": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "sullivan-county": "Only the Hub template's empty 'Terms of Service' link (href '#').",
+    "putnam-county": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "nys-adirondack-park-agency": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "ontario-county": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "steuben-county": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "genesee-county": "Only the Hub template's empty 'Terms of Use' and 'Terms of Service' links (href '#').",
+    "wayne-county": "The ArcGIS Enterprise site's footer has contact and county links but no terms; only an empty template 'Terms of Use' link (href '#').",
+    "monroe-county": "The ArcGIS Enterprise site's footer is turned off; its template links 'Terms of Service' and 'Privacy Policy' are empty (href '#').",
+    "livingston-county": "ArcGIS Enterprise portal home page only; the portal's settings have no terms or access notice.",
+    "yates-county": "ArcGIS Enterprise portal home page only; the portal's settings have no terms or access notice."
+  }
 }

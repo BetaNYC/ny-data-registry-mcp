@@ -21,17 +21,30 @@ export interface LicenseInfo {
   /** Only for kind "license". */
   license: { name: string; url: string | null } | null;
   /** A terms-of-use page. Never a license. */
-  terms_page: { url: string; label: typeof TERMS_LABEL; source: "dataset" | "portal" } | null;
+  terms_page: { url: string; label: typeof TERMS_LABEL; source: "dataset" | "portal"; platform?: true } | null;
   /** The portal's own text when it is not a license name, cleaned of HTML. */
   statement: string | null;
 }
 
+/**
+ * One checked page per portal. `kind` "platform" marks a vendor's page (Socrata/Tyler, Esri) that
+ * the portal itself links to; "portal" (the default) a page the government body publishes.
+ */
+export interface TermsPage {
+  url: string;
+  checked: string;
+  title?: string;
+  found?: string;
+  kind?: "portal" | "platform";
+  note?: string;
+}
+
 export interface TermsPages {
-  portals: Record<string, { url: string; checked: string; note?: string }>;
+  portals: Record<string, TermsPage>;
 }
 
 let cachedTerms: TermsPages | null = null;
-/** data/terms-pages.json: one checked terms-of-use URL per portal. Empty until someone checks them. */
+/** data/terms-pages.json: one checked terms-of-use page per portal (checked by hand; see the file's `about`). */
 export function termsPages(): TermsPages {
   if (!cachedTerms) {
     const raw = readDataJson<Partial<TermsPages>>("terms-pages.json");
@@ -93,7 +106,9 @@ function urlsIn(text: string): string[] {
 export function classifyLicense(raw: string | null | undefined, portalId: string, terms: TermsPages = termsPages()): LicenseInfo {
   const text = cleanLicenseText(raw);
   const portalTerms = terms.portals[portalId];
-  const fromPortal = portalTerms ? { url: portalTerms.url, label: TERMS_LABEL, source: "portal" as const } : null;
+  const fromPortal = portalTerms
+    ? { url: portalTerms.url, label: TERMS_LABEL, source: "portal" as const, ...(portalTerms.kind === "platform" ? { platform: true as const } : {}) }
+    : null;
   if (!text || EMPTY_WORDS.has(text.toLowerCase())) {
     return { kind: fromPortal ? "terms-page" : "none", license: null, terms_page: fromPortal, statement: null };
   }

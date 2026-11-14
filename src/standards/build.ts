@@ -258,7 +258,7 @@ export function toCroissant(r: StdRecord, o: { harvestedAt: string | null; terms
   if (lic.license) doc.license = lic.license.url ?? lic.license.name;
   else missing.push({ field: "license", required: true, why: licenseWhy(lic) });
   const usage: Record<string, unknown>[] = [];
-  if (lic.terms_page) usage.push({ "@type": "sc:CreativeWork", name: capitalize(TERMS_LABEL), url: lic.terms_page.url });
+  if (lic.terms_page) usage.push({ "@type": "sc:CreativeWork", name: termsName(lic), url: lic.terms_page.url });
   if (lic.statement) usage.push({ "@type": "sc:CreativeWork", name: "Use terms stated by the portal (not a license)", text: lic.statement });
   if (usage.length) doc.usageInfo = usage.length === 1 ? usage[0] : usage;
 
@@ -324,7 +324,7 @@ export function toDcatUs(r: StdRecord, o: { terms?: TermsPages } = {}): Built {
   if (lic.license) doc.license = lic.license.url ?? lic.license.name;
   else missing.push({ field: "license", required: false, why: licenseWhy(lic) });
   const rights: string[] = [];
-  if (lic.terms_page) rights.push(`${capitalize(TERMS_LABEL)}: ${lic.terms_page.url}`);
+  if (lic.terms_page) rights.push(`${termsName(lic)}: ${lic.terms_page.url}`);
   if (lic.statement) rights.push(lic.statement);
   if (rights.length) doc.rights = rights;
 
@@ -340,6 +340,11 @@ export function toDcatUs(r: StdRecord, o: { terms?: TermsPages } = {}): Built {
   }
   if (dist.length) doc.distribution = dist;
   return { document: doc, license: lic, missing };
+}
+
+/** "Terms page, not a license", saying so when it is the platform vendor's page the portal links to. */
+function termsName(l: LicenseInfo): string {
+  return capitalize(TERMS_LABEL) + (l.terms_page?.platform ? " (the platform vendor's page, linked by the portal)" : "");
 }
 
 function licenseWhy(l: LicenseInfo): string {
