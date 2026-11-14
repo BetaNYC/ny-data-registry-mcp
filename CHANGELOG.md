@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+See [#10](https://github.com/BetaNYC/ny-data-registry-mcp/issues/10) (part of
+[BetaNYC/ny-gov-web-registry#58](https://github.com/BetaNYC/ny-gov-web-registry/issues/58)).
+
+### Added
+
+- `registry_id` in every reply that names a data site: the id of the row's
+  government body in BetaNYC/ny-gov-web-registry, for joining the two. Source
+  rows (`find_sources`, `list_sources_for_place`, `how_to_query`,
+  `check_source`) always carry it, `null` when the row has none. Dataset rows
+  carry their portal's id: `search_datasets` compact rows, portal groups, the
+  coverage list and `find_joinable`'s `by_portal` only when there is one;
+  full rows, `get_dataset_columns`, `find_joinable`'s `dataset` and the CSV
+  export (a new `registry_id` column after `portal_id`) always. Dataset rows
+  read it from the registry at answer time, so ids added upstream show up
+  without a new harvest.
+- `search_datasets` and `whats_new`: `portal` also accepts a `registry_id`,
+  meaning every data site of that government and nothing else.
+- `registry_info`: `with_registry_id`, how many rows carry one.
+
+### Changed
+
+- An empty `registry_id`, or the registry's `—` placeholder, is read as no id
+  (`null`). Ids are copied from the registry and never derived.
+- The "no row with registry_id" error counts the rows that carry one from the
+  loaded registry instead of a fixed "22 of 140".
+
+### Fixed
+
+- `search_datasets`: the rows-left-out note is now counted against the size
+  budget. A trimmed page could end up a little over 20 KB once the note was
+  added.
+
 ## [0.2.0] — 2026-11-12
 
 See [#8](https://github.com/BetaNYC/ny-data-registry-mcp/issues/8) (epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).

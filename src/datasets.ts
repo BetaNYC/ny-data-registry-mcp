@@ -9,7 +9,7 @@ import { openDb, indexExists, stripHtml } from "./db.js";
 import { indexPath } from "./paths.js";
 import { expandTerms, placeMatches, tokenize } from "./sources.js";
 import { resolvePlace, places, type ResolvedPlace } from "./places.js";
-import { registry, type Source } from "./registry.js";
+import { registry, registryIdFor, sourceIdsForRegistryId, type Source } from "./registry.js";
 
 export class NoIndexError extends Error {
   constructor(detail?: string) {
@@ -90,6 +90,7 @@ function summary(r: DatasetRow) {
     name: r.name,
     portal: r.portal_name,
     portal_id: r.portal_id,
+    registry_id: registryIdFor(r.portal_id),
     entity: r.portal_entity,
     platform_family: r.platform_family,
     type: r.type,
@@ -179,6 +180,12 @@ export function toolJson(v: unknown): string {
 }
 const byteSize = (v: unknown) => Buffer.byteLength(toolJson(v), "utf8");
 
+/** `{ registry_id }` when the portal's registry row has one, else nothing (compact rows leave it out rather than repeat a null). */
+function ridField(portalId: string): { registry_id?: string } {
+  const rid = registryIdFor(portalId);
+  return rid ? { registry_id: rid } : {};
+}
+
 function compact(r: DatasetRow) {
   const formats = JSON.parse(r.formats || "[]") as { format: string }[];
   return {
@@ -186,6 +193,7 @@ function compact(r: DatasetRow) {
     name: r.name,
     portal: r.portal_name,
     portal_id: r.portal_id,
+    ...ridField(r.portal_id),
     type: r.type,
     updated_at: r.updated_at ? r.updated_at.slice(0, 10) : null,
     url: r.permalink,
@@ -260,7 +268,7 @@ export function coverageNote(place: ResolvedPlace | null) {
   const statewide = gaps.filter((x) => x.s.place.scope === "statewide" && placeMatches(x.s, place) !== null);
   return {
     place: place.name,
-    portals_for_this_place_not_fully_indexed: local.map((x) => ({ portal_id: x.s.source_id, entity: x.s.entity, reason: x.why })),
+    portals_for_this_place_not_fully_indexed: local.map((x) => ({ portal_id: x.s.source_id, ...(x.s.registry_id ? { registry_id: x.s.registry_id } : {}), entity: x.s.entity, reason: x.why })),
     statewide_portals_not_fully_indexed: statewide.length,
     note: "Portals listed here are not (fully) searched, so a missing result is not proof the data does not exist. Use how_to_query on a portal_id to reach it directly.",
   };
@@ -295,8 +303,9 @@ export function searchDatasets(a: SearchArgs) {
     }
   }
   if (a.portal) {
-    where.push("(d.portal_id = ? OR p.name LIKE ? OR p.entity LIKE ?)");
-    params.push(a.portal, `%${a.portal}%`, `%${a.portal}%`);
+    const f = portalFilter(a.portal, "d.portal_id", ["p.name", "p.entity"]);
+    where.push(f.sql);
+    params.push(...f.params);
   }
   if (a.platform_family) {
     where.push("d.platform_family = ?");
@@ -431,12 +440,20 @@ export function searchDatasets(a: SearchArgs) {
   if (exportMode === "always" || (exportMode === "auto" && groups !== null)) attachExport(ctx, resp);
   if (groups) fitSummary(resp, results, groups);
   else while (results.length > 1 && byteSize(resp) > RESPONSE_BUDGET_BYTES) results.pop();
-  const omitted = pageIds.length - results.length;
-  resp.returned = results.length;
-  if (omitted > 0) {
-    resp.next_offset = offset + results.length;
-    resp.omitted_for_size = omitted;
-    resp.size_note = `${omitted} more row(s) were left out to keep the answer under ${RESPONSE_BUDGET_BYTES} bytes.${resp.export ? " The export CSV has every match." : ` offset=${offset + results.length} gets them${detail === "full" ? ', or use detail: "compact"' : ""}.`}`;
+  const noteOmitted = () => {
+    const omitted = pageIds.length - results.length;
+    resp.returned = results.length;
+    if (omitted > 0) {
+      resp.next_offset = offset + results.length;
+      resp.omitted_for_size = omitted;
+      resp.size_note = `${omitted} more row(s) were left out to keep the answer under ${RESPONSE_BUDGET_BYTES} bytes.${resp.export ? " The export CSV has every match." : ` offset=${offset + results.length} gets them${detail === "full" ? ', or use detail: "compact"' : ""}.`}`;
+    }
+  };
+  noteOmitted();
+  // The notes just added take room too; trim again until the whole reply fits.
+  while (results.length > 1 && byteSize(resp) > RESPONSE_BUDGET_BYTES) {
+    results.pop();
+    noteOmitted();
   }
   return resp;
 }
@@ -477,7 +494,7 @@ function computeGroups(ctx: SearchCtx, by: GroupBy, topN: number): GroupRow[] {
   const label = new Map<string, Record<string, string>>();
   for (const { r } of scored) {
     for (const k of groupKeys(r, by)) {
-      if (by === "portal" && !label.has(k)) label.set(k, { portal: r.portal_name, entity: r.portal_entity });
+      if (by === "portal" && !label.has(k)) label.set(k, { portal: r.portal_name, ...ridField(k), entity: r.portal_entity });
       const t = top.get(k) ?? [];
       if (t.length < topN) t.push({ dataset_id: r.id, name: r.name });
       top.set(k, t);
@@ -551,7 +568,7 @@ function fitSummary(resp: Record<string, unknown>, results: unknown[], groups: G
 }
 
 const CSV_HEADER = [
-  "rank", "dataset_id", "name", "portal", "portal_id", "type", "updated_at", "url", "formats",
+  "rank", "dataset_id", "name", "portal", "portal_id", "registry_id", "type", "updated_at", "url", "formats",
   "api_endpoint", "socrata_domain", "socrata_dataset_id", "platform_family", "place_counties", "geometry_type", "column_count",
 ];
 
@@ -577,6 +594,7 @@ function attachExport(ctx: SearchCtx, resp: Record<string, unknown>): void {
     r.name,
     r.portal_name,
     r.portal_id,
+    registryIdFor(r.portal_id),
     r.type,
     r.updated_at ? r.updated_at.slice(0, 10) : null,
     r.permalink,
@@ -659,7 +677,9 @@ export function findJoinable(ref: string, column?: string, limitPerKey = 10) {
     const sc = scopeOf(k.key_label) === "nyc" ? nycOnly : "";
     const base = `FROM dataset_columns c JOIN datasets ds ON ds.id = c.dataset_id JOIN portals p ON p.id = ds.portal_id WHERE c.key_label = ? AND c.dataset_id != ? AND ds.removed_at IS NULL ${sc}`;
     const total = (d.prepare(`SELECT COUNT(DISTINCT c.dataset_id) AS n ${base}`).get(k.key_label, r.id) as { n: number }).n;
-    const byPortal = d.prepare(`SELECT ds.portal_id, COUNT(DISTINCT c.dataset_id) AS n ${base} GROUP BY ds.portal_id ORDER BY n DESC`).all(k.key_label, r.id);
+    const byPortal = (d.prepare(`SELECT ds.portal_id, COUNT(DISTINCT c.dataset_id) AS n ${base} GROUP BY ds.portal_id ORDER BY n DESC`).all(k.key_label, r.id) as { portal_id: string; n: number }[]).map(
+      (x) => ({ portal_id: x.portal_id, ...ridField(x.portal_id), n: x.n })
+    );
     const top = d
       .prepare(`${SELECT_DS} WHERE d.removed_at IS NULL AND d.id != ? AND d.id IN (SELECT c.dataset_id ${base.replace("c.dataset_id != ?", "1 = 1")}) ORDER BY (d.portal_id = ?) DESC, COALESCE(d.views, 0) DESC LIMIT ?`)
       .all(r.id, k.key_label, r.portal_id, limitPerKey) as unknown as DatasetRow[];
@@ -686,9 +706,12 @@ export function whatsNew(since: string, portal?: string, limit = 50) {
   if (!/^\d{4}-\d{2}-\d{2}/.test(since)) return { error: "since must be a date, YYYY-MM-DD" };
   const params: string[] = [since];
   let pw = "";
+  let uw = "";
   if (portal) {
-    pw = " AND (c.portal_id = ? OR p.name LIKE ?)";
-    params.push(portal, `%${portal}%`);
+    const fc = portalFilter(portal, "c.portal_id", ["p.name"]);
+    pw = ` AND ${fc.sql}`;
+    uw = ` AND ${portalFilter(portal, "ds.portal_id", ["p.name"]).sql}`;
+    params.push(...fc.params);
   }
   const counts = d.prepare(`SELECT c.change, COUNT(*) AS n FROM changes c JOIN portals p ON p.id = c.portal_id WHERE c.at >= ?${pw} GROUP BY c.change`).all(...params);
   const rows = d
@@ -696,7 +719,7 @@ export function whatsNew(since: string, portal?: string, limit = 50) {
     .all(...params, String(limit));
   const firstRun = (d.prepare("SELECT MIN(started_at) AS s FROM harvest_runs").get() as { s: string | null }).s;
   const updated = d
-    .prepare(`SELECT ds.id AS dataset_id, ds.name, p.name AS portal, ds.updated_at, ds.permalink FROM datasets ds JOIN portals p ON p.id = ds.portal_id WHERE ds.removed_at IS NULL AND ds.updated_at >= ?${portal ? " AND (ds.portal_id = ? OR p.name LIKE ?)" : ""} ORDER BY ds.updated_at DESC LIMIT ?`)
+    .prepare(`SELECT ds.id AS dataset_id, ds.name, p.name AS portal, ds.updated_at, ds.permalink FROM datasets ds JOIN portals p ON p.id = ds.portal_id WHERE ds.removed_at IS NULL AND ds.updated_at >= ?${uw} ORDER BY ds.updated_at DESC LIMIT ?`)
     .all(...params, String(limit));
   return {
     since,
@@ -708,6 +731,17 @@ export function whatsNew(since: string, portal?: string, limit = 50) {
         ? `The index's first harvest was ${firstRun.slice(0, 10)}. 'added' before that date means 'first indexed', not 'newly published'. data_updated_per_portal uses each portal's own updated date.`
         : "index_changes compares harvests. data_updated_per_portal uses each portal's own updated date.",
   };
+}
+
+/**
+ * SQL for a `portal` filter. A value that is exactly some row's registry_id matches that
+ * government's data sites (several rows can share one) and nothing else; any other value is
+ * a source_id or part of a portal name, as before.
+ */
+export function portalFilter(portal: string, idCol: string, likeCols: string[]): { sql: string; params: string[] } {
+  const ids = sourceIdsForRegistryId(portal);
+  if (ids.length) return { sql: `(${idCol} = ? OR ${idCol} IN (${ids.map(() => "?").join(",")}))`, params: [portal, ...ids] };
+  return { sql: `(${idCol} = ? OR ${likeCols.map((c) => `${c} LIKE ?`).join(" OR ")})`, params: [portal, ...likeCols.map(() => `%${portal}%`)] };
 }
 
 export function registryPortalIds(): string[] {

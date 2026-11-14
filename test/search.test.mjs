@@ -121,7 +121,8 @@ test("group_by refuses list-only parameters instead of ignoring them", () => {
 test("rows are compact by default; detail full keeps the original shape", () => {
   const c = searchDatasets({ query: "medicaid" });
   assert.equal(c.detail, "compact");
-  assert.deepEqual(Object.keys(c.results[0]).sort(), ["dataset_id", "formats", "name", "portal", "portal_id", "type", "updated_at", "url"]);
+  // registry_id appears only when the portal's registry row has one (test/registry-id.test.mjs).
+  assert.deepEqual(Object.keys(c.results[0]).filter((k) => k !== "registry_id").sort(), ["dataset_id", "formats", "name", "portal", "portal_id", "type", "updated_at", "url"]);
   const p = searchDatasets({ query: "parcel layer putnam" }).results[0];
   assert.equal(p.updated_at, "2026-10-01", "date only");
   const f = searchDatasets({ query: "medicaid", detail: "full" }).results[0];
