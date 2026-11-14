@@ -16,6 +16,11 @@
 # The code release is created with --latest=false. The dataset index lives in
 # its own fixed release, index-latest, which the server downloads on first run;
 # code releases must never hold or shadow it.
+#
+# Before tagging: one commit dates the WHATS-CHANGED.md "## Unreleased:" entry and the
+# CHANGELOG.md heading with the same New York date, and adds the dated anchor to the entry's
+# MCP version link. Tag that commit. Full steps: README, "Releases". The "WHATS-CHANGED.md has
+# no Unreleased entry" step below enforces the dating.
 
 name: Release
 
@@ -64,6 +69,12 @@ jobs:
             echo "Tag ${GITHUB_REF_NAME} does not match package.json version ${PKG_VERSION}" >&2
             exit 1
           fi
+
+      # WHATS-CHANGED.md: the version bump's entry is "## Unreleased: Title" until the release
+      # commit dates it ("## YYYY-MM-DD: Title", same title). This fails while one is left.
+      # scripts/whats_changed.py is a copy of the workspace's canonical file; never edit it.
+      - name: WHATS-CHANGED.md has no Unreleased entry
+        run: python3 scripts/whats_changed.py check WHATS-CHANGED.md --release
 
       - name: Publish to npm
         run: npm publish --provenance --access public
