@@ -64,6 +64,7 @@ const hostLocks = new Map<string, Promise<void>>();
 const robotsCache = new Map<string, RobotsRules>();
 const hostDelayMs = new Map<string, number>();
 const widenedGapMs = new Map<string, number>();
+const adapterFloorMs = new Map<string, number>();
 export const requestLog: { url: string; status: number; at: string }[] = [];
 
 export function minIntervalMs(): number {
@@ -84,7 +85,15 @@ export function isSocrataHost(host: string): boolean {
 
 /** The minimum gap this client keeps between two requests to `host`, before any Crawl-delay. */
 export function hostFloorMs(host: string): number {
-  return Math.max(minIntervalMs(), isSocrataHost(host) ? SOCRATA_MIN_INTERVAL_MS : 0, widenedGapMs.get(host) ?? 0);
+  return Math.max(minIntervalMs(), isSocrataHost(host) ? SOCRATA_MIN_INTERVAL_MS : 0, widenedGapMs.get(host) ?? 0, adapterFloorMs.get(host) ?? 0);
+}
+
+/**
+ * Widen the gap for one host for the rest of the run (an adapter's own politeness setting, such
+ * as the ArcGIS Server adapter's). It can only widen: values under the package floor are ignored.
+ */
+export function setHostFloorMs(host: string, ms: number): void {
+  if (Number.isFinite(ms) && ms > (adapterFloorMs.get(host) ?? 0)) adapterFloorMs.set(host, Math.min(ms, MAX_WAIT_MS));
 }
 
 /**
@@ -291,5 +300,6 @@ export function resetHttpState(): void {
   robotsCache.clear();
   hostDelayMs.clear();
   widenedGapMs.clear();
+  adapterFloorMs.clear();
   requestLog.length = 0;
 }

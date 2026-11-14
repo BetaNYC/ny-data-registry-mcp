@@ -6,7 +6,9 @@ import { openDb, upsertPortal, setPortalHarvest, writePortalDatasets, purgePorta
 import { registry, type Source } from "../registry.js";
 import { socrataDomain } from "../sources.js";
 import { refuseReason } from "../check.js";
+import { bboxIntersectsNY } from "../places.js";
 import { harvestSocrata } from "./socrata.js";
+import { DEFAULT_SERVER_CONFIG, harvestArcgisServer, serverRootOf, type ServerConfig } from "./arcgis-server.js";
 import { buildTopics } from "../topics.js";
 import {
   dcatByItem, fetchServiceColumns, filterItems, itemsFromDcat, listHubItems, mapArcgisItem, mergeDcat, mostCommonOrg,
@@ -25,6 +27,7 @@ interface HarvestConfig {
   cadence?: CadenceConfig;
   adapters?: Record<string, AdapterSwitch>;
   allow_no_portal?: Record<string, AllowNoPortal | string>;
+  arcgis_server?: Partial<ServerConfig>;
 }
 
 /**
@@ -91,6 +94,7 @@ export type Plan =
   | { kind: "hub"; site: string; agolOrg: string | null }
   | { kind: "enterprise"; portalBase: string }
   | { kind: "agol-org"; orgId: string }
+  | { kind: "arcgis-server"; root: string }
   | { kind: "skip"; reason: string; code: SkipCode };
 
 /**
@@ -147,6 +151,10 @@ export function allowedNoPortalPlan(s: Source, cfg: HarvestConfig): Plan | null 
     const b = enterprisePortalBase(s);
     return b ? { kind: "enterprise", portalBase: b } : { kind: "skip", code: "incomplete-row", reason: "on allow_no_portal, but no portal URL in the row" };
   }
+  if (a.adapter === "arcgis-server") {
+    const root = serverRootOf(s.url, s.api_endpoint);
+    return root ? { kind: "arcgis-server", root } : { kind: "skip", code: "incomplete-row", reason: "on allow_no_portal, but no REST services directory in the row" };
+  }
   return { kind: "skip", code: "incomplete-row", reason: `on allow_no_portal with adapter '${a.adapter}', which this row cannot use` };
 }
 
@@ -173,11 +181,15 @@ function basePlan(s: Source, cfg: HarvestConfig): Plan {
       return s.url ? { kind: "hub", site: s.url.trim().split(/\s/)[0].replace(/\/+$/, ""), agolOrg: agolOrgOf(s) } : { kind: "skip", code: "incomplete-row", reason: "no site URL" };
     case "arcgis-enterprise": {
       const b = enterprisePortalBase(s);
-      return b ? { kind: "enterprise", portalBase: b } : { kind: "skip", code: "no-adapter", reason: "ArcGIS Enterprise without a portal (server REST directory only): no catalog adapter in this build" };
+      if (b) return { kind: "enterprise", portalBase: b };
+      const root = serverRootOf(s.url, s.api_endpoint);
+      return root ? { kind: "arcgis-server", root } : { kind: "skip", code: "incomplete-row", reason: "ArcGIS Enterprise with neither a portal nor a REST services directory in the row" };
     }
     case "arcgis-server": {
       const org = agolOrgOf(s);
-      return org ? { kind: "agol-org", orgId: org } : { kind: "skip", code: "no-adapter", reason: "standalone ArcGIS Server REST directory: no catalog adapter in this build" };
+      if (org) return { kind: "agol-org", orgId: org };
+      const root = serverRootOf(s.url, s.api_endpoint);
+      return root ? { kind: "arcgis-server", root } : { kind: "skip", code: "incomplete-row", reason: "ArcGIS Server row without a REST services directory URL" };
     }
     case "geoblacklight":
       return { kind: "skip", code: "no-adapter", reason: "GeoBlacklight: no adapter in this build" };
@@ -382,6 +394,18 @@ export async function runHarvest(opts: RunOpts = {}) {
         datasets = h.datasets;
         complete = h.complete;
         Object.assign(st, { listed: h.resultSetSize, requests: h.requests, error: h.error, columns_fetched_for: datasets.filter((d) => d.columns_status === "from-search").length });
+      } else if (plan.kind === "arcgis-server") {
+        const h = await harvestArcgisServer(plan.root, { ...DEFAULT_SERVER_CONFIG, ...(cfg.arcgis_server ?? {}) });
+        // The out-of-state guard, as for ArcGIS items: drop services whose extent is outside New York.
+        const kept = h.datasets.filter((d) => bboxIntersectsNY(d.extent) !== false);
+        datasets = kept;
+        complete = h.complete;
+        Object.assign(st, {
+          listed: h.listed, kept: kept.length, requests: h.requests, error: h.error,
+          excluded: { esri: 0, other_org: 0, out_of_state: h.datasets.length - kept.length, not_public: 0 },
+          columns_fetched_for: kept.filter((d) => d.columns_status === "fetched").length,
+          columns_not_fetched: kept.filter((d) => d.columns_status === "not-fetched").length,
+        });
       } else {
         let items: ArcgisItem[] = [];
         let listingComplete = false;

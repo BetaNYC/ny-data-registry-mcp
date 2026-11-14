@@ -49,6 +49,10 @@
     },
     "agol-org": {
       "enabled": true
+    },
+    "arcgis-server": {
+      "enabled": true,
+      "note": "ArcGIS Server REST directories with no catalog in front (issue #16, milestone 4). Read weekly per host, within arcgis_server.max_requests_per_host."
     }
   },
   "allow_no_portal": {
@@ -69,13 +73,30 @@
       "checked_new_york": "Registry evidence (2026-11-05): the city's own Infrastructure Dashboard page (mountvernonny.gov/2052) links gis.cmvny.com/portal; its City_Boundary layer returns NAME 'Mount Vernon', 4.40 sq mi, in NAD83 / New York East."
     }
   },
+  "arcgis_server": {
+    "_note": "The ArcGIS Server REST directory adapter (issue #16, D5). Per host and per read: at most max_requests_per_host requests in all (listing, services and layer fields), min_interval_ms between them (robots.txt Crawl-delay still wins when longer), utility folders skipped, at most max_layers_per_service layer field requests per service, and no new request after max_seconds_per_host. A host that hits the cap is marked partial and nothing is marked removed.",
+    "max_requests_per_host": 400,
+    "min_interval_ms": 2000,
+    "skip_folders": [
+      "Utilities",
+      "System"
+    ],
+    "service_types": [
+      "MapServer",
+      "FeatureServer",
+      "ImageServer"
+    ],
+    "max_layers_per_service": 5,
+    "max_seconds_per_host": 1800
+  },
   "cadence": {
-    "_note": "Days between reads. Self-hosted county ArcGIS servers (the `enterprise` adapter) are read weekly, to be gentle on small county servers (epic #7, decision D5). Everything else nightly. A portal is due `slack_hours` early so a late scheduled start does not slip a whole week. `harvest --ignore-cadence` reads everything.",
+    "_note": "Days between reads. Self-hosted county ArcGIS portals (the `enterprise` adapter) and ArcGIS Server REST directories (`arcgis-server`) are read weekly, to be gentle on small county servers (epic #7, decision D5). Everything else nightly. A portal is due `slack_hours` early so a late scheduled start does not slip a whole week. `harvest --ignore-cadence` reads everything.",
     "days_by_adapter": {
       "socrata": 1,
       "hub": 1,
       "agol-org": 1,
-      "enterprise": 7
+      "enterprise": 7,
+      "arcgis-server": 7
     },
     "days_by_source": {},
     "slack_hours": 6

@@ -1,0 +1,13 @@
+{
+  "_source": "Esri ArcGIS REST API reference, ArcGIS Server Services Directory root, sample response (https://developers.arcgis.com/rest/services-reference/enterprise/catalog/), read 2026-11-14.",
+  "currentVersion": 11.1,
+  "folders": [
+    "Utilities"
+  ],
+  "services": [
+    {
+      "name": "SampleWorldCities",
+      "type": "MapServer"
+    }
+  ]
+}

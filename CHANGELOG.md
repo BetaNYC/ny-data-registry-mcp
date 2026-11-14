@@ -144,6 +144,15 @@ Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data
   (ArcGIS Online org, ArcGIS Online org, ArcGIS Enterprise). Each was checked to be New York,
   not Utica, Minnesota or Wyoming County, Pennsylvania. A changed registry endpoint stops the
   row until it is checked again.
+- ArcGIS Server REST directory adapter (`arcgis-server`, milestone 4): the State's GIS servers
+  (`nysgeohub`, `gisservices`, `orthos`, `elevation`), DOT, DEC's server, Broome and Ulster.
+  One dataset per map, feature or image service; layer fields for up to 5 layers each. Read
+  weekly per host (D5), at most 400 requests and 30 minutes per host, 2 s apart (or the
+  robots.txt Crawl-delay), `Utilities` and `System` folders skipped, robots.txt honored.
+  Settings in `arcgis_server` in `harvest-config.json`. Switched on.
+- The publish gate needs nothing new for the first run with the new adapters: its drop checks
+  compare only what the published index had, so growth passes. The question set must still
+  pass.
 - `ny-data-registry parcels`: a tax parcel table for all 62 counties. 38 share their parcels
   with the State's public layer; 23 have their own parcel layer in the index and 11 more in
   the registry only; 18 have neither (2026-11-14). The State's list comes from one read of the
