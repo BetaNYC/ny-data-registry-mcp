@@ -28,7 +28,8 @@ Eleven tools, in three groups.
 
 | Tool | What it answers |
 |---|---|
-| `search_datasets` | Dataset titles, descriptions, tags and **column names** across Socrata and ArcGIS portals. Filters: place, portal, platform family, format (csv, geojson, shapefile, kml, api, xlsx …), updated since. One call gives the whole answer: the true number of matches, a count per portal when they don't all fit, the best rows, and a CSV file with every match. `group_by` summarizes by entity, county or platform family instead |
+| `search_datasets` | Dataset titles, descriptions, tags and **column names** across Socrata and ArcGIS portals. Filters: topic, place, portal, platform family, format (csv, geojson, shapefile, kml, api, xlsx …), updated since. One call gives the whole answer: the true number of matches, a count per portal when they don't all fit, the best rows, and a CSV file with every match. `group_by` summarizes by entity, county or platform family instead |
+| `list_topics` | The 24 shared topics, with how many datasets and portals each has, and the share of datasets with a topic. Filter: portal |
 | `get_dataset_columns` | Fields and types, every distribution (format + URL), license, publisher, extent, and per-field provenance |
 | `find_joinable` | Datasets sharing a join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), from a curated key-column map, not raw name equality |
 | `whats_new` | Datasets added, changed or removed since a date |
@@ -48,6 +49,8 @@ All tool inputs are strict: an unknown parameter is rejected by name, never sile
 
 **The CSV files.** One row per matching dataset, best-ranked first: id, name, portal, type, update date, link, formats, API endpoint, Socrata domain and 4x4, platform, counties, geometry type and column count. Standard CSV (RFC 4180), UTF-8, values as the portal published them, with one safety exception: a text value that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so a spreadsheet shows it as text instead of running it as a formula. Numbers are never changed. They go in `${HOME}/.cache/betanyc/ny-data-registry/exports/` (change with `NY_DATA_EXPORT_DIR`). The newest 50 are kept, none older than 7 days; nothing else in that folder is touched. `export: "never"` turns the file off and `export: "always"` writes one even for a short answer. `offset` still pages by hand for clients that need it, but nothing depends on it.
 
+**Topics.** Every dataset gets topics from one shared list of 24, such as Housing and homelessness, Transportation or Elections and civic participation. A dataset can have several. They come from the dataset's own categories, tags and department, so the same topic finds the same kind of data on every portal, whatever each portal calls it. Pass `topic` to `search_datasets`, alone or with a query; a topic alone lists that topic, most-viewed first. Rows carry their topic ids. `list_topics` gives the list with counts. On the 2026-11-05 index, 8,910 of 9,569 datasets (93.1%) get at least one topic; the rest carry no label that fits the list, and text search still finds them. Each published index comes with `topic-crosswalk.csv`: every label on every portal, and the topics it gives. How it works and how to change it: [docs/topics.md](docs/topics.md).
+
 ---
 
 ## Questions to try
@@ -65,6 +68,7 @@ Ask your AI assistant these once the server is connected. Where we ran a questio
 - "Housing code violations in Syracuse." / "Bike lanes in Buffalo." / "Street trees in Buffalo." Narrow a search to one place.
 - "Where are the polling places?" Finds Suffolk and Tompkins counties.
 - "Crash data updated since 2026-10-01." Use a date to see only datasets that changed recently.
+- "List election data in Tompkins County." / "Which housing datasets does Buffalo have?" A topic finds data whatever words a portal uses for it. (`list_topics` shows all 24.)
 
 **Who has data, and for where?** (`find_sources`, `list_sources_for_place`)
 
@@ -125,7 +129,7 @@ and point your client at `node /path/to/ny-data-registry-mcp/dist/index.js`.
 
 ### The dataset index
 
-The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. It holds **metadata only**: titles, descriptions, column names and types, formats and links. No dataset contents.
+The five index tools (`search_datasets`, `list_topics`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. It holds **metadata only**: titles, descriptions, column names and types, formats and links. No dataset contents.
 
 - **Where it comes from:** the `index-latest` release, at a fixed URL: `https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz`. It is rebuilt every night (see "The nightly harvest"). Dated snapshots are kept as `index-YYYY-MM-DD` releases: the last 14, plus the first of each month for good. Each release also carries `index.json`, which describes the files (schema version, harvest time, sizes, both SHA-256 sums, dataset and portal counts, and the quality-gate result).
 - **Checked before use:** the server checks both SHA-256 sums in the release's `SHA256SUMS` file (the `.gz` and the unzipped `.sqlite`) and the schema version. A file that fails any check is never installed.
@@ -230,7 +234,7 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 
 1. **Preflight.** It stops at once if the `SOCRATA_APP_TOKEN` secret is missing, if the certificate file below is missing, or if a publishing run was started on a branch other than `main`.
 2. **Start from the published index.** It downloads `index-latest` with the same checksum and schema checks every server uses. If that fails, the run fails. It never quietly starts from nothing, which would reset every dataset's `first_seen`. Only the `fresh` input starts empty.
-3. **Harvest**, as described above. First, portals whose ids are no longer in the registry are dropped with their datasets, since nothing would ever read them again (portal ids come from registry rows, so a changed row leaves its old id behind). Each drop is listed in the run summary and `index.json`. Nothing is dropped when the registry the run loaded is older than the one the index was built from.
+3. **Harvest**, as described above. First, portals whose ids are no longer in the registry are dropped with their datasets, since nothing would ever read them again (portal ids come from registry rows, so a changed row leaves its old id behind). Each drop is listed in the run summary and `index.json`. Nothing is dropped when the registry the run loaded is older than the one the index was built from. Last, every live dataset's topics are rebuilt from its labels, including portals not read that night, so a change to the topic rules reaches the whole index.
 4. **Quality gate.** The new index is compared with the published one. Datasets dropped with registry removals are subtracted first (up to 5 portals; more blocks the publish). Publishing is blocked when:
    - the question set (`eval/questions.json`) scores under 90% or finds any invariant violation;
    - the index loses more than 10% of its datasets;
@@ -240,7 +244,7 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
    - the index is empty.
 
    The limits are `publish_gate` in `data/harvest-config.json`. The result goes to `gate.json`, published with every index. When the gate fails, nothing is published and the current index stays. To publish anyway, run the workflow by hand with `force_publish` on and a `force_reason`. The reason, the person who gave it and the failed checks are recorded in `gate.json`, in `index.json` and in the release notes.
-5. **Publish.** The published copy uses SQLite's rollback journal, not WAL, so readers do not create `-wal` and `-shm` files beside it. The run creates a dated snapshot `index-YYYY-MM-DD` titled "(current)" with all files, then updates `index-latest` (the `.gz`, `SHA256SUMS`, the side files, `index.json` last), then relabels older snapshots "(superseded)". Index releases are never marked "Latest"; the code release is.
+5. **Publish.** The published copy uses SQLite's rollback journal, not WAL, so readers do not create `-wal` and `-shm` files beside it. The files are the index, its `SHA256SUMS`, `index.json`, `harvest-stats.json`, `eval.md`, `gate.json` and `topic-crosswalk.csv`. The run creates a dated snapshot `index-YYYY-MM-DD` titled "(current)" with all files, then updates `index-latest` (the `.gz`, `SHA256SUMS`, the side files, `index.json` last), then relabels older snapshots "(superseded)". Index releases are never marked "Latest"; the code release is.
 6. **Retention.** The 14 newest snapshots and the first snapshot of each month are kept. Older dated snapshots and their tags are deleted. `index-latest` and code releases are never touched.
 7. **Failures.** A scheduled or publishing run that fails, or whose gate blocks the publish, opens an issue labeled `harvest-failure` (or comments on the open one), with the run link, what failed and the portals that did not come back complete. The next run that publishes closes it. GitHub also emails whoever last changed the schedule line. Every run's summary page shows the portal outcomes and the gate, and its `harvest-run` artifact (kept 14 days) holds the stats, question-set results, gate result, the files built and the log.
 
@@ -265,7 +269,7 @@ GitHub turns off scheduled workflows in a public repository after 60 days with n
 
 ## How it was checked
 
-- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all eleven tools.
+- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all twelve tools.
 - `node dist/cli.js eval`: a fixed set of real questions (`eval/questions.json`) scored against the real index. Results: `eval/runs/`.
 
 Latest results (2026-11-05, office-mac), all in `eval/runs/`:

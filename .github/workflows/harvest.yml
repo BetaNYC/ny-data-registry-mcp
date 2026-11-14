@@ -7,7 +7,8 @@
 #   4. harvests (read-only, throttled, robots.txt honored; county ArcGIS servers weekly), first
 #      dropping portals whose ids left the registry (issue #21),
 #   5. runs the question set and the quality gate against the published index,
-#   6. builds the files to publish (rollback-journal SQLite, .gz, SHA256SUMS, index.json),
+#   6. builds the files to publish (rollback-journal SQLite, .gz, SHA256SUMS, index.json,
+#      topic-crosswalk.csv: each portal label and its topics, issue #18),
 #   7. publishes a dated snapshot, then updates index-latest, relabels older snapshots
 #      "superseded" and applies retention (14 newest + first of each month),
 #   8. on failure, opens a `harvest-failure` issue (or comments on the open one); on the next

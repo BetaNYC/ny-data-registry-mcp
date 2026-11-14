@@ -5,6 +5,7 @@
  * ny-data-registry stats
  * ny-data-registry download [--force]
  * ny-data-registry update [--check]
+ * ny-data-registry topics [--crosswalk-out file.csv]
  *
  * `update` exit codes: UPDATE_EXIT_CODES in refresh.ts (2 is a usage error).
  */
@@ -16,6 +17,9 @@ import { indexInfo } from "./datasets.js";
 import { runEval } from "./eval.js";
 import { downloadIndex, indexUrl } from "./fetchindex.js";
 import { checkForUpdate, UPDATE_EXIT_CODES } from "./refresh.js";
+import { openDb, indexExists } from "./db.js";
+import { indexPath } from "./paths.js";
+import { buildTopics, computeTopics, crosswalkCsv } from "./topics.js";
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -24,7 +28,7 @@ function arg(name: string): string | undefined {
 
 
 const cmd = process.argv[2];
-if (cmd !== "download" && cmd !== "update") await refreshRegistry();
+if (cmd !== "download" && cmd !== "update" && cmd !== "topics") await refreshRegistry();
 if (cmd === "update") {
   const extra = process.argv.slice(3).filter((a) => a !== "--check");
   if (extra.length) {
@@ -70,9 +74,25 @@ if (cmd === "update") {
   }
   console.log(res.markdown);
   process.exitCode = res.passed ? 0 : 1;
+} else if (cmd === "topics") {
+  // Rebuild the topics on an existing index (the harvest does this itself) and report coverage.
+  if (!indexExists()) {
+    console.error(`no index at ${indexPath()}; run download or harvest first`);
+    process.exitCode = 1;
+  } else {
+    const db = openDb();
+    const t = buildTopics(db);
+    const out = arg("crosswalk-out");
+    if (out) {
+      mkdirSync(dirname(out), { recursive: true });
+      writeFileSync(out, crosswalkCsv(computeTopics(db).crosswalk));
+    }
+    db.close();
+    console.log(JSON.stringify(t, null, 2));
+  }
 } else if (cmd === "stats") {
   console.log(JSON.stringify(indexInfo(), null, 2));
 } else {
-  console.error("usage: ny-data-registry <update|download|harvest|eval|stats> [options]");
+  console.error("usage: ny-data-registry <update|download|harvest|eval|stats|topics> [options]");
   process.exitCode = 2;
 }

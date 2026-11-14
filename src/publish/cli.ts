@@ -23,13 +23,14 @@ import { SCHEMA_VERSION } from "../db.js";
 import { indexSummary, type IndexSummary } from "./summary.js";
 import { evaluateGate, gateMarkdown, type EvalResult, type GateResult, type GateThresholds } from "./gate.js";
 import { preparePublish, MANIFEST_NAME, type Manifest } from "./prepare.js";
+import { CROSSWALK_NAME } from "../topics.js";
 import {
   newYorkDate, nextSnapshotTag, pickTagTarget, planRetention, publishCommands, retentionCommands, type GhCommand, type ReleaseInfo,
 } from "./releases.js";
 import { FAILURE_LABEL, FAILURE_TITLE, failureIssueBody, runSummaryMarkdown, type HarvestStats } from "./report.js";
 
 /** Files beside the index in every snapshot and in index-latest. */
-export const SIDE_FILES = ["harvest-stats.json", "eval.md", "gate.json"];
+export const SIDE_FILES = ["harvest-stats.json", "eval.md", "gate.json", CROSSWALK_NAME];
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
