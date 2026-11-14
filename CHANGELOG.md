@@ -91,6 +91,17 @@ demand. See [#15](https://github.com/BetaNYC/ny-data-registry-mcp/issues/15) (ep
 - `search_datasets` replies carry `index_note` when the index is more than 14 days old,
   with the `update` command. Other tools do not.
 - CI runs the whole test suite on `windows-latest` (Node 22.x) as well.
+- Rollback. `harvest.yml` takes `rollback_to` (a kept `index-YYYY-MM-DD` snapshot) with a
+  required `rollback_reason`. That run does no harvest: it checks the snapshot's files and
+  copies them over `index-latest`, adds `rolled_back` (`from`, `to`, `reason`, `at`, `by`) to
+  `index.json`, and relabels the bad snapshot "(rolled back)". It refuses a missing snapshot,
+  one retention is about to delete, one without `index.json`, one this package cannot read,
+  and one not older than `index-latest`. It deletes nothing. A server whose index is newer than
+  the target replaces it with the target at its next check, even inside the 5 days, so an
+  automatic check now reads `index.json` every time (under 1 KB). `update --check` reports a
+  rollback (exit 4), `update` makes the swap (new outcome `rolled-back`, exit 0), and
+  `index_note` and `registry_info.index_status.rolled_back` say why. The next nightly publish
+  clears it. Each publish now records its tag in `index.json` (`snapshot_tag`).
 
 ### Changed
 

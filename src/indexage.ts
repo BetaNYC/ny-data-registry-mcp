@@ -87,11 +87,40 @@ export function ageDays(lastHarvest: string | null | undefined, now = Date.now()
 
 export const UPDATE_COMMAND = "npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry update";
 
+/** What the published `index.json` says about a rollback (its `rolled_back` field). */
+export interface RollbackNotice {
+  /** The snapshot `index-latest` held before, or null when the publisher could not tell. */
+  from: string | null;
+  /** The snapshot `index-latest` now holds. */
+  to: string;
+  reason: string;
+  at: string | null;
+}
+
+let seenRollback: RollbackNotice | null = null;
+
+/** Set by each update check that read `index.json` (refresh.ts); null when the index is not rolled back. */
+export function setSeenRollback(r: RollbackNotice | null): void {
+  seenRollback = r;
+}
+
+export function getSeenRollback(): RollbackNotice | null {
+  return seenRollback;
+}
+
+/** One short sentence about a rollback, for replies that warn about the index's age. */
+export function rollbackSentence(r: RollbackNotice | null = seenRollback): string | null {
+  if (!r) return null;
+  const why = r.reason.length > 160 ? `${r.reason.slice(0, 157)}...` : r.reason;
+  return `The published index was rolled back to ${r.to}${r.at ? ` on ${r.at.slice(0, 10)}` : ""}: ${why.replace(/[.\s]+$/, "")}.`;
+}
+
 /** The short note a dataset search carries when the index is older than NY_DATA_INDEX_STALE_DAYS; null otherwise. */
 export function staleNote(lastHarvest: string | null | undefined, now = Date.now()): string | null {
   const age = ageDays(lastHarvest, now);
   const cfg = updateConfig();
   if (age === null || age <= cfg.stale_days) return null;
   const off = cfg.auto ? "" : ` Automatic updates are off (${cfg.off_reason}).`;
-  return `This index was harvested ${Math.floor(age)} days ago (${String(lastHarvest).slice(0, 10)}), so newer datasets may be missing.${off} Run \`${UPDATE_COMMAND}\` to get the newest.`;
+  const rb = rollbackSentence();
+  return `This index was harvested ${Math.floor(age)} days ago (${String(lastHarvest).slice(0, 10)}), so newer datasets may be missing.${off}${rb ? ` ${rb}` : ""} Run \`${UPDATE_COMMAND}\` to get the newest.`;
 }

@@ -289,6 +289,134 @@ test("the snapshot tag points at the newest commit that does not change workflow
   assert.equal(pickTagTarget([{ sha: "c3", files: [".github/workflows/ci.yml"] }]), null);
 });
 
+// ---------- rollback ----------
+
+const { rollbackProblems, rollbackCommands, rollbackRecord, rolledBackManifest, findSnapshotTag, verifySnapshotFiles, rollbackSummaryMarkdown } = await import("../dist/publish/rollback.js");
+const { publishedManifest } = await import("../dist/publish/prepare.js");
+const ALL_FILES = ["ny-data-index.sqlite.gz", "SHA256SUMS", "index.json", "harvest-stats.json", "eval.md", "gate.json"];
+const SIDE = ["harvest-stats.json", "eval.md", "gate.json"];
+const mf = (last_harvest, sha) => ({ ...manifest, last_harvest, sqlite_sha256: sha.repeat(64), gz_sha256: sha.repeat(64) });
+const GOOD = mf("2026-11-12T07:40:00Z", "1");
+const BAD = { ...mf("2026-11-13T07:40:00Z", "2"), snapshot_tag: "index-2026-11-13" };
+const kept = [
+  { tagName: "index-latest", name: "Latest harvested index" },
+  { tagName: "index-2026-11-05", name: "Index 2026-11-05 (superseded)" },
+  { tagName: "index-2026-11-12", name: "Index 2026-11-12 (superseded)", body: "good notes" },
+  { tagName: "index-2026-11-13", name: "Index 2026-11-13 (current)", body: "bad notes" },
+];
+const problems = (o) => rollbackProblems({ to: "index-2026-11-12", reason: "county layer renamed; 900 datasets lost", releases: kept, current: BAD, target: GOOD, targetFiles: ALL_FILES, sideFiles: SIDE, schemaVersion: SCHEMA_VERSION, ...o });
+
+test("rollback: a kept, complete, older snapshot with a reason is accepted", () => {
+  assert.deepEqual(problems({}), []);
+});
+
+test("rollback to a missing snapshot is refused", () => {
+  const p = problems({ to: "index-2026-10-20", target: null, targetFiles: [] });
+  assert.equal(p.length, 1);
+  assert.match(p[0], /index-2026-10-20 does not exist/);
+  assert.match(problems({ to: "index-latest" })[0], /not a dated snapshot tag/);
+});
+
+test("rollback refuses a snapshot retention is about to delete", () => {
+  const many = rel(["index-2026-10-02", ...days("2026-10-01", 1), ...days("2026-10-03", 20)]);
+  const p = problems({ to: "index-2026-10-02", releases: many });
+  assert.ok(p.some((x) => /due for deletion under retention/.test(x)), p.join("; "));
+});
+
+test("rollback refuses a snapshot without index.json (index-2026-11-05), no reason, another schema, the same or a newer index", () => {
+  assert.match(problems({ to: "index-2026-11-05", target: null, targetFiles: ["ny-data-index.sqlite.gz", "SHA256SUMS"] }).join(), /lacks index\.json, harvest-stats\.json, eval\.md, gate\.json/);
+  assert.match(problems({ reason: "  " }).join(), /a reason is required/);
+  assert.match(problems({ target: { ...GOOD, schema_version: SCHEMA_VERSION + 1 } }).join(), /servers would refuse it/);
+  assert.match(problems({ current: GOOD }).join(), /already holds index-2026-11-12/);
+  assert.match(problems({ target: mf("2026-11-14T07:40:00Z", "3") }).join(), /a rollback only goes back/);
+});
+
+test("rollback names the snapshot index-latest holds: its snapshot_tag, or else the matching sum", () => {
+  assert.equal(findSnapshotTag(BAD, []), "index-2026-11-13");
+  const { snapshot_tag, ...noTag } = BAD;
+  assert.equal(findSnapshotTag(noTag, [{ tag: "index-2026-11-12", manifest: GOOD }, { tag: "index-2026-11-13", manifest: noTag }]), "index-2026-11-13");
+  assert.equal(findSnapshotTag(noTag, [{ tag: "index-2026-11-12", manifest: GOOD }]), null);
+  assert.equal(findSnapshotTag(null, []), null);
+});
+
+const REC = rollbackRecord({ to: "index-2026-11-12", reason: " county layer renamed ", at: "2026-11-14T15:00:00Z", by: "noneck", current: BAD, from: "index-2026-11-13" });
+
+test("rollback: index.json is the target's plus rolled_back {from, to, reason, at}", () => {
+  const m = rolledBackManifest(GOOD, REC);
+  assert.equal(m.sqlite_sha256, GOOD.sqlite_sha256, "the target's own sums");
+  assert.equal(m.last_harvest, GOOD.last_harvest);
+  assert.deepEqual(m.rolled_back, {
+    from: "index-2026-11-13", to: "index-2026-11-12", reason: "county layer renamed", at: "2026-11-14T15:00:00Z", by: "noneck",
+    from_last_harvest: BAD.last_harvest, from_sqlite_sha256: BAD.sqlite_sha256,
+  });
+  assert.equal(m.snapshot_tag, "index-2026-11-12");
+});
+
+test("rollback order: index-latest .gz, SHA256SUMS, side files, index.json last; bad snapshot relabeled, target current; nothing deleted", () => {
+  const m = rolledBackManifest(GOOD, REC);
+  const cmds = rollbackCommands({ dir: "/r", sideFiles: SIDE, manifest: m, rec: REC, releases: kept });
+  const a = cmds.map((c) => c.args.join(" "));
+  const o = (n) => join("/r", n);
+  assert.deepEqual(a, [
+    `release upload index-latest ${o("ny-data-index.sqlite.gz")} --clobber`,
+    `release upload index-latest ${o("SHA256SUMS")} --clobber`,
+    `release upload index-latest ${o("harvest-stats.json")} ${o("eval.md")} ${o("gate.json")} --clobber`,
+    `release upload index-latest ${o("index.json")} --clobber`,
+    "release edit index-latest --latest=false",
+    "release edit index-2026-11-13 --title Index 2026-11-13 (rolled back) --latest=false",
+    "release edit index-2026-11-12 --title Index 2026-11-12 (current) --latest=false",
+  ]);
+  assert.ok(!a.some((x) => /delete/.test(x)), "a rollback deletes nothing");
+  assert.match(cmds[4].notes, /\*\*Rolled back\*\* on 2026-11-14 by noneck, from \[index-2026-11-13\].* to \[index-2026-11-12\].*Reason given: county layer renamed/);
+  assert.match(cmds[5].notes, /^\*\*Rolled back\*\* on 2026-11-14.*\n\nbad notes$/s);
+  assert.match(cmds[6].notes, /^\*\*Current again\*\* on 2026-11-14.*from \[index-2026-11-13\].*\n\ngood notes$/s);
+  assert.match(rollbackSummaryMarkdown({ rec: REC, problems: [], dryRun: true }), /dry run: nothing changed/);
+  assert.match(rollbackSummaryMarkdown({ rec: null, problems: ["x"], dryRun: false }), /Rollback refused[\s\S]*Nothing changed[\s\S]*- x/);
+});
+
+test("the next normal publish clears the rollback: fresh index.json, rolled-back label kept, target superseded", () => {
+  const after = publishedManifest({ ...manifest, rolled_back: REC }, "index-2026-11-15");
+  assert.equal("rolled_back" in after, false);
+  assert.equal(after.snapshot_tag, "index-2026-11-15");
+  assert.equal("rolled_back" in manifest, false, "prepare never writes rolled_back");
+  const cmds = publishCommands({
+    tag: "index-2026-11-15", date: "2026-11-15", target: "t", dir: "/o", sideFiles: [], manifest: after,
+    releases: [
+      { tagName: LATEST_TAG, name: "Latest harvested index" },
+      { tagName: "index-2026-11-13", name: "Index 2026-11-13 (rolled back)", body: "x" },
+      { tagName: "index-2026-11-12", name: "Index 2026-11-12 (current)", body: "y" },
+    ],
+  });
+  const a = cmds.map((c) => c.args.join(" "));
+  assert.ok(a.includes(`release upload index-latest ${join("/o", "index.json")} --clobber`));
+  assert.ok(a.includes("release edit index-2026-11-12 --title Index 2026-11-12 (superseded) --latest=false"));
+  assert.ok(!a.some((x) => x.startsWith("release edit index-2026-11-13")), "a rolled-back snapshot keeps its label");
+  assert.doesNotMatch(cmds.find((c) => c.args[1] === "edit" && c.args[2] === LATEST_TAG).notes, /Rolled back/);
+});
+
+test("rollback checks the snapshot's files against its own index.json and SHA256SUMS", async () => {
+  const src = tempIndexPath();
+  await buildFixtureIndex(src);
+  const dir = mkdtempSync(join(tmpdir(), "nydr-rb-"));
+  const m = await preparePublish({ index: src, dir });
+  assert.deepEqual(await verifySnapshotFiles(dir, m), []);
+  assert.match((await verifySnapshotFiles(dir, { ...m, sqlite_sha256: "0".repeat(64) })).join(), /unzipped ny-data-index\.sqlite does not match/);
+  assert.match((await verifySnapshotFiles(dir, { ...m, gz_sha256: "0".repeat(64) })).join(), /ny-data-index\.sqlite\.gz does not match/);
+});
+
+test("the workflow: rollback_to runs the rollback job instead of the harvest, with a required reason", () => {
+  const y = readFileSync(new URL(".github/workflows/harvest.yml", ROOT), "utf8");
+  assert.match(y, /rollback_to:\r?\n\s+description:/);
+  assert.match(y, /rollback_reason:\r?\n\s+description:/);
+  assert.match(y, /harvest:\r?\n\s+#.*\r?\n\s+if: \$\{\{ github\.event_name == 'schedule' \|\| inputs\.rollback_to == '' \}\}/);
+  assert.match(y, /rollback:\r?\n\s+if: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.rollback_to != '' \}\}/);
+  assert.match(y, /rollback_to needs a rollback_reason/);
+  assert.match(y, /node dist\/publish\/cli\.js rollback "\$\{args\[@\]\}"/);
+  for (const line of y.split(/\r?\n/).filter((l) => /\$\{\{ inputs\.rollback_/.test(l))) {
+    assert.match(line, /^\s+ROLLBACK_(TO|REASON): \$\{\{ inputs\.rollback_(to|reason) \}\}$/, `inputs reach the shell through env, never inline: ${line}`);
+  }
+});
+
 // ---------- failure issue and run summary ----------
 
 const stats = {

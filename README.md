@@ -134,7 +134,7 @@ The five index tools (`search_datasets`, `list_topics`, `get_dataset_columns`, `
 - **Where it comes from:** the `index-latest` release, at a fixed URL: `https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz`. It is rebuilt every night (see "The nightly harvest"). Dated snapshots are kept as `index-YYYY-MM-DD` releases: the last 14, plus the first of each month for good. Each release also carries `index.json`, which describes the files (schema version, harvest time, sizes, both SHA-256 sums, dataset and portal counts, and the quality-gate result).
 - **Checked before use:** the server checks both SHA-256 sums in the release's `SHA256SUMS` file (the `.gz` and the unzipped `.sqlite`) and the schema version. A file that fails any check is never installed.
 - **Where it goes:** `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` (change with `NY_DATA_INDEX`).
-- **When:** on first run when the file is missing, and then whenever it is more than **5 days** old and a newer one is published (see "Keeping the index current").
+- **When:** on first run when the file is missing, then whenever it is more than **5 days** old and a newer one is published, and at once if the published index was rolled back past yours (see "Keeping the index current").
 - **Get or refresh it by hand:**
 
   ```bash
@@ -149,17 +149,19 @@ The five index tools (`search_datasets`, `list_topics`, `get_dataset_columns`, `
 
 A running server checks for a newer index 5 minutes after it starts and then once a day. It never makes you wait: the check runs in the background, and a question asked during a download is answered from the index you have.
 
-1. **Is it due?** If your index is less than 5 days old (`NY_DATA_INDEX_REFRESH_DAYS`), nothing happens and nothing is fetched.
+1. **Is it due?** If your index is less than 5 days old (`NY_DATA_INDEX_REFRESH_DAYS`), the server reads only `index.json`, to see whether the index was rolled back (below). Nothing else is fetched.
 2. **Is there a newer one?** The server reads `index.json`, the small file published beside each index (under 1 KB). It does nothing when that is the file you have, when yours is as new or newer (an index you built yourself, say), or when the published index needs a newer version of this package. In that last case it says so and keeps your index.
 3. **Download and check.** The new index is saved beside the old one as `ny-data-index.sqlite.part`, and both SHA-256 sums in `index.json` (the `.gz` and the unzipped file) and the schema version are checked. A file that fails any check is deleted. Your index is not touched until the new one passes.
 4. **Swap.** The checked file is renamed over the old one, and the server reopens it. `ny-data-index.sqlite.source.json` records what was installed, from where, and its SHA-256. If the old index was in WAL mode, its empty `-wal` and `-shm` files are removed; a `-wal` with data in it is kept and reported.
 5. **On Windows**, a file that another program has open cannot be replaced. Then the checked file waits as `ny-data-index.sqlite.next`, and it is installed the next time the index is opened with nothing holding it (usually the next start). `registry_info` says `ready-on-restart`.
 
+**If the index was rolled back.** When a published index turns out bad, BetaNYC can point `index-latest` back at an older snapshot (see "Roll back a bad index"). Its `index.json` then says `rolled_back`, with the snapshot it went back to and why. At its next check, a server whose index is newer than that snapshot replaces it with the snapshot, even if its index is less than 5 days old. A server already on that snapshot, or on an older one, does nothing special. `update --check` reports a rollback (exit 4) and `update` makes the swap (exit 0). On Windows the swap can wait as `.next`, like any update. `registry_info.index_status.rolled_back` shows the rollback, and an `index_note` about an old index also says the index was rolled back, and why.
+
 If anything fails, the server keeps the index it has and tries again at the next check. `registry_info` shows `index_status`: the index's age, whether automatic updates are on (and if not, which setting turned them off), and what the last check found. When your index is more than **14 days** old, every `search_datasets` reply carries an `index_note` saying so, with the `update` command.
 
 **Turn automatic updates off** with `NY_DATA_INDEX_AUTO_UPDATE=0`. They are also off when you set `NY_DATA_INDEX` (the index is then a file you manage), when `NY_DATA_INDEX_URL` names a dated snapshot (`.../download/index-YYYY-MM-DD/...`, a pin), when `NY_DATA_INDEX_AUTO_DOWNLOAD=0`, and in offline mode. The `update` command still works in all of these but offline mode.
 
-**`update` exit codes:** 0 already current, updated, or yours was left alone because it is as new as the published one; 1 failed (nothing changed), or another process is downloading; 2 usage error; 3 the published index needs a newer version of this package; 4 (`--check`) a newer index is published; 5 downloaded and checked, but the index is in use (Windows), so it is installed when nothing holds it.
+**`update` exit codes:** 0 already current, updated, rolled back, or yours was left alone because it is as new as the published one; 1 failed (nothing changed), or another process is downloading; 2 usage error; 3 the published index needs a newer version of this package; 4 (`--check`) a newer index is published, or the index was rolled back; 5 downloaded and checked, but the index is in use (Windows), so it is installed when nothing holds it.
 
 ### Environment variables (all optional)
 
@@ -248,18 +250,20 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 6. **Retention.** The 14 newest snapshots and the first snapshot of each month are kept. Older dated snapshots and their tags are deleted. `index-latest` and code releases are never touched.
 7. **Failures.** A scheduled or publishing run that fails, or whose gate blocks the publish, opens an issue labeled `harvest-failure` (or comments on the open one), with the run link, what failed and the portals that did not come back complete. The next run that publishes closes it. GitHub also emails whoever last changed the schedule line. Every run's summary page shows the portal outcomes and the gate, and its `harvest-run` artifact (kept 14 days) holds the stats, question-set results, gate result, the files built and the log.
 
-Inputs for a run by hand: `publish` (off = dry run; files in the artifact only), `fresh`, `ignore_cadence`, `force_publish` with `force_reason`.
+Inputs for a run by hand: `publish` (off = dry run; files in the artifact only), `fresh`, `ignore_cadence`, `force_publish` with `force_reason`, `rollback_to` with `rollback_reason`.
 
-**Roll back a bad index** by copying a snapshot's files over `index-latest`:
+**Roll back a bad index.** If a published index turns out bad, run the workflow with `rollback_to`:
 
 ```sh
-gh release download index-YYYY-MM-DD --dir rollback
-gh release upload index-latest rollback/* --clobber
+gh workflow run harvest.yml -f rollback_to=index-YYYY-MM-DD -f rollback_reason="why"
 ```
 
-`index-2026-11-05` predates `index.json`; after rolling back to it, also run `gh release delete-asset index-latest index.json --yes`, `gate.json` likewise.
+That run does no harvest. It checks the snapshot, copies its files over `index-latest` (`index.json` last), and adds `rolled_back` to `index.json`: `from` (the bad snapshot), `to`, `reason`, `at`, `by`, and the bad index's harvest time and SHA-256. The bad snapshot is relabeled "(rolled back)" and the target "(current)". No release is deleted. A snapshot made before `topic-crosswalk.csv` existed can still be a target; the newer crosswalk is then removed from `index-latest`, last, so it never sits beside an index it does not describe. Add `-f publish=false` to only check.
 
-Servers move to a new index only when its harvest time is newer than theirs, so a machine that already took the bad index keeps it until a newer one is published, or until its owner runs `ny-data-registry download --force`. Or pin one machine to a snapshot with `NY_DATA_INDEX_URL`. **Stop the nightly run** with `gh workflow disable harvest.yml`; servers keep the index they have.
+- **It refuses** a snapshot that does not exist, one that retention is about to delete, one without `index.json` and the other files a nightly publish makes (so not `index-2026-11-05`), one whose schema this package cannot read, one that is not older than `index-latest`, and a missing reason. Nothing changes when it refuses.
+- **Servers go back by themselves.** At their next check (within a day for a running server), servers whose index is newer than the target replace it with the target. See "Keeping the index current".
+- **The next nightly publish clears it.** That run starts from the rolled-back index, and its `index.json` has no `rolled_back`, so servers move forward as usual. To keep the bad night from coming back, fix the cause first, or **stop the nightly run** with `gh workflow disable harvest.yml`; servers keep the index they have.
+- **One machine only?** Pin it to a snapshot with `NY_DATA_INDEX_URL`, or run `ny-data-registry download --force` there.
 
 GitHub turns off scheduled workflows in a public repository after 60 days with no repository activity. A stale `index.json` (`last_harvest` more than a few days old) is the sign.
 

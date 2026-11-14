@@ -125,12 +125,12 @@ test("a bad setting falls back to its default and is reported", () => {
 
 // ---- the age check ---------------------------------------------------------------------
 
-test("age check: an automatic check under 5 days asks the network nothing; past 5 days it updates", async () => {
+test("age check: an automatic check under 5 days reads only index.json (for a rollback); past 5 days it updates", async () => {
   const p = installedOld();
   const t0 = Date.parse(OLD.manifest.last_harvest);
   const young = await checkForUpdate({ path: p, url: URL_, now: t0 + 4.9 * DAY });
   assert.equal(young.outcome, "not-due");
-  assert.equal(hits.all, 0);
+  assert.deepEqual(hits, { all: 1, "index.json": 1 }, "under 1 KB, never the index");
   assert.deepEqual(readFileSync(p), OLD.sqlite);
 
   const due = await checkForUpdate({ path: p, url: URL_, now: t0 + 5.1 * DAY });
@@ -148,7 +148,16 @@ test("NY_DATA_INDEX_REFRESH_DAYS changes the threshold", async () => {
   const p = installedOld();
   const r = await checkForUpdate({ path: p, url: URL_ });
   assert.equal(r.outcome, "not-due");
-  assert.equal(hits.all, 0);
+  assert.equal(hits["ny-data-index.sqlite.gz"], undefined);
+});
+
+test("a young index whose index.json cannot be read is still not due; the error is recorded", async () => {
+  const p = installedOld();
+  const t0 = Date.parse(OLD.manifest.last_harvest);
+  const r = await checkForUpdate({ path: p, url: "http://127.0.0.1:9/releases/download/index-latest/ny-data-index.sqlite.gz", now: t0 + 1 * DAY });
+  assert.equal(r.outcome, "not-due");
+  assert.match(r.message, /could not read index\.json to check for a rollback/);
+  assert.ok(r.error);
 });
 
 test("ageDays reads ISO times and rejects junk", () => {
@@ -375,6 +384,123 @@ test("offline mode refuses a real URL even for the manual update", async () => {
   const r = await checkForUpdate({ path: p, url: "https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz", manual: true });
   assert.equal(r.outcome, "failed");
   assert.match(r.error, /offline/);
+});
+
+// ---- rollback: index-latest re-pointed at an older snapshot ----------------------------
+
+// NEW (1 day old) is the bad index; index-latest was rolled back to OLD (10 days old).
+const ROLLBACK = { from: "index-2026-11-13", to: "index-2026-11-04", reason: "a county layer was renamed and 900 datasets vanished", at: iso(NOW - 0.5 * DAY), by: "noneck" };
+const rolledBack = () => ({ json: Buffer.from(JSON.stringify({ ...OLD.manifest, rolled_back: ROLLBACK })), sums: OLD.sums, gz: OLD.gz });
+/** A folder with the bad (NEW) index installed. */
+function installedBad() {
+  const p = join(mkdtempSync(join(tmpdir(), "nydr-rb-")), "ny-data-index.sqlite");
+  copyFileSync(NEW.file, p);
+  return p;
+}
+
+test("rollback: a server holding the bad index swaps to the target at its next check, though its copy is young", async () => {
+  const p = installedBad();
+  rel = rolledBack();
+  const r = await checkForUpdate({ path: p, url: URL_ }); // automatic; the bad copy is 1 day old
+  assert.equal(r.outcome, "rolled-back", r.message);
+  assert.match(r.message, /a rollback to index-2026-11-04; reason: a county layer was renamed/);
+  assert.deepEqual(readFileSync(p), OLD.sqlite);
+  assert.equal(r.installed_last_harvest, OLD.manifest.last_harvest);
+  assert.deepEqual(r.rolled_back, { from: ROLLBACK.from, to: ROLLBACK.to, reason: ROLLBACK.reason, at: ROLLBACK.at });
+  assert.equal(JSON.parse(readFileSync(`${p}.source.json`, "utf8")).sqlite_sha256, OLD.manifest.sqlite_sha256);
+  assert.equal(UPDATE_EXIT_CODES["rolled-back"], 0);
+  assert.deepEqual(leftovers(p), []);
+});
+
+test("rollback: a server already on the target does nothing", async () => {
+  const p = installedOld();
+  rel = rolledBack();
+  const r = await checkForUpdate({ path: p, url: URL_, manual: true });
+  assert.equal(r.outcome, "current", r.message);
+  assert.match(r.message, /rolled back to index-2026-11-04/);
+  assert.equal(hits["ny-data-index.sqlite.gz"], undefined);
+  assert.deepEqual(readFileSync(p), OLD.sqlite);
+});
+
+test("rollback: a server older than the target is not rolled back; it updates as usual when due", async () => {
+  const older = await makeRelease(iso(NOW - 20 * DAY));
+  const p = join(mkdtempSync(join(tmpdir(), "nydr-rb-")), "ny-data-index.sqlite");
+  copyFileSync(older.file, p);
+  rel = rolledBack();
+  const r = await checkForUpdate({ path: p, url: URL_ });
+  assert.equal(r.outcome, "updated", r.message);
+  assert.deepEqual(readFileSync(p), OLD.sqlite);
+});
+
+test("rollback: a rolled-back index the package cannot read is not installed", async () => {
+  const p = installedBad();
+  rel = rolledBack();
+  rel.json = Buffer.from(JSON.stringify({ ...OLD.manifest, schema_version: 99, rolled_back: ROLLBACK }));
+  const r = await checkForUpdate({ path: p, url: URL_ });
+  assert.equal(r.outcome, "not-due");
+  assert.deepEqual(readFileSync(p), NEW.sqlite);
+});
+
+test("rollback: the Windows .next path still works", async () => {
+  const p = installedBad();
+  rel = rolledBack();
+  const blocked = (from, to) => {
+    if (to === p) throw Object.assign(new Error("EBUSY: resource busy or locked, rename"), { code: "EBUSY" });
+    renameSync(from, to);
+  };
+  const r = await checkForUpdate({ path: p, url: URL_, rename: blocked });
+  assert.equal(r.outcome, "ready-on-restart", r.message);
+  assert.match(r.message, /a rollback to index-2026-11-04/);
+  assert.deepEqual(readFileSync(p), NEW.sqlite, "the bad copy stays until the file is free");
+  assert.deepEqual(readFileSync(`${p}.next`), OLD.sqlite);
+  // The next check installs the waiting file first, and then has nothing to do.
+  const again = await checkForUpdate({ path: p, url: URL_ });
+  assert.equal(again.outcome, "current", again.message);
+  assert.deepEqual(readFileSync(p), OLD.sqlite);
+  assert.deepEqual(leftovers(p), []);
+});
+
+test("rollback: update --check reports it (exit 4) and changes nothing; update swaps (exit 0)", async () => {
+  const cache = mkdtempSync(join(tmpdir(), "nydr-cli-"));
+  const p = join(cache, "ny-data-index.sqlite");
+  copyFileSync(NEW.file, p);
+  rel = rolledBack();
+  let r = await cli(["--check"], { NY_DATA_CACHE_DIR: cache });
+  assert.equal(r.status, 4, r.stdout + r.stderr);
+  assert.match(r.stdout, /rolled back to index-2026-11-04 .*`update` replaces the installed one.*Reason: a county layer was renamed/);
+  assert.equal(hits["ny-data-index.sqlite.gz"], undefined);
+  assert.deepEqual(readFileSync(p), NEW.sqlite);
+  r = await cli([], { NY_DATA_CACHE_DIR: cache });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /replaced the installed index/);
+  assert.deepEqual(readFileSync(p), OLD.sqlite);
+});
+
+test("rollback: the next normal publish clears it; servers move forward and the note goes away", async () => {
+  const p = installedOld(); // a server that took the rollback
+  rel = rolledBack();
+  await checkForUpdate({ path: p, url: URL_, manual: true });
+  const { getSeenRollback } = await import("../dist/indexage.js");
+  assert.equal(getSeenRollback().to, "index-2026-11-04");
+  const NEXT = await makeRelease(iso(NOW - 0.2 * DAY)); // the next nightly: index.json without rolled_back
+  rel = { json: NEXT.json, sums: NEXT.sums, gz: NEXT.gz };
+  const r = await checkForUpdate({ path: p, url: URL_ });
+  assert.equal(r.outcome, "updated", r.message);
+  assert.equal(r.rolled_back, null);
+  assert.equal(getSeenRollback(), null);
+  assert.deepEqual(readFileSync(p), NEXT.sqlite);
+});
+
+test("rollback: the staleness note says the index was rolled back, and why, in one sentence", async () => {
+  const p = installedOld();
+  rel = rolledBack();
+  await checkForUpdate({ path: p, url: URL_, manual: true });
+  const note = staleNote(iso(NOW - 15 * DAY));
+  assert.match(note, /harvested 15 days ago/);
+  assert.match(note, /The published index was rolled back to index-2026-11-04 on \d{4}-\d{2}-\d{2}: a county layer was renamed and 900 datasets vanished\. Run/);
+  rel = { json: NEW.json, sums: NEW.sums, gz: NEW.gz };
+  await checkForUpdate({ path: installedOld(), url: URL_, manual: true, checkOnly: true });
+  assert.doesNotMatch(staleNote(iso(NOW - 15 * DAY)), /rolled back/);
 });
 
 // ---- the 14-day warning: dataset searches only ------------------------------------------

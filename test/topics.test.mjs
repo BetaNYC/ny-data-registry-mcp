@@ -19,7 +19,8 @@ const { mapSocrataAsset } = await import("../dist/harvest/socrata.js");
 const { portalRecord } = await import("../dist/harvest/run.js");
 const { registry } = await import("../dist/registry.js");
 const { searchDatasets, listTopics, closeDb, NO_TOPICS_NOTE } = await import("../dist/datasets.js");
-const { writeCrosswalk } = await import("../dist/publish/prepare.js");
+const { writeCrosswalk, OPTIONAL_SIDE_FILES } = await import("../dist/publish/prepare.js");
+const { rollbackSideFiles, rollbackCommands } = await import("../dist/publish/rollback.js");
 
 const rules = T.loadTopicRules();
 const topicsOf = (label, type, acr) => T.classifyLabel(label, type, acr, rules);
@@ -140,8 +141,7 @@ test("the crosswalk CSV has one row per label per portal, with its topics or why
   assert.equal(lines.length, n + 1);
   assert.ok(lines.some((l) => l.startsWith("new-york-city,tag,zzqx widget,zzqx widget,,,none,,1")), "unknown label listed with no topic");
   assert.ok(lines.some((l) => l.includes("school district,education; boundaries,Education; Boundaries and administrative areas,rule")));
-  // publish/cli.js runs a command when imported, so read its source for the list of published files.
-  assert.match(readFileSync(new URL("../src/publish/cli.ts", import.meta.url), "utf8"), /SIDE_FILES = \[[^\]]*CROSSWALK_NAME\]/, "published beside the index");
+  assert.ok(OPTIONAL_SIDE_FILES.includes(T.CROSSWALK_NAME), "published beside the index");
 });
 
 test("search_datasets filters by topic, with or without a query, and rows carry their topics", () => {
@@ -227,4 +227,16 @@ test("the fixture index (real recorded portal answers) gets topics from its own 
   // Cortland's zoning layer is tagged "zoning".
   const z = searchDatasets({ query: "zoning", topic: "landuse" });
   assert.ok(z.results.some((r) => r.dataset_id.endsWith("dea35a11cfbf4adeb083df6d63cf1f88")));
+});
+
+test("rollback: a snapshot made before the crosswalk existed is still a target, and the newer crosswalk leaves index-latest", () => {
+  const required = ["harvest-stats.json", "eval.md", "gate.json"];
+  const old = rollbackSideFiles({ required, optional: [T.CROSSWALK_NAME], targetFiles: [...required, "index.json"], latestFiles: [...required, T.CROSSWALK_NAME] });
+  assert.deepEqual(old, { check: required, upload: required, removeFromLatest: [T.CROSSWALK_NAME] });
+  const fresh = rollbackSideFiles({ required, optional: [T.CROSSWALK_NAME], targetFiles: [...required, T.CROSSWALK_NAME], latestFiles: [...required, T.CROSSWALK_NAME] });
+  assert.deepEqual(fresh, { check: required, upload: [...required, T.CROSSWALK_NAME], removeFromLatest: [] });
+  const rec = { from: null, to: "index-2026-11-12", reason: "r", at: "2026-11-14T00:00:00Z", by: null, from_last_harvest: null, from_sqlite_sha256: null };
+  const cmds = rollbackCommands({ dir: "/r", sideFiles: old.upload, manifest: { last_harvest: "x", datasets: 1, portals_ok: 1, portals_failed: 0 }, rec, releases: [], removeFromLatest: old.removeFromLatest });
+  assert.deepEqual(cmds.at(-1).args, ["release", "delete-asset", "index-latest", T.CROSSWALK_NAME, "--yes"], "removed last");
+  assert.ok(!cmds.some((c) => c.args.includes(join("/r", T.CROSSWALK_NAME))));
 });

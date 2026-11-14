@@ -54,7 +54,7 @@ export function nextSnapshotTag(date: string, existingTags: string[]): string {
   for (let n = 2; ; n++) if (!taken.has(`index-${date}-${n}`)) return `index-${date}-${n}`;
 }
 
-export type SnapshotStatus = "current" | "superseded";
+export type SnapshotStatus = "current" | "superseded" | "rolled back";
 
 export function snapshotTitle(tag: string, status: SnapshotStatus): string {
   const s = parseSnapshotTag(tag);
@@ -155,7 +155,8 @@ export function latestNotes(tag: string, m: Manifest): string {
  *    Between uploads a server can see a .gz and SHA256SUMS that do not match; it refuses the
  *    file and tries again later (src/fetchindex.ts), so the window costs a retry, never a bad install.
  * 3. Rewrite `index-latest`'s notes.
- * 4. Relabel every older snapshot not yet marked superseded.
+ * 4. Relabel every older snapshot not yet marked superseded. One marked "(rolled back)" keeps
+ *    that label (src/publish/rollback.ts).
  */
 export function publishCommands(o: {
   tag: string;
@@ -184,7 +185,7 @@ export function publishCommands(o: {
   cmds.push({ args: ["release", "edit", LATEST_TAG, "--latest=false"], notes: latestNotes(o.tag, o.manifest) });
   for (const r of o.releases) {
     const s = parseSnapshotTag(r.tagName);
-    if (!s || r.tagName === o.tag || /\(superseded\)\s*$/.test(r.name)) continue;
+    if (!s || r.tagName === o.tag || /\((superseded|rolled back)\)\s*$/.test(r.name)) continue;
     cmds.push({
       args: ["release", "edit", r.tagName, "--title", snapshotTitle(r.tagName, "superseded"), "--latest=false"],
       notes: supersededNote(o.tag, o.date) + (r.body ?? ""),
