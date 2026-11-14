@@ -89,11 +89,11 @@ test("harvest plan: adapters, skips and reasons", () => {
   assert.equal(planFor(src("monroe-county"), cfg).kind, "enterprise");
   assert.equal(enterprisePortalBase(src("monroe-county")), "https://maps.monroecounty.gov/portal");
   assert.equal(planFor(src("rockland-county"), cfg).kind, "skip");
-  assert.equal(planFor(src("columbia-university-libraries"), cfg).kind, "skip");
+  assert.equal(planFor(src("columbia-university-libraries--geodata-library-columbia-edu"), cfg).kind, "skip");
   assert.equal(planFor(src("association-for-neighborhood-and-housing-development-anhd"), cfg).kind, "skip");
   assert.equal(planFor(src("erie-county"), cfg).kind, "skip");
   assert.equal(planFor(src("new-york-state-senate"), cfg).kind, "skip");
-  assert.deepEqual(planFor(src("nys-department-of-environmental-conservation"), cfg), { kind: "agol-org", orgId: "DZHaqZm9cxOD4CWM" });
+  assert.deepEqual(planFor(src("nys-department-of-environmental-conservation--services6-arcgis-com"), cfg), { kind: "agol-org", orgId: "DZHaqZm9cxOD4CWM" });
   assert.equal(agolOrgOf(src("tioga-county")), "PvkAiSMFS7cpxnJP");
   for (const s of registry().sources) {
     const p = planFor(s, cfg);

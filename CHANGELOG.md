@@ -128,6 +128,28 @@ Search by topic. See [#18](https://github.com/BetaNYC/ny-data-registry-mcp/issue
   them on a local index. New `topics` and `dataset_topics` tables; the schema version is
   unchanged, so older servers still read new indexes. Method: `docs/topics.md`.
 
+Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data-registry-mcp/issues/16)
+(epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- `ny-data-registry coverage [--json] [--out file] [--index path] [--refresh]`: for every
+  registry row, whether the harvest reads it, and if not, why, as a fixed code (`no-portal`,
+  `policy`, `adapter-off`, `no-adapter`, `no-api` and others). Offline: registry, harvest
+  config and index only; it never calls a portal.
+- `adapters` in `harvest-config.json`: one on/off switch per adapter. An adapter switched off
+  stops alone; its portals report `adapter-off` and keep their datasets.
+
+### Changed
+
+- The bundled registry is the 2026-11-13 copy (224 rows, was 140). `platform-families.json`
+  maps its 156 platform strings; 3 strings no longer in the registry are gone. Newly mapped:
+  two ArcGIS Hub sites on custom domains (NYC's `nycmaps.nyc.gov`, DEC's Bond Act site), two
+  self-hosted ArcGIS Enterprise portals (DOT, Watertown), and research repositories
+  (`custom-api`, described only). Source ids follow the registry rows, so two changed:
+  `nys-department-of-environmental-conservation--services6-arcgis-com` and
+  `columbia-university-libraries--geodata-library-columbia-edu`.
+
 ## [0.3.0] — 2026-11-13
 
 `search_datasets` gives the whole answer in one call. Its reply has a new shape, which is

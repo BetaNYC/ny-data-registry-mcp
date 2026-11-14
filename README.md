@@ -2,7 +2,7 @@
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that finds open data across every New York data portal in BetaNYC's [NY data portal registry](https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html): which portal covers a place or topic, how to query it, and, with the harvested index, which datasets and columns exist and in what formats.
 
-It complements the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP rather than replacing it. This server knows *where* data is (140 sources across state, county, city, agency, library and nonprofit portals) and hands the agent the right Socrata domain or ArcGIS service. Querying the data stays with `socrata` and the other BetaNYC MCPs.
+It complements the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP rather than replacing it. This server knows *where* data is (224 sources across state, county, city, agency, library and nonprofit portals) and hands the agent the right Socrata domain or ArcGIS service. Querying the data stays with `socrata` and the other BetaNYC MCPs.
 
 Built by [BetaNYC](https://beta.nyc). **Status: 0.3.0.** Package: `@betanyc/ny-data-registry-mcp`.
 
@@ -186,9 +186,9 @@ If anything fails, the server keeps the index it has and tries again at the next
 
 ## Data sources
 
-- **The registry.** `BetaNYC/grounding-ai-with-ny-open-data` `resources/ny-data-portal-registry.json` (140 rows). A copy is bundled in `data/`. On startup the server makes a conditional request (ETag) for the published copy on GitHub Pages, caches it under `${HOME}/.cache/betanyc/`, and falls back to the bundled copy on any failure. This server never edits the registry.
+- **The registry.** `BetaNYC/grounding-ai-with-ny-open-data` `resources/ny-data-portal-registry.json` (224 rows, 2026-11-13). A copy is bundled in `data/`. On startup the server makes a conditional request (ETag) for the published copy on GitHub Pages, caches it under `${HOME}/.cache/betanyc/`, and falls back to the bundled copy on any failure. This server never edits the registry.
 - **Human-editable tables** in `data/`:
-  - `platform-families.json`: maps each of the registry's **101** free-text `platform` strings to one family (`socrata`, `arcgis-hub`, `arcgis-enterprise`, `arcgis-server`, `ckan`, `geoblacklight`, `custom-api`, `none`). A string not in the table is reported as *unmapped*, never guessed; 7 strings are deliberately `null` because the registry marks them UNCONFIRMED.
+  - `platform-families.json`: maps each of the registry's **156** free-text `platform` strings to one family (`socrata`, `arcgis-hub`, `arcgis-enterprise`, `arcgis-server`, `ckan`, `geoblacklight`, `custom-api`, `none`). A string not in the table is reported as *unmapped*, never guessed; 4 strings are deliberately `null` because the registry cannot say how the data is reached.
   - `ny-places.json`: 62 counties, 62 cities, 5 boroughs, 8 regions.
   - `key-columns.json`: the curated join keys.
   - `handoffs.json`: which BetaNYC MCP serves which registry row.
@@ -223,6 +223,28 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 
 **Incremental**: datasets carry `first_seen`, `last_seen` and a content hash. A layer whose `modified` date has not changed keeps its stored columns and is not re-requested. A dataset is marked removed only after a *complete* harvest of its portal.
 
+
+### Coverage
+
+`node dist/cli.js coverage` reports, for every registry row, whether the harvest reads it and why not. It is offline: it reads the newest registry on the machine (the cached published copy, else the bundled one; `--refresh` fetches it first), `data/harvest-config.json` and the index (`--index path`, default the installed one). It never calls a portal. `--json` gives the full report; `--out file` saves it.
+
+Each row gets one state: `harvested`, `read-empty` (read, nothing kept), `failing` (failed, blocked or refused last time), `not-yet-read` (an adapter would read it, the index has no read yet), or `not-harvested`. A not-harvested row carries a fixed code:
+
+| code | meaning |
+|---|---|
+| `not-live` | the registry says dead or UNCONFIRMED |
+| `no-portal` | the registry says no portal |
+| `policy` | never called: a key is required, account-gated, blocks automated clients, or excluded in `harvest-config.json` |
+| `adapter-off` | its adapter is switched off in `harvest-config.json` |
+| `no-adapter` | it has an API, but this build has no adapter for it |
+| `described-only` | a custom API the registry describes |
+| `no-api` | web pages, viewers or downloads only |
+| `unmapped`, `unconfirmed` | the platform string is not in `platform-families.json`, or its family is deliberately null |
+| `incomplete-row` | the row lacks the URL or domain an adapter needs |
+
+For a not-harvested row, `documented_endpoint` is the registry's `api_endpoint`, verbatim.
+
+**Adapter switches.** `adapters` in `data/harvest-config.json` holds one `enabled` switch per adapter. Turning one off stops that adapter alone; its portals show as `adapter-off`, and their datasets stay in the index as last read, so the publish gate does not count them as lost.
 ---
 
 ## Refresh

@@ -23,6 +23,18 @@ interface HarvestConfig {
   };
   skip: { by_entity: Record<string, string> };
   cadence?: CadenceConfig;
+  adapters?: Record<string, AdapterSwitch>;
+}
+
+/** One adapter's on/off switch in harvest-config.json (`adapters`). Missing means on. */
+export interface AdapterSwitch {
+  enabled: boolean;
+  note?: string;
+}
+
+/** Whether an adapter is switched on. An adapter not listed is on. */
+export function adapterEnabled(kind: string, cfg: { adapters?: Record<string, AdapterSwitch> }): boolean {
+  return cfg.adapters?.[kind]?.enabled !== false;
 }
 
 /**
@@ -66,7 +78,22 @@ export type Plan =
   | { kind: "hub"; site: string; agolOrg: string | null }
   | { kind: "enterprise"; portalBase: string }
   | { kind: "agol-org"; orgId: string }
-  | { kind: "skip"; reason: string };
+  | { kind: "skip"; reason: string; code: SkipCode };
+
+/**
+ * Why a registry row is not harvested, as a fixed code (the `coverage` command groups by it).
+ * - not-live: registry status 'dead' or 'UNCONFIRMED'.
+ * - no-portal: registry status 'no-portal'.
+ * - policy: never called (key required, account-gated, blocks automated clients, or excluded in harvest-config.json).
+ * - adapter-off: the adapter exists but is switched off in harvest-config.json.
+ * - no-adapter: the platform has an API but this build has no adapter for it.
+ * - described-only: a custom API the registry describes; not harvested.
+ * - no-api: web pages, viewers or downloads only.
+ * - unmapped / unconfirmed: the platform string is not in platform-families.json, or its family is deliberately null.
+ * - incomplete-row: the row lacks the URL or domain the adapter needs.
+ */
+export type SkipCode =
+  | "not-live" | "no-portal" | "policy" | "adapter-off" | "no-adapter" | "described-only" | "no-api" | "unmapped" | "unconfirmed" | "incomplete-row";
 
 const AGOL_SERVICES = /https:\/\/services\d*\.arcgis\.com\/([A-Za-z0-9]{10,})\/arcgis\/rest\/services/;
 
@@ -84,35 +111,45 @@ export function enterprisePortalBase(s: Source): string | null {
 }
 
 export function planFor(s: Source, cfg: HarvestConfig): Plan {
-  if (s.status !== "live") return { kind: "skip", reason: `registry status '${s.status}'` };
+  const p = basePlan(s, cfg);
+  if (p.kind !== "skip" && !adapterEnabled(p.kind, cfg)) {
+    const note = cfg.adapters?.[p.kind]?.note;
+    return { kind: "skip", code: "adapter-off", reason: `the '${p.kind}' adapter is switched off in harvest-config.json${note ? `: ${note}` : ""}` };
+  }
+  return p;
+}
+
+function basePlan(s: Source, cfg: HarvestConfig): Plan {
+  if (s.status === "no-portal") return { kind: "skip", code: "no-portal", reason: "registry status 'no-portal'" };
+  if (s.status !== "live") return { kind: "skip", code: "not-live", reason: `registry status '${s.status}'` };
   const refuse = refuseReason(s);
-  if (refuse) return { kind: "skip", reason: refuse };
-  if (cfg.skip.by_entity[s.entity]) return { kind: "skip", reason: cfg.skip.by_entity[s.entity] };
+  if (refuse) return { kind: "skip", code: "policy", reason: refuse };
+  if (cfg.skip.by_entity[s.entity]) return { kind: "skip", code: "policy", reason: cfg.skip.by_entity[s.entity] };
   switch (s.platform_family) {
     case "socrata": {
       const d = socrataDomain(s);
-      return d ? { kind: "socrata", domain: d } : { kind: "skip", reason: "no Socrata domain in the registry row" };
+      return d ? { kind: "socrata", domain: d } : { kind: "skip", code: "incomplete-row", reason: "no Socrata domain in the registry row" };
     }
     case "arcgis-hub":
-      return s.url ? { kind: "hub", site: s.url.trim().split(/\s/)[0].replace(/\/+$/, ""), agolOrg: agolOrgOf(s) } : { kind: "skip", reason: "no site URL" };
+      return s.url ? { kind: "hub", site: s.url.trim().split(/\s/)[0].replace(/\/+$/, ""), agolOrg: agolOrgOf(s) } : { kind: "skip", code: "incomplete-row", reason: "no site URL" };
     case "arcgis-enterprise": {
       const b = enterprisePortalBase(s);
-      return b ? { kind: "enterprise", portalBase: b } : { kind: "skip", reason: "ArcGIS Enterprise without a portal (server REST directory only): no catalog adapter in this build" };
+      return b ? { kind: "enterprise", portalBase: b } : { kind: "skip", code: "no-adapter", reason: "ArcGIS Enterprise without a portal (server REST directory only): no catalog adapter in this build" };
     }
     case "arcgis-server": {
       const org = agolOrgOf(s);
-      return org ? { kind: "agol-org", orgId: org } : { kind: "skip", reason: "standalone ArcGIS Server REST directory: no catalog adapter in this build" };
+      return org ? { kind: "agol-org", orgId: org } : { kind: "skip", code: "no-adapter", reason: "standalone ArcGIS Server REST directory: no catalog adapter in this build" };
     }
     case "geoblacklight":
-      return { kind: "skip", reason: "GeoBlacklight: no adapter in this build" };
+      return { kind: "skip", code: "no-adapter", reason: "GeoBlacklight: no adapter in this build" };
     case "ckan":
-      return { kind: "skip", reason: "CKAN (catalog.data.gov): a re-harvest of portals indexed directly; no adapter in this build" };
+      return { kind: "skip", code: "no-adapter", reason: "CKAN: no adapter in this build (a one-time comparison only, epic #7 D7; data.gov's copies re-harvest portals indexed directly)" };
     case "custom-api":
-      return { kind: "skip", reason: "custom API: described by the registry, not harvested" };
+      return { kind: "skip", code: "described-only", reason: "custom API: described by the registry, not harvested" };
     case "none":
-      return { kind: "skip", reason: "no API (web pages, viewers or downloads only)" };
+      return { kind: "skip", code: "no-api", reason: "no API (web pages, viewers or downloads only)" };
     default:
-      return { kind: "skip", reason: `platform family ${s.platform_family_status}` };
+      return { kind: "skip", code: s.platform_family_status === "unconfirmed" ? "unconfirmed" : "unmapped", reason: `platform family ${s.platform_family_status}` };
   }
 }
 

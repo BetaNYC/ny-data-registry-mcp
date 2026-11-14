@@ -36,6 +36,21 @@
       "Columbia University Libraries": "GeoBlacklight with 104,570 records, mostly not New York. Excluded from the harvest."
     }
   },
+  "adapters": {
+    "_note": "One on/off switch per adapter (issue #16). Set enabled to false to stop one adapter without touching the rest; its portals are reported as 'adapter-off' by the harvest stats and the coverage command, and their datasets stay in the index as last read. An adapter not listed here is on.",
+    "socrata": {
+      "enabled": true
+    },
+    "hub": {
+      "enabled": true
+    },
+    "enterprise": {
+      "enabled": true
+    },
+    "agol-org": {
+      "enabled": true
+    }
+  },
   "cadence": {
     "_note": "Days between reads. Self-hosted county ArcGIS servers (the `enterprise` adapter) are read weekly, to be gentle on small county servers (epic #7, decision D5). Everything else nightly. A portal is due `slack_hours` early so a late scheduled start does not slip a whole week. `harvest --ignore-cadence` reads everything.",
     "days_by_adapter": {
