@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] — Unreleased
+
+Adds `about_data`, the third tool BetaNYC is adding to each of its MCP servers. Tracking:
+BetaNYC/betanyc-ai-workspace#1655 (epic #1652).
+
+### Added
+
+- `about_data`: where each kind of data comes from, whether it is an official record, how
+  current it is on this machine, its terms, where to check it and where to report an error,
+  with BetaNYC's contact address for data questions (lab@beta.nyc). Optional `topic`: a source
+  id or a tool name. No network request.
+- `DATA-SOURCES.json`, three sources: `portal-registry` (BetaNYC's registry, published by
+  BetaNYC and marked as BetaNYC's curation, not an official record), `socrata-catalogs` and
+  `arcgis-catalogs` (the catalogs of the portals run by New York State, New York City and other
+  New York governments, which the harvested index is built from). An error in a dataset or its
+  description goes to the contact on that dataset's own portal page. How current: the `generated` date
+  of the registry copy this server loaded, and the index's `last_harvest` (or "not fetched yet"
+  when there is no index on this machine).
+- `data.json`, a DCAT-US 3.0 catalog built from `DATA-SOURCES.json` by
+  `scripts/whats_changed.py about-data catalog`. Never edit it by hand. Both files ship in the
+  npm package (`files`).
+- The server now sends MCP `instructions` saying when to call `about_data`, `about_betanyc`
+  and `whats_changed`.
+- `scripts/tests/catalog_validate.py`, `scripts/mcp_shared/data-sources.schema.json` and
+  `scripts/mcp_shared/vendor/dcat-us-3.0.0/`, copied unchanged from the BetaNYC workspace.
+- CI: an `about-data` job checks that every tool has a source, that `data.json` is current,
+  and validates both files against their JSON Schemas (pinned validators, CI only).
+  `release.yml` runs `about-data check --release` before `npm publish`.
+- Tests: `test/about-data.test.mjs`; the tool-list tests now expect twelve tools.
+
+### Changed
+
+- `src/betanyc-tools.ts` and `scripts/whats_changed.py` updated to shared module 1.3.7
+  (from 1.2.4), copied unchanged.
+- README: the data license of `data/ny-data-portal-registry.json` (CC BY-SA 4.0, adapted
+  from grounding-ai-with-ny-open-data) inside the MIT package.
+
 ## [0.3.0] — 2026-11-13
 
 `search_datasets` gives the whole answer in one call. Its reply has a new shape, which is

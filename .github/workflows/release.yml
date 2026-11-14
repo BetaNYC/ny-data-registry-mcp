@@ -20,7 +20,8 @@
 # Before tagging: one commit dates the WHATS-CHANGED.md "## Unreleased:" entry and the
 # CHANGELOG.md heading with the same New York date, and adds the dated anchor to the entry's
 # MCP version link. Tag that commit. Full steps: README, "Releases". The "WHATS-CHANGED.md has
-# no Unreleased entry" step below enforces the dating.
+# no Unreleased entry" step below enforces the dating, and the DATA-SOURCES.json release gate
+# runs before anything is published.
 
 name: Release
 
@@ -75,6 +76,19 @@ jobs:
       # scripts/whats_changed.py is a copy of the workspace's canonical file; never edit it.
       - name: WHATS-CHANGED.md has no Unreleased entry
         run: python3 scripts/whats_changed.py check WHATS-CHANGED.md --release
+
+      # DATA-SOURCES.json: no error, every tool has a source, and the contact address is real
+      # (not the placeholder). scripts/whats_changed.py is a copy; never edit it here.
+      - name: "Release gate: DATA-SOURCES.json is valid and names a real contact"
+        env:
+          NY_DATA_OFFLINE: "1"
+          NY_DATA_REGISTRY_REFRESH: "0"
+        run: |
+          node --input-type=module -e '
+          const { TOOLS } = await import("./dist/tools.js");
+          console.log(JSON.stringify(TOOLS.map((t) => t.name)));
+          ' > "$RUNNER_TEMP/tools.json"
+          python3 scripts/whats_changed.py about-data check DATA-SOURCES.json --release --tools-file "$RUNNER_TEMP/tools.json"
 
       - name: Publish to npm
         run: npm publish --provenance --access public

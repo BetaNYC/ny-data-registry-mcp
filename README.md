@@ -4,7 +4,7 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 
 It complements the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP rather than replacing it. This server knows *where* data is (140 sources across state, county, city, agency, library and nonprofit portals) and hands the agent the right Socrata domain or ArcGIS service. Querying the data stays with `socrata` and the other BetaNYC MCPs.
 
-Built by [BetaNYC](https://beta.nyc). **Status: 0.3.0.** Package: `@betanyc/ny-data-registry-mcp`.
+Built by [BetaNYC](https://beta.nyc). **Status: 0.4.0.** Package: `@betanyc/ny-data-registry-mcp`.
 
 What changed in this server, newest first, including corrections: [WHATS-CHANGED.md](WHATS-CHANGED.md).
 
@@ -12,7 +12,7 @@ What changed in this server, newest first, including corrections: [WHATS-CHANGED
 
 ## What it does
 
-Eleven tools, in three groups.
+Twelve tools, in three groups.
 
 **Registry tools** (work out of the box, no index needed):
 
@@ -33,14 +33,15 @@ Eleven tools, in three groups.
 | `find_joinable` | Datasets sharing a join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), from a curated key-column map, not raw name equality |
 | `whats_new` | Datasets added, changed or removed since a date |
 
-**About this server** (the two tools BetaNYC is adding to each of its MCP servers; no index needed):
+**About this server** (the three tools BetaNYC is adding to each of its MCP servers; no index needed):
 
 | Tool | What it answers |
 |---|---|
 | `whats_changed` | What changed in **this server**, newest first, from [WHATS-CHANGED.md](WHATS-CHANGED.md): new tools, fixes and corrections. Filters: since, tag (Site, Data, MCP, Correction), limit. For datasets that are new on the portals, use `whats_new` |
 | `about_betanyc` | Who built the server, its version, where to report a bug in this server or ask for a new feature, and BetaNYC's links |
+| `about_data` | Where the data comes from, source by source, from [DATA-SOURCES.json](DATA-SOURCES.json): the registry (BetaNYC's own curation, not an official record) and the Socrata and ArcGIS catalogs the index is built from. For each: whether it is official, how current it is on your machine (the registry's date, the index's last harvest), its terms, where to check it and where to report an error. Optional `topic`: `portal-registry`, `socrata-catalogs`, `arcgis-catalogs`, or a tool name. Questions about the data: lab@beta.nyc |
 
-These two come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
+These three come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
 
 All tool inputs are strict: an unknown parameter is rejected by name, never silently dropped (same rule as `nyc-311-mcp`).
 
@@ -167,6 +168,7 @@ The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`,
   - `harvest-config.json`: skips (ANHD, Rockland, Columbia GeoBlacklight) and caps.
   - `synonyms.json`: a short civic synonym list ("property" → parcels, tax lots, BBL).
 - **The harvested index**, built from the portals themselves (next section).
+- **`DATA-SOURCES.json`** says the same, source by source, for the `about_data` tool. `data.json` is the same facts as a DCAT-US 3.0 catalog, built from it with `python3 scripts/whats_changed.py about-data catalog DATA-SOURCES.json`; never edit it by hand. Both ship in the npm package.
 
 ---
 
@@ -205,7 +207,7 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 
 ## How it was checked
 
-- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all eleven tools.
+- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all twelve tools.
 - `node dist/cli.js eval`: a fixed set of real questions (`eval/questions.json`) scored against the real index. Results: `eval/runs/`.
 
 Latest results (2026-11-05, office-mac), all in `eval/runs/`:
@@ -231,7 +233,7 @@ Latest results (2026-11-05, office-mac), all in `eval/runs/`:
 
 ## Releases
 
-A tag `vX.Y.Z` runs `.github/workflows/release.yml`: tests, a check that `server.json` matches `package.json`, a check that `WHATS-CHANGED.md` has no `Unreleased` entry, `npm publish`, and a GitHub Release. `publish-mcp.yml` then lists the version in the MCP Registry.
+A tag `vX.Y.Z` runs `.github/workflows/release.yml`: tests, a check that `server.json` matches `package.json`, a check that `WHATS-CHANGED.md` has no `Unreleased` entry, a check that `DATA-SOURCES.json` is valid, explains every tool and names a real contact (`about-data check --release`), `npm publish`, and a GitHub Release. `publish-mcp.yml` then lists the version in the MCP Registry.
 
 The pull request that bumps the version changes it in `package.json`, both `version` fields in `package-lock.json`, both in `server.json`, `VERSION` in `src/paths.ts`, and "Status" at the top of this README. When the release changes what the server returns or which tools it has, the same pull request adds a `CHANGELOG.md` section headed `## [X.Y.Z] — Unreleased` and a `WHATS-CHANGED.md` entry headed `## Unreleased: Title`, in plain words, tagged `MCP`, with `- **MCP version:** [ny-data-registry-mcp X.Y.Z](CHANGELOG.md)` (no anchor yet). A fix for a wrong answer is also tagged `Correction` and says what to re-check under "If you used the old numbers".
 
@@ -242,7 +244,7 @@ On release day, one commit, which the tag then goes on:
 3. The entry's MCP version link gains that heading's anchor. Compute it, never write it by hand: `python3 -c "import sys; sys.path.insert(0,'scripts'); import whats_changed as w; print(w.github_slug('[X.Y.Z] — YYYY-MM-DD'))"`.
 4. `python3 scripts/whats_changed.py check WHATS-CHANGED.md --release` passes.
 
-Never rewrite an older entry in `WHATS-CHANGED.md`; add a dated `- **Update YYYY-MM-DD:**` line to it. CI enforces this. `scripts/whats_changed.py` and `src/betanyc-tools.ts` are copies of files in the BetaNYC workspace; never edit them here. A release that changes only metadata gets no entry; its commit carries a `No-whats-changed: <reason>` trailer.
+Never rewrite an older entry in `WHATS-CHANGED.md`; add a dated `- **Update YYYY-MM-DD:**` line to it. CI enforces this. `scripts/whats_changed.py`, `src/betanyc-tools.ts`, `scripts/tests/catalog_validate.py` and `scripts/mcp_shared/` are copies of files in the BetaNYC workspace; never edit them here. A release that changes only metadata gets no entry; its commit carries a `No-whats-changed: <reason>` trailer.
 
 ## Terms of use
 
@@ -258,4 +260,6 @@ Read before any adapter was written; details and quotes in [`docs/terms.md`](doc
 
 ## License
 
-MIT
+MIT, for the code and the package.
+
+Data license: `data/ny-data-portal-registry.json` is CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/), adapted from BetaNYC's [grounding-ai-with-ny-open-data](https://github.com/BetaNYC/grounding-ai-with-ny-open-data) registry, and ships inside the MIT-licensed package. Credit: "Source: BetaNYC, New York Data Portal Registry."

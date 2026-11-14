@@ -20,7 +20,7 @@ export function indexPath(): string {
   return process.env.NY_DATA_INDEX || join(cacheDir(), "ny-data-index.sqlite");
 }
 
-export const VERSION = "0.3.0";
+export const VERSION = "0.4.0";
 
 /** Descriptive User-Agent. No email address, by design. */
 export const USER_AGENT = `ny-data-registry-mcp/${VERSION} (BetaNYC read-only open data catalog index; +https://beta.nyc)`;

@@ -2,12 +2,16 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { TOOLS, callTool } from "./tools.js";
+import { TOOLS, betanyc, callTool } from "./tools.js";
 import { refreshRegistry } from "./registry.js";
 import { VERSION } from "./paths.js";
 import { ensureIndex } from "./fetchindex.js";
 
-const server = new Server({ name: "ny-data-registry-mcp", version: VERSION }, { capabilities: { tools: {} } });
+// betanyc.instructions: when to call about_data, about_betanyc and whats_changed.
+const server = new Server(
+  { name: "ny-data-registry-mcp", version: VERSION },
+  { capabilities: { tools: {} }, instructions: betanyc.instructions }
+);
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
