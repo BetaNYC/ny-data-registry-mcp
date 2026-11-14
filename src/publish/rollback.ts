@@ -11,8 +11,8 @@
  *   the target with the target (src/refresh.ts).
  * - The bad snapshot is relabeled "(rolled back)" and the target "(current)", each with a line
  *   at the top of its notes. No release is deleted. A side file added after the target was made
- *   (topic-crosswalk.csv) is removed from `index-latest`, last, so it never describes another
- *   index than the one beside it.
+ *   (topic-crosswalk.csv, the statewide Croissant and DCAT-US files) is removed from
+ *   `index-latest`, last, so it never describes another index than the one beside it.
  * - The next normal publish uploads a fresh `index.json` without `rolled_back`, which clears it.
  */
 import { createHash } from "node:crypto";

@@ -1,6 +1,7 @@
 /**
  * Make the files a harvest publishes: a clean copy of the index, its .gz, SHA256SUMS,
- * index.json (the manifest) and topic-crosswalk.csv (each portal label and its topics, #18).
+ * index.json (the manifest), topic-crosswalk.csv (each portal label and its topics, #18), and the
+ * statewide Croissant and DCAT-US files (#17).
  *
  * The published copy uses the rollback journal, not WAL. WAL mode is persistent in the
  * file header (https://www.sqlite.org/wal.html, "Persistence of WAL mode"; header bytes
@@ -20,6 +21,7 @@ import { indexSummary, type IndexSummary } from "./summary.js";
 import type { GateResult } from "./gate.js";
 import { computeTopics, crosswalkCsv, CROSSWALK_NAME } from "../topics.js";
 import type { RollbackRecord } from "./rollback.js";
+import { STANDARD_FILES, writeStatewide } from "../standards/statewide.js";
 
 export const SQLITE_NAME = "ny-data-index.sqlite";
 export const GZ_NAME = "ny-data-index.sqlite.gz";
@@ -32,9 +34,9 @@ export const REQUIRED_SIDE_FILES = ["harvest-stats.json", "eval.md", "gate.json"
 /**
  * Side files added later: every new publish has them, but older snapshots do not, so a
  * rollback to one of those still goes ahead (src/publish/rollback.ts rollbackSideFiles).
- * topic-crosswalk.csv since 0.4.0 (#18).
+ * topic-crosswalk.csv since 0.4.0 (#18); the statewide Croissant and DCAT-US files since 0.4.0 (#17).
  */
-export const OPTIONAL_SIDE_FILES = [CROSSWALK_NAME];
+export const OPTIONAL_SIDE_FILES = [CROSSWALK_NAME, ...STANDARD_FILES];
 
 export interface Manifest {
   manifest_version: number;
@@ -162,6 +164,7 @@ export async function preparePublish(opts: {
   const [sqliteSha, gzSha] = [await sha256(sqlite), await sha256(gz)];
   writeFileSync(join(opts.dir, SUMS_NAME), sumsFile(gzSha, sqliteSha));
   writeCrosswalk(sqlite, join(opts.dir, CROSSWALK_NAME));
+  writeStatewide(sqlite, opts.dir);
   const manifest = buildManifest(
     indexSummary(sqlite),
     { sqlite_sha256: sqliteSha, gz_sha256: gzSha, sqlite_bytes: statSync(sqlite).size, gz_bytes: statSync(gz).size },

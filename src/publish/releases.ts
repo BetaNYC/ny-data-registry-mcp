@@ -121,7 +121,7 @@ export function snapshotNotes(tag: string, m: Manifest): string {
     ``,
     `The server downloads the newest index from the [\`${LATEST_TAG}\`](${REPO_URL}/releases/tag/${LATEST_TAG}) release, not from here. To pin this copy, set \`NY_DATA_INDEX_URL\` to \`${REPO_URL}/releases/download/${tag}/${GZ_NAME}\`.`,
     ``,
-    `Kept for 14 days; the first snapshot of each month is kept for good. \`index.json\` describes the files; \`SHA256SUMS\` checks them. \`topic-crosswalk.csv\` lists each portal label and the shared topics it gives.`,
+    `Kept for 14 days; the first snapshot of each month is kept for good. \`index.json\` describes the files; \`SHA256SUMS\` checks them. \`topic-crosswalk.csv\` lists each portal label and the shared topics it gives. \`ny-data-dcat-us.json.gz\` (DCAT-US 3.0) and \`ny-data-croissant.jsonl.gz\` (Croissant 1.1, one dataset per line) describe every dataset in this index; where a portal gives no license, none is inferred.`,
     ``,
   ]
     .filter((l, i, a) => !(l === "" && a[i - 1] === ""))

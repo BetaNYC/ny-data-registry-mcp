@@ -6,11 +6,12 @@
  * ny-data-registry download [--force]
  * ny-data-registry update [--check]
  * ny-data-registry topics [--crosswalk-out file.csv]
+ * ny-data-registry standards [--out-dir dir]
  *
  * `update` exit codes: UPDATE_EXIT_CODES in refresh.ts (2 is a usage error).
  */
 import { writeFileSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { runHarvest } from "./harvest/run.js";
 import { refreshRegistry } from "./registry.js";
 import { indexInfo } from "./datasets.js";
@@ -18,7 +19,8 @@ import { runEval } from "./eval.js";
 import { downloadIndex, indexUrl } from "./fetchindex.js";
 import { checkForUpdate, UPDATE_EXIT_CODES } from "./refresh.js";
 import { openDb, indexExists } from "./db.js";
-import { indexPath } from "./paths.js";
+import { cacheDir, indexPath } from "./paths.js";
+import { writeStatewide } from "./standards/statewide.js";
 import { buildTopics, computeTopics, crosswalkCsv } from "./topics.js";
 
 function arg(name: string): string | undefined {
@@ -28,7 +30,7 @@ function arg(name: string): string | undefined {
 
 
 const cmd = process.argv[2];
-if (cmd !== "download" && cmd !== "update" && cmd !== "topics") await refreshRegistry();
+if (cmd !== "download" && cmd !== "update" && cmd !== "topics" && cmd !== "standards") await refreshRegistry();
 if (cmd === "update") {
   const extra = process.argv.slice(3).filter((a) => a !== "--check");
   if (extra.length) {
@@ -90,9 +92,19 @@ if (cmd === "update") {
     db.close();
     console.log(JSON.stringify(t, null, 2));
   }
+} else if (cmd === "standards") {
+  // The statewide Croissant and DCAT-US files, from the installed index (the nightly publish makes the same files).
+  if (!indexExists()) {
+    console.error(`no index at ${indexPath()}; run download or harvest first`);
+    process.exitCode = 1;
+  } else {
+    const dir = arg("out-dir") ?? join(cacheDir(), "standards");
+    const stats = writeStatewide(indexPath(), dir);
+    console.log(JSON.stringify({ out_dir: dir, ...stats }, null, 2));
+  }
 } else if (cmd === "stats") {
   console.log(JSON.stringify(indexInfo(), null, 2));
 } else {
-  console.error("usage: ny-data-registry <update|download|harvest|eval|stats|topics> [options]");
+  console.error("usage: ny-data-registry <update|download|harvest|eval|stats|topics|standards> [options]");
   process.exitCode = 2;
 }

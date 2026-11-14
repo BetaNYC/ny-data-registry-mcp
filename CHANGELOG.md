@@ -128,6 +128,25 @@ Search by topic. See [#18](https://github.com/BetaNYC/ny-data-registry-mcp/issue
   them on a local index. New `topics` and `dataset_topics` tables; the schema version is
   unchanged, so older servers still read new indexes. Method: `docs/topics.md`.
 
+Standard metadata. See [#17](https://github.com/BetaNYC/ny-data-registry-mcp/issues/17) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- `get_dataset_columns` takes `standard: "croissant" | "dcat-us"` and returns that dataset as
+  Croissant 1.1 or DCAT-US 3.0, with its license kind and the required fields its portal does
+  not give (`missing`). Each published index carries `ny-data-dcat-us.json.gz` (one DCAT-US
+  Catalog) and `ny-data-croissant.jsonl.gz` (one Croissant document per line), about 3 MB
+  each on the 2026-11-05 index; `ny-data-registry standards [--out-dir dir]` builds them
+  locally. They are optional side files: a rollback treats them like `topic-crosswalk.csv`.
+  Licenses are never inferred: a known license name is a license; otherwise a terms-of-use
+  link is labeled "terms page, not a license" (from the dataset's own text or
+  `data/terms-pages.json`, which starts empty), and other portal text is kept as a rights
+  statement. On the 2026-11-05 index: 791 licenses, 72 terms pages, 1,806 statements only,
+  6,900 nothing. DCAT-US's required contact email is always left out (portals do not give
+  one). Tests check DCAT-US output against GSA's JSON Schema (vendored in
+  `test/fixtures/dcat-us-3.0/`). Plan and field mapping: `docs/standard-metadata-plan.md`.
+
 ## [0.3.0] — 2026-11-13
 
 `search_datasets` gives the whole answer in one call. Its reply has a new shape, which is
