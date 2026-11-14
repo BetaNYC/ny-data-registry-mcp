@@ -111,7 +111,10 @@ test("about_betanyc names the server, its version, and where to report a bug or 
 });
 
 test("WHATS-CHANGED.md ships in the npm package", () => {
-  const out = execFileSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { encoding: "utf8" });
+  // On Windows npm is npm.cmd, and Node runs a .cmd only through a shell
+  // (https://nodejs.org/api/child_process.html#spawning-bat-and-cmd-files-on-windows).
+  // The arguments are fixed strings, so the shell sees nothing from outside.
+  const out = execFileSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { encoding: "utf8", shell: process.platform === "win32" });
   const files = JSON.parse(out)[0].files.map((f) => f.path);
   assert.ok(files.includes("WHATS-CHANGED.md"), files.join(", "));
   assert.ok(files.includes("dist/betanyc-tools.js"));
