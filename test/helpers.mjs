@@ -19,7 +19,7 @@ export function tempIndexPath() {
 }
 
 /** Build a small index from the recorded fixtures, through the real mappers and writer. */
-export async function buildFixtureIndex(path) {
+export async function buildFixtureIndex(path, { lastHarvest = "2026-11-05T00:00:00Z" } = {}) {
   const { openDb, writePortalDatasets } = await import("../dist/db.js");
   const { mapSocrataAsset } = await import("../dist/harvest/socrata.js");
   const { mapArcgisItem, mergeDcat, filterItems } = await import("../dist/harvest/arcgis.js");
@@ -75,7 +75,7 @@ export async function buildFixtureIndex(path) {
   writePortalDatasets(db, nyc, [mk("test-0001", "SYNTHETIC 311 test rows", ["unique_key", "bbl", "borough", "incident_zip", "community_board"]), mk("test-0002", "SYNTHETIC pluto test rows", ["bbl", "borocode", "cd", "zipcode", "name"])], run, true);
   setPortalHarvest(db, nyc.id, { adapter: "socrata", status: "ok", note: null, socrata_domain: "data.cityofnewyork.us" });
 
-  db.prepare("INSERT OR REPLACE INTO meta(key, value) VALUES ('last_harvest', '2026-11-05T00:00:00Z')").run();
+  db.prepare("INSERT OR REPLACE INTO meta(key, value) VALUES ('last_harvest', ?)").run(lastHarvest);
   db.close();
   return path;
 }
