@@ -30,6 +30,16 @@ from being published. See [#14](https://github.com/BetaNYC/ny-data-registry-mcp/
 - `cadence` in `harvest-config.json`: self-hosted county ArcGIS Enterprise portals are read
   weekly, not nightly. New `not-due` portal outcome and `not_due` count in the harvest stats;
   `harvest --ignore-cadence` reads everything.
+- The harvest drops portals whose ids are no longer in the registry, with their datasets,
+  columns and change history ([#21](https://github.com/BetaNYC/ny-data-registry-mcp/issues/21)).
+  Portal ids come from registry rows, so when a row changes its old id was left behind,
+  never read again: on the 224-row registry, DEC's old id kept 834 stale datasets next to the
+  842 under its new id. Each drop (portal id, dataset count) is listed in the harvest stats
+  (`dropped_portals`), the run summary, `index.json` and the snapshot's release notes. The
+  registry records no id changes, so nothing is re-keyed. Nothing is dropped when the loaded
+  registry is older than the index's (a failed refresh falling back to the bundled copy). The
+  gate subtracts these drops before its drop checks, up to 5 portals
+  (`max_registry_removed_portals`); any other drop is judged as before.
 - `eval --result-out file.json`: the question-set result as JSON.
 - `certs/sectigo-public-server-authentication-ca-ov-r36.pem`: the intermediate certificate
   Orange County's server leaves out, added for the harvest step with `NODE_EXTRA_CA_CERTS`.

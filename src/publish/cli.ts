@@ -2,9 +2,9 @@
  * The harvest workflow's publish steps (.github/workflows/harvest.yml). Not a user command.
  *
  *   node dist/publish/cli.js summary --index <sqlite> --out <json>      (or --none)
- *   node dist/publish/cli.js gate --previous <json> --current <json> --eval <json> --out <json>
+ *   node dist/publish/cli.js gate --previous <json> --current <json> --eval <json> --stats <json> --out <json>
  *                                 [--override-reason <text> --actor <login>]
- *   node dist/publish/cli.js prepare --index <sqlite> --dir <dir> --gate <json> [--run-url U --code-sha S]
+ *   node dist/publish/cli.js prepare --index <sqlite> --dir <dir> --gate <json> --stats <json> [--run-url U --code-sha S]
  *   node dist/publish/cli.js report --stats <json> --gate <json> [--publish true|false] [--published <json>]
  *   node dist/publish/cli.js publish --dir <dir> [--dry-run]
  *   node dist/publish/cli.js prune [--dry-run]
@@ -116,6 +116,7 @@ if (cmd === "summary") {
     packageSchemaVersion: SCHEMA_VERSION,
     thresholds: cfg.publish_gate,
     override: arg("override-reason") ? { reason: arg("override-reason")!, actor: arg("actor") ?? null } : null,
+    registryRemovals: readJson<HarvestStats>(arg("stats"))?.dropped_portals ?? [],
   });
   writeFileSync(need("out"), JSON.stringify(g, null, 2));
   console.log(gateMarkdown(g));
@@ -127,6 +128,7 @@ if (cmd === "summary") {
     gate: readJson<GateResult>(arg("gate")),
     runUrl: arg("run-url") ?? runUrl(),
     codeSha: arg("code-sha") ?? process.env.GITHUB_SHA ?? null,
+    droppedPortals: readJson<HarvestStats>(arg("stats"))?.dropped_portals ?? [],
   });
   console.log(JSON.stringify(m, null, 2));
 } else if (cmd === "report") {

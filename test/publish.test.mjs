@@ -11,7 +11,7 @@ import tls from "node:tls";
 import { tempIndexPath, buildFixtureIndex } from "./helpers.mjs";
 
 const { evaluateGate, gateMarkdown } = await import("../dist/publish/gate.js");
-const { planRetention, retentionCommands, publishCommands, nextSnapshotTag, snapshotTitle, newYorkDate, pickTagTarget, parseSnapshotTag, LATEST_TAG } =
+const { snapshotNotes, planRetention, retentionCommands, publishCommands, nextSnapshotTag, snapshotTitle, newYorkDate, pickTagTarget, parseSnapshotTag, LATEST_TAG } =
   await import("../dist/publish/releases.js");
 const { failureIssueBody, runSummaryMarkdown, whatFailed, FAILURE_LABEL } = await import("../dist/publish/report.js");
 const { preparePublish, journalHeaderBytes, buildManifest } = await import("../dist/publish/prepare.js");
@@ -35,7 +35,7 @@ const gate = (o) => evaluateGate({ previous: summary(), current: summary(), eval
 test("gate thresholds come from harvest-config.json", () => {
   assert.deepEqual(
     { ...thresholds, _note: undefined },
-    { _note: undefined, eval_must_pass: true, max_total_drop_pct: 10, max_ok_portals_lost: 3, max_portal_drop_pct: 50, portal_drop_min_datasets: 20 }
+    { _note: undefined, eval_must_pass: true, max_total_drop_pct: 10, max_ok_portals_lost: 3, max_portal_drop_pct: 50, portal_drop_min_datasets: 20, max_registry_removed_portals: 5 }
   );
 });
 
@@ -45,7 +45,7 @@ test("gate passes an index as good as the published one", () => {
   assert.equal(g.publish, true);
   assert.equal(g.overridden, false);
   assert.deepEqual(g.reasons, []);
-  assert.deepEqual(g.checks.map((c) => c.id), ["index_not_empty", "schema", "question_set", "total_drop", "portals_lost", "portal_drop"]);
+  assert.deepEqual(g.checks.map((c) => c.id), ["index_not_empty", "schema", "question_set", "registry_removals", "total_drop", "portals_lost", "portal_drop"]);
 });
 
 test("gate blocks a failing or missing question set", () => {
@@ -121,6 +121,46 @@ test("override: a written reason lets a failing index publish, and the record ke
   assert.equal(passing.override_reason, null);
 });
 
+test("gate: DEC's old id dropped with the registry change does not count as a loss (issue #21)", () => {
+  const prev = summary({ portals: { ...portals(10), "nys-dec": { datasets: 834, harvest_status: "ok" } } });
+  const cur = summary({ portals: { ...portals(10), "nys-dec--services6-arcgis-com": { datasets: 842, harvest_status: "ok" } } });
+  const removals = [{ portal_id: "nys-dec", datasets: 834 }];
+  const g = gate({ previous: prev, current: cur, registryRemovals: removals });
+  assert.equal(g.passed, true, g.reasons.join("; "));
+  assert.deepEqual(g.registry_removals, removals);
+  assert.match(g.checks.find((c) => c.id === "registry_removals").detail, /nys-dec \(834\)/);
+});
+
+test("gate: a drop fully explained by registry removals passes; the same drop unexplained blocks", () => {
+  const prev = summary({ portals: { ...portals(10), gone: { datasets: 900, harvest_status: "ok" } } }); // 1900
+  const cur = summary({ portals: portals(10) }); // 1000: -47%
+  const explained = gate({ previous: prev, current: cur, registryRemovals: [{ portal_id: "gone", datasets: 900 }] });
+  assert.equal(explained.passed, true, explained.reasons.join("; "));
+  assert.match(explained.checks.find((c) => c.id === "total_drop").detail, /1900 - 900 dropped with registry removals = 1000 → 1000/);
+  const unexplained = gate({ previous: prev, current: cur });
+  assert.equal(unexplained.publish, false);
+  assert.deepEqual(unexplained.reasons.map((r) => r.split(":")[0]).sort(), ["portal_drop", "total_drop"]);
+});
+
+test("gate: registry removals never hide an unexplained drop elsewhere", () => {
+  const prev = summary({ portals: { ...portals(10), gone: { datasets: 900, harvest_status: "ok" } } });
+  const cur = summary({ portals: portals(10, 85) }); // the rest lost 15%
+  const g = gate({ previous: prev, current: cur, registryRemovals: [{ portal_id: "gone", datasets: 900 }] });
+  assert.equal(g.publish, false);
+  assert.match(g.reasons.join(), /total_drop: 1900 - 900 .* = 1000 → 850 datasets \(-15%\)/);
+});
+
+test("gate: a removal only counts if the portal is really gone, and more than 5 block", () => {
+  const prev = summary({ portals: { ...portals(10), x: { datasets: 900, harvest_status: "ok" } } });
+  const still = gate({ previous: prev, current: prev, registryRemovals: [{ portal_id: "x", datasets: 900 }, { portal_id: "never-there", datasets: 5 }] });
+  assert.deepEqual(still.registry_removals, [], "a portal still in the new index, or never in the old, explains nothing");
+  const many = portals(12, 50);
+  const prev2 = summary({ portals: { ...portals(10), ...Object.fromEntries(Object.entries(many).map(([k, v]) => [`old-${k}`, v])) } });
+  const g = gate({ previous: prev2, current: summary({ portals: portals(10) }), registryRemovals: Object.keys(many).slice(0, 6).map((k) => ({ portal_id: `old-${k}`, datasets: 50 })) });
+  assert.equal(g.publish, false);
+  assert.match(g.reasons.join(), /registry_removals: 6 portal\(s\) dropped .*limit 5/);
+});
+
 // ---------- retention ----------
 
 const days = (from, n) => {
@@ -173,6 +213,7 @@ test("snapshot tags, titles and the New York date", () => {
 });
 
 const manifest = buildManifest(summary(), { sqlite_sha256: "a".repeat(64), gz_sha256: "b".repeat(64), sqlite_bytes: 10, gz_bytes: 5 }, { run_url: "https://example.test/run/1", code_sha: "0123456789abcdef", gate: gate({}) });
+const snapshotNotesFor = (m) => snapshotNotes("index-2026-11-14", m);
 const publishPlan = (releases) =>
   publishCommands({ tag: "index-2026-11-14", date: "2026-11-14", target: "abc123", dir: "/o", sideFiles: ["harvest-stats.json", "eval.md", "gate.json"], manifest, releases });
 
@@ -230,6 +271,15 @@ test("an overridden gate is stated in the release notes", () => {
   assert.deepEqual(m.gate, { passed: false, overridden: true, override_reason: "county renamed a layer", override_by: "noneck", reasons: g.reasons });
 });
 
+test("dropped portals go into index.json and the snapshot's release notes", () => {
+  const dropped = [{ portal_id: "nys-department-of-environmental-conservation", datasets: 834, reason: "id no longer in the registry" }];
+  const m = buildManifest(summary(), { sqlite_sha256: "a", gz_sha256: "b", sqlite_bytes: 1, gz_bytes: 1 }, { gate: gate({}), dropped_portals: dropped });
+  assert.deepEqual(m.dropped_portals, dropped);
+  const cmds = publishCommands({ tag: "index-2026-11-14", date: "2026-11-14", target: "t", dir: "/o", sideFiles: [], manifest: m, releases: [{ tagName: LATEST_TAG, name: "x" }] });
+  assert.match(cmds[0].notes, /\*\*Dropped:\*\* `nys-department-of-environmental-conservation` \(834 datasets\), because their ids are no longer in the registry/);
+  assert.doesNotMatch(snapshotNotesFor(manifest), /Dropped/, "no line when nothing was dropped");
+});
+
 test("the snapshot tag points at the newest commit that does not change workflow files", () => {
   assert.equal(pickTagTarget([{ sha: "c3", files: [".github/workflows/harvest.yml", "src/x.ts"] }, { sha: "c2", files: ["README.md"] }]), "c2");
   assert.equal(pickTagTarget([{ sha: "c1", files: [] }]), "c1");
@@ -280,6 +330,10 @@ test("run summary: counts, trouble portals, not-due portals, gate, and dry-run n
   assert.match(md, /\| 30 \| 27 \| 1 \| 1 \| 1 \| 0 \| 4 \| 100 \| 9600 \| 185000 \|/);
   assert.match(md, /\| orange-county \| failed \| network error/);
   assert.match(md, /Not due tonight: monroe-county\./);
+  assert.doesNotMatch(md, /Dropped because/);
+  const withDrop = runSummaryMarkdown({ stats: { ...stats, dropped_portals: [{ portal_id: "nys-dec", datasets: 834, reason: "id no longer in the registry" }], dropped_datasets: 834 }, gate: null, publish: false });
+  assert.match(withDrop, /Dropped because their ids are no longer in the registry \(834 datasets\):\n\n\| portal \| datasets \|\n\|---\|---\|\n\| nys-dec \| 834 \|/);
+  assert.match(runSummaryMarkdown({ stats: { ...stats, orphan_portals_kept: [{ portal_id: "x", datasets: 3 }], orphan_portals_kept_reason: "the loaded registry (a) is older" }, gate: null, publish: false }), /Not in the registry but kept: x\. the loaded registry/);
   assert.match(md, /Quality gate: PASS/);
   assert.match(md, /Dry run: nothing was published/);
   assert.match(runSummaryMarkdown({ stats: null, gate: null, publish: true, published: { tag: "index-2026-11-14", deleted: ["index-2026-10-20"] } }), /Published\*\* `index-2026-11-14`[\s\S]*Retention removed: index-2026-10-20/);
@@ -300,13 +354,14 @@ test("the published copy uses the rollback journal, its sums match, and the serv
   db.close();
   assert.ok(!existsSync(`${sqlite}-wal`) && !existsSync(`${sqlite}-shm`), "no WAL side files");
 
-  for (const k of ["manifest_version", "schema_version", "last_harvest", "registry_generated", "sqlite_sha256", "gz_sha256", "sqlite_bytes", "gz_bytes", "datasets", "portals_ok", "portals_failed", "run_url", "code_sha", "gate"]) {
+  for (const k of ["manifest_version", "schema_version", "last_harvest", "registry_generated", "sqlite_sha256", "gz_sha256", "sqlite_bytes", "gz_bytes", "datasets", "portals_ok", "portals_failed", "run_url", "code_sha", "gate", "dropped_portals"]) {
     assert.ok(k in m, `index.json has ${k}`);
   }
   assert.deepEqual(JSON.parse(readFileSync(join(dir, "index.json"), "utf8")), m);
   assert.equal(m.schema_version, SCHEMA_VERSION);
   assert.equal(m.datasets, indexSummary(src).datasets);
   assert.equal(m.gate.passed, true);
+  assert.deepEqual(m.dropped_portals, []);
   assert.equal(readFileSync(join(dir, "SHA256SUMS"), "utf8"), `${m.gz_sha256}  ny-data-index.sqlite.gz\n${m.sqlite_sha256}  ny-data-index.sqlite\n`);
 
   // Serve the files as a release on loopback and install them with the server's own downloader.

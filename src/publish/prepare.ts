@@ -40,12 +40,14 @@ export interface Manifest {
   run_url: string | null;
   code_sha: string | null;
   gate: { passed: boolean; overridden: boolean; override_reason: string | null; override_by: string | null; reasons: string[] } | null;
+  /** Portals this harvest dropped because their ids left the registry (issue #21). */
+  dropped_portals: { portal_id: string; datasets: number; reason: string }[];
 }
 
 export function buildManifest(
   s: IndexSummary,
   files: { sqlite_sha256: string; gz_sha256: string; sqlite_bytes: number; gz_bytes: number },
-  meta: { run_url?: string | null; code_sha?: string | null; gate?: GateResult | null }
+  meta: { run_url?: string | null; code_sha?: string | null; gate?: GateResult | null; dropped_portals?: Manifest["dropped_portals"] }
 ): Manifest {
   const g = meta.gate ?? null;
   return {
@@ -60,6 +62,7 @@ export function buildManifest(
     run_url: meta.run_url ?? null,
     code_sha: meta.code_sha ?? null,
     gate: g ? { passed: g.passed, overridden: g.overridden, override_reason: g.override_reason, override_by: g.override_by, reasons: g.reasons } : null,
+    dropped_portals: meta.dropped_portals ?? [],
   };
 }
 
@@ -113,6 +116,7 @@ export async function preparePublish(opts: {
   gate?: GateResult | null;
   runUrl?: string | null;
   codeSha?: string | null;
+  droppedPortals?: Manifest["dropped_portals"];
 }): Promise<Manifest> {
   mkdirSync(opts.dir, { recursive: true });
   const sqlite = join(opts.dir, SQLITE_NAME);
@@ -124,7 +128,7 @@ export async function preparePublish(opts: {
   const manifest = buildManifest(
     indexSummary(sqlite),
     { sqlite_sha256: sqliteSha, gz_sha256: gzSha, sqlite_bytes: statSync(sqlite).size, gz_bytes: statSync(gz).size },
-    { run_url: opts.runUrl, code_sha: opts.codeSha, gate: opts.gate }
+    { run_url: opts.runUrl, code_sha: opts.codeSha, gate: opts.gate, dropped_portals: opts.droppedPortals }
   );
   writeFileSync(join(opts.dir, MANIFEST_NAME), JSON.stringify(manifest, null, 2) + "\n");
   return manifest;

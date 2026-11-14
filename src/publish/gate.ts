@@ -19,6 +19,8 @@ export interface GateThresholds {
   max_portal_drop_pct: number;
   /** ...counting only portals that had at least this many. */
   portal_drop_min_datasets: number;
+  /** Block when the harvest dropped more than this many portals because their ids left the registry. */
+  max_registry_removed_portals: number;
 }
 
 export interface EvalResult {
@@ -36,11 +38,13 @@ export interface GateInput {
   packageSchemaVersion: number;
   thresholds: GateThresholds;
   override?: { reason: string; actor: string | null } | null;
+  /** Portals the harvest dropped because their ids left the registry (harvest stats `dropped_portals`). */
+  registryRemovals?: { portal_id: string; datasets: number }[];
   now?: Date;
 }
 
 export interface GateCheck {
-  id: "index_not_empty" | "schema" | "question_set" | "total_drop" | "portals_lost" | "portal_drop";
+  id: "index_not_empty" | "schema" | "question_set" | "registry_removals" | "total_drop" | "portals_lost" | "portal_drop";
   ok: boolean;
   detail: string;
 }
@@ -57,6 +61,8 @@ export interface GateResult {
   reasons: string[];
   checks: GateCheck[];
   compared_with: { last_harvest: string | null; datasets: number } | null;
+  /** Portals dropped because their ids left the registry, as the gate counted them. */
+  registry_removals: { portal_id: string; datasets: number }[];
   evaluated_at: string;
 }
 
@@ -93,14 +99,31 @@ export function evaluateGate(input: GateInput): GateResult {
   }
 
   if (prev) {
-    const drop = prev.datasets > 0 ? ((prev.datasets - cur.datasets) / prev.datasets) * 100 : 0;
+    // A removal is "explained" only if the portal was in the published index and is gone from the
+    // new one. Its published dataset count is what it explains, whatever the stats file says.
+    const explained = (input.registryRemovals ?? []).filter((r) => prev.portals[r.portal_id] && !cur.portals[r.portal_id]);
+    const removedIds = new Set(explained.map((r) => r.portal_id));
+    const explainedDatasets = explained.reduce((a, r) => a + prev.portals[r.portal_id].datasets, 0);
+    checks.push({
+      id: "registry_removals",
+      ok: explained.length <= t.max_registry_removed_portals,
+      detail: explained.length
+        ? `${explained.length} portal(s) dropped because their ids left the registry: ${explained.map((r) => `${r.portal_id} (${prev.portals[r.portal_id].datasets})`).join(", ")}; limit ${t.max_registry_removed_portals}`
+        : `none; limit ${t.max_registry_removed_portals}`,
+    });
+
+    const base = prev.datasets - explainedDatasets;
+    const drop = base > 0 ? ((base - cur.datasets) / base) * 100 : 0;
     checks.push({
       id: "total_drop",
       ok: drop <= t.max_total_drop_pct,
-      detail: `${prev.datasets} → ${cur.datasets} datasets (${drop > 0 ? "-" : "+"}${pct(Math.abs(drop))}); limit -${t.max_total_drop_pct}%`,
+      detail:
+        `${prev.datasets}${explainedDatasets ? ` - ${explainedDatasets} dropped with registry removals = ${base}` : ""} → ${cur.datasets} datasets ` +
+        `(${drop > 0 ? "-" : "+"}${pct(Math.abs(drop))}); limit -${t.max_total_drop_pct}%`,
     });
 
     const lost = Object.entries(prev.portals)
+      .filter(([id]) => !removedIds.has(id))
       .filter(([, p]) => HEALTHY_STATUSES.has(p.harvest_status ?? ""))
       .filter(([id]) => !HEALTHY_STATUSES.has(cur.portals[id]?.harvest_status ?? "missing"))
       .map(([id]) => `${id} (${cur.portals[id]?.harvest_status ?? "missing"})`);
@@ -113,7 +136,7 @@ export function evaluateGate(input: GateInput): GateResult {
     });
 
     const shrunk = Object.entries(prev.portals)
-      .filter(([, p]) => p.datasets >= t.portal_drop_min_datasets)
+      .filter(([id, p]) => !removedIds.has(id) && p.datasets >= t.portal_drop_min_datasets)
       .map(([id, p]) => ({ id, before: p.datasets, after: cur.portals[id]?.datasets ?? 0 }))
       .filter((x) => ((x.before - x.after) / x.before) * 100 > t.max_portal_drop_pct)
       .map((x) => `${x.id} ${x.before} → ${x.after}`);
@@ -138,6 +161,9 @@ export function evaluateGate(input: GateInput): GateResult {
     reasons: checks.filter((c) => !c.ok).map((c) => `${c.id}: ${c.detail}`),
     checks,
     compared_with: prev ? { last_harvest: prev.last_harvest, datasets: prev.datasets } : null,
+    registry_removals: prev
+      ? (input.registryRemovals ?? []).filter((r) => prev.portals[r.portal_id] && !cur.portals[r.portal_id]).map((r) => ({ portal_id: r.portal_id, datasets: prev.portals[r.portal_id].datasets }))
+      : [],
     evaluated_at: (input.now ?? new Date()).toISOString(),
   };
 }

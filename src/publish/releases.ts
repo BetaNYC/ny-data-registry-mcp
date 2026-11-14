@@ -114,6 +114,9 @@ export function snapshotNotes(tag: string, m: Manifest): string {
     `- **Harvested:** ${m.last_harvest ?? "unknown"} (registry generated ${m.registry_generated ?? "unknown"})`,
     `- **Contents:** ${fmt(m.datasets)} datasets; ${m.portals_ok} portals read in full, ${m.portals_failed} failed or blocked (their datasets are kept as of their last good read).`,
     gateLine(m),
+    m.dropped_portals?.length
+      ? `- **Dropped:** ${m.dropped_portals.map((d) => `\`${d.portal_id}\` (${d.datasets} datasets)`).join(", ")}, because their ids are no longer in the registry.`
+      : "",
     `- **Built by:** ${m.run_url ? `[the harvest workflow run](${m.run_url})` : "the harvest workflow"}${m.code_sha ? ` from commit ${m.code_sha.slice(0, 7)}` : ""}.`,
     ``,
     `The server downloads the newest index from the [\`${LATEST_TAG}\`](${REPO_URL}/releases/tag/${LATEST_TAG}) release, not from here. To pin this copy, set \`NY_DATA_INDEX_URL\` to \`${REPO_URL}/releases/download/${tag}/${GZ_NAME}\`.`,

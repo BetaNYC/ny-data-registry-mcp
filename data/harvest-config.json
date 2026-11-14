@@ -48,11 +48,12 @@
     "slack_hours": 6
   },
   "publish_gate": {
-    "_note": "The workflow publishes only when every check passes (or a person overrides it with a written reason, which is recorded in gate.json, index.json and the release notes). Compared with the index that is published now.",
+    "_note": "The workflow publishes only when every check passes (or a person overrides it with a written reason, which is recorded in gate.json, index.json and the release notes). Compared with the index that is published now. Portals the harvest drops because their ids left the registry are subtracted before the drop checks, up to max_registry_removed_portals of them.",
     "eval_must_pass": true,
     "max_total_drop_pct": 10,
     "max_ok_portals_lost": 3,
     "max_portal_drop_pct": 50,
-    "portal_drop_min_datasets": 20
+    "portal_drop_min_datasets": 20,
+    "max_registry_removed_portals": 5
   }
 }

@@ -4,7 +4,8 @@
 #   1. checks its setup (Socrata token, certificate file, publishing only from the default branch),
 #   2. builds the package and runs the offline tests,
 #   3. downloads and verifies the published index (fails closed: no silent fresh start),
-#   4. harvests (read-only, throttled, robots.txt honored; county ArcGIS servers weekly),
+#   4. harvests (read-only, throttled, robots.txt honored; county ArcGIS servers weekly), first
+#      dropping portals whose ids left the registry (issue #21),
 #   5. runs the question set and the quality gate against the published index,
 #   6. builds the files to publish (rollback-journal SQLite, .gz, SHA256SUMS, index.json),
 #   7. publishes a dated snapshot, then updates index-latest, relabels older snapshots
@@ -133,14 +134,14 @@ jobs:
         id: gate
         run: |
           node dist/publish/cli.js summary --index "$NY_DATA_INDEX" --out "$OUT/current-summary.json"
-          args=(--previous "$OUT/previous-summary.json" --current "$OUT/current-summary.json" --eval "$OUT/eval.json" --out "$OUT/gate.json")
+          args=(--previous "$OUT/previous-summary.json" --current "$OUT/current-summary.json" --eval "$OUT/eval.json" --stats "$OUT/harvest-stats.json" --out "$OUT/gate.json")
           [ "$FORCE_PUBLISH" = "true" ] && args+=(--override-reason "$FORCE_REASON" --actor "$GITHUB_ACTOR")
           node dist/publish/cli.js gate "${args[@]}"
 
       - name: Build files to publish
         id: prepare
         if: ${{ !cancelled() && steps.harvest.outcome == 'success' }}
-        run: node dist/publish/cli.js prepare --index "$NY_DATA_INDEX" --dir "$OUT" --gate "$OUT/gate.json"
+        run: node dist/publish/cli.js prepare --index "$NY_DATA_INDEX" --dir "$OUT" --gate "$OUT/gate.json" --stats "$OUT/harvest-stats.json"
 
       - name: Publish
         id: publish

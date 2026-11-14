@@ -20,6 +20,10 @@ export interface HarvestStats {
   refused_out_of_state?: number;
   skipped_live_rows?: number;
   not_due?: number;
+  dropped_portals?: { portal_id: string; datasets: number; reason: string }[];
+  dropped_datasets?: number;
+  orphan_portals_kept?: { portal_id: string; datasets: number }[];
+  orphan_portals_kept_reason?: string | null;
   datasets_in_index?: number;
   columns_in_index?: number;
   http_requests?: number;
@@ -56,6 +60,17 @@ export function runSummaryMarkdown(o: {
     );
     const t = troublePortals(s);
     if (t.length) out.push("Portals that did not come back complete (their datasets stay as of their last good read):", "", "| portal | outcome | why |", "|---|---|---|", ...t.map((p) => `| ${p.source_id} | ${p.outcome} | ${cell(p.why)} |`), "");
+    if (s.dropped_portals?.length) {
+      out.push(
+        `Dropped because their ids are no longer in the registry (${s.dropped_datasets ?? 0} datasets):`,
+        "",
+        "| portal | datasets |",
+        "|---|---|",
+        ...s.dropped_portals.map((d) => `| ${d.portal_id} | ${d.datasets} |`),
+        ""
+      );
+    }
+    if (s.orphan_portals_kept?.length) out.push(`Not in the registry but kept: ${s.orphan_portals_kept.map((o) => o.portal_id).join(", ")}. ${s.orphan_portals_kept_reason ?? ""}`, "");
     const nd = (s.portals ?? []).filter((p) => p.outcome === "not-due");
     if (nd.length) out.push(`Not due tonight: ${nd.map((p) => p.source_id).join(", ")}.`, "");
   }

@@ -208,8 +208,8 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 
 1. **Preflight.** It stops at once if the `SOCRATA_APP_TOKEN` secret is missing, if the certificate file below is missing, or if a publishing run was started on a branch other than `main`.
 2. **Start from the published index.** It downloads `index-latest` with the same checksum and schema checks every server uses. If that fails, the run fails. It never quietly starts from nothing, which would reset every dataset's `first_seen`. Only the `fresh` input starts empty.
-3. **Harvest**, as described above.
-4. **Quality gate.** The new index is compared with the published one. Publishing is blocked when:
+3. **Harvest**, as described above. First, portals whose ids are no longer in the registry are dropped with their datasets, since nothing would ever read them again (portal ids come from registry rows, so a changed row leaves its old id behind). Each drop is listed in the run summary and `index.json`. Nothing is dropped when the registry the run loaded is older than the one the index was built from.
+4. **Quality gate.** The new index is compared with the published one. Datasets dropped with registry removals are subtracted first (up to 5 portals; more blocks the publish). Publishing is blocked when:
    - the question set (`eval/questions.json`) scores under 90% or finds any invariant violation;
    - the index loses more than 10% of its datasets;
    - more than 3 portals that had data now fail, are blocked, refused or gone;
