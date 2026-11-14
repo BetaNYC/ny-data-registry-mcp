@@ -159,6 +159,8 @@ Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data
   community, weekly, oldest first. Keeps public records whose location touches New York, or
   that name New York when they have no location. **Switched off** until a supervised run
   checks that filter: locations are optional in InvenioRDM and the repository is worldwide.
+- `docs/ckan-comparison.md` (milestone 7, D7): data.gov's copies of the State and NYC
+  catalogs against the index, from counts already on record; no CKAN site called, no adapter.
 - `politeFetch` can read a binary body (`binary: true`), never cached.
 - Hand-kept list (`data/hand-kept.json`, milestone 5, D6): for rows with no data link, what the
   place does offer (pages, viewers, search pages, request forms). The `hand-kept` adapter adds

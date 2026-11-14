@@ -214,7 +214,7 @@ If anything fails, the server keeps the index it has and tries again at the next
 | InvenioRDM (NYU's UltraViolet, Spatial Data Repository community) | `/api/communities/{id}/records`, oldest first, 25 per page. **Switched off** until a supervised run checks the New York filter | none |
 | Hand-kept list (rows with no data link) | `data/hand-kept.json`, edited by hand; no network call | none |
 
-Everything else (custom APIs, CKAN, pages with no API and no hand-kept entry) is described by the registry tools but not harvested. `coverage` lists each row and why.
+Everything else (custom APIs, CKAN, pages with no API and no hand-kept entry) is described by the registry tools but not harvested. `coverage` lists each row and why. CKAN has no adapter by decision: the registry's CKAN rows are data.gov's copies of catalogs read here at the source, plus one Stony Brook site whose robots.txt disallows its API ([`docs/ckan-comparison.md`](docs/ckan-comparison.md)).
 
 **Guards**
 - **Esri's own content is excluded** (owner `esri…`, org `P3ePLMYs2RVChkJx`). For Enterprise portals and ArcGIS Online orgs, items from another org are not counted under that portal; this is what turns Monroe's 108 search hits into its own content. Hub sites are *not* filtered by org, because a Hub's catalog is curated by its owner and aggregators like the State GIS Clearinghouse deliberately list other agencies' layers.
