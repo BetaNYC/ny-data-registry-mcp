@@ -98,11 +98,21 @@ words, not guesses:
    Croissant `usageInfo`; DCAT-US `rights`. Never in `license`.
 4. **Nothing.** No text, or "None". No license field, no rights field.
 
-**Where terms pages come from.** The registry has no terms-of-use field. `docs/terms.md`
-tried two portal terms URLs on 2026-11-05 and both returned 404. This build makes no live
-calls to portals. So `data/terms-pages.json` starts **empty**, and a portal is listed there
-only after someone opens its terms page and records the date. Until then the only terms
-pages are URLs a portal wrote into a dataset's own license text.
+**Where terms pages come from.** The registry has no terms-of-use field. The build makes no
+live calls to portals. Terms pages come from two places:
+
+- URLs a portal wrote into a dataset's own license text. These win.
+- `data/terms-pages.json`, checked by hand on 2026-11-14: each of the 35 portals in the
+  2026-11-05 index was opened (home page, footer, About page) to find its own terms page.
+  **10 have one** and are listed with the URL, the exact page title, the date, and how it
+  was found. `kind: "platform"` marks a vendor's page that the portal itself links to (only
+  Lehman College, which links Tyler's Socrata agreement); the output says so. **25 have none**
+  (most ArcGIS Hub sites keep the template's empty "Terms of Use" link) or were blocked
+  (Nassau's robots.txt disallows every page). They are listed under `checked_without_terms`
+  with the reason.
+
+On the 2026-11-05 index this gives: 791 licenses, 5,312 terms pages (72 from the dataset,
+5,240 from the portal table), 1,360 statements only, and 2,106 with nothing.
 
 ## Statewide files (decision E4)
 
@@ -114,7 +124,7 @@ with every snapshot and to `index-latest`:
   dataset per document; there is no standard multi-dataset container).
 
 Gzipped, because both are mostly repeated keys. On the 2026-11-05 index (9,569 datasets):
-the DCAT-US file is 3.0 MB (24.0 MB unzipped), the Croissant file 3.1 MB (30.2 MB unzipped).
+the DCAT-US file is 2.8 MB (19.2 MB unzipped), the Croissant file 3.0 MB (30.3 MB unzipped).
 They are optional side files, like the crosswalk: a rollback to a snapshot that has them
 copies them; to one that lacks them removes them from `index-latest`, last. They never sit
 beside an index they do not describe. Each names its index: the Catalog's `modified` and each

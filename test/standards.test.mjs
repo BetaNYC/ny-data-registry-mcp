@@ -175,6 +175,15 @@ test("license absent with a terms page: linked and labeled 'terms page, not a li
     assert.ok(d.document.rights.includes("Terms page, not a license: https://example.org/nyc-terms"), id);
     assert.ok(!("license" in d.document));
   }
+  // A platform vendor's page (kind "platform") says so, and is still never a license.
+  const PLATFORM = { portals: { "new-york-city": { url: "https://example.org/vendor-terms", checked: "2026-11-14", kind: "platform" } } };
+  const d = B.toDcatUs(rec("syn-null"), { terms: PLATFORM });
+  const c = B.toCroissant(rec("syn-null"), { harvestedAt, terms: PLATFORM });
+  assert.equal(d.license.terms_page.platform, true);
+  assert.ok(d.document.rights.includes("Terms page, not a license (the platform vendor's page, linked by the portal): https://example.org/vendor-terms"));
+  assert.match(c.document.usageInfo.name, /^Terms page, not a license \(the platform vendor's page/);
+  assert.ok(!("license" in d.document) && !("license" in c.document));
+  assert.ok(!("platform" in B.toDcatUs(rec("syn-null"), { terms: NYC_TERMS }).license.terms_page), "a portal's own page is not marked platform");
 });
 
 test("no license and no terms page: no license field and no terms link; portal text is kept word for word", () => {
@@ -197,10 +206,23 @@ test("no license and no terms page: no license field and no terms link; portal t
   assert.equal(L.cleanLicenseText(LICENSE_CASES["syn-dis1"]), 'The County makes no warranty of any kind. "As is".');
 });
 
-test("data/terms-pages.json ships empty: no portal terms page until someone checks one", () => {
+test("data/terms-pages.json: every portal entry was checked by hand and says how it was found", async () => {
   const f = JSON.parse(readFileSync(new URL("../data/terms-pages.json", import.meta.url), "utf8"));
-  assert.deepEqual(f.portals, {});
-  for (const [url, v] of Object.entries(f.portals)) assert.match(v.checked, /^\d{4}-\d{2}-\d{2}$/, url);
+  const { assignSourceIds } = await import("../dist/registry.js");
+  const sourceIds = new Set(assignSourceIds(JSON.parse(readFileSync(new URL("../data/ny-data-portal-registry.json", import.meta.url), "utf8")).rows));
+  assert.ok(Object.keys(f.portals).length > 0);
+  for (const [id, v] of Object.entries(f.portals)) {
+    assert.match(v.url, /^https?:\/\/\S+$/, id);
+    assert.match(v.checked, /^\d{4}-\d{2}-\d{2}$/, id);
+    assert.ok(typeof v.title === "string" && v.title.trim(), `${id}: exact page title`);
+    assert.ok(typeof v.found === "string" && v.found.trim(), `${id}: how it was found`);
+    assert.ok(["portal", "platform"].includes(v.kind), `${id}: kind`);
+    assert.ok(!(id in f.checked_without_terms), `${id} is listed both ways`);
+  }
+  // Keys are the bundled registry's portal ids: a typo would silently never match a dataset.
+  for (const id of [...Object.keys(f.portals), ...Object.keys(f.checked_without_terms).filter((k) => !k.startsWith("_"))]) {
+    assert.ok(sourceIds.has(id), `${id} is not a portal id in the bundled registry`);
+  }
 });
 
 // --- Croissant 1.1 -----------------------------------------------------------------------------
@@ -310,7 +332,9 @@ test("get_dataset_columns with standard returns that document; without it, the r
   assert.match(c.statewide_file.url, /index-latest\/ny-data-croissant\.jsonl\.gz$/);
   const d = parse(await callTool("get_dataset_columns", { dataset: "new-york-city:syn-null", standard: "dcat-us" }));
   assert.equal(d.conforms_to, "DCAT-US v3.0");
-  assert.equal(d.license.kind, "none", "the bundled terms table is empty");
+  assert.equal(d.license.kind, "terms-page", "the bundled terms table has New York City's page");
+  assert.equal(d.license.terms_page.source, "portal");
+  assert.equal(d.license.terms_page.url, "https://www.nyc.gov/main/terms-of-use");
   assert.ok(!("license" in d.document));
   assert.deepEqual(unexpectedDcatErrors(d.document, d.missing), []);
   const bad = await callTool("get_dataset_columns", { dataset: "new-york-city:syn-lic1", standard: "schema.org" });

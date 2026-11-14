@@ -141,11 +141,12 @@ Standard metadata. See [#17](https://github.com/BetaNYC/ny-data-registry-mcp/iss
   locally. They are optional side files: a rollback treats them like `topic-crosswalk.csv`.
   Licenses are never inferred: a known license name is a license; otherwise a terms-of-use
   link is labeled "terms page, not a license" (from the dataset's own text or
-  `data/terms-pages.json`, which starts empty), and other portal text is kept as a rights
-  statement. On the 2026-11-05 index: 791 licenses, 72 terms pages, 1,806 statements only,
-  6,900 nothing. DCAT-US's required contact email is always left out (portals do not give
-  one). Tests check DCAT-US output against GSA's JSON Schema (vendored in
-  `test/fixtures/dcat-us-3.0/`). Plan and field mapping: `docs/standard-metadata-plan.md`.
+  `data/terms-pages.json`, checked by hand on 2026-11-14: 10 of 35 portals have a terms page,
+  25 have none or were blocked), and other portal text is kept as a rights statement. On the
+  2026-11-05 index: 791 licenses, 5,312 terms pages, 1,360 statements only, 2,106 nothing.
+  DCAT-US's required contact email is always left out (portals do not give one). Tests check
+  DCAT-US output against GSA's JSON Schema (vendored in `test/fixtures/dcat-us-3.0/`). Plan
+  and field mapping: `docs/standard-metadata-plan.md`.
 
 ## [0.3.0] — 2026-11-13
 
