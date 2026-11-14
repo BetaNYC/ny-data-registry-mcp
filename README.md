@@ -245,6 +245,17 @@ Each row gets one state: `harvested`, `read-empty` (read, nothing kept), `failin
 For a not-harvested row, `documented_endpoint` is the registry's `api_endpoint`, verbatim.
 
 **Adapter switches.** `adapters` in `data/harvest-config.json` holds one `enabled` switch per adapter. Turning one off stops that adapter alone; its portals show as `adapter-off`, and their datasets stay in the index as last read, so the publish gate does not count them as lost.
+
+### Tax parcel coverage
+
+`node dist/cli.js parcels` builds a table of all 62 counties. For each it says whether the county shares its tax parcels with the State's public layer, and whether the county (for the five boroughs, New York City) publishes its own parcel layer that the index or the registry knows about. It is offline, like `coverage`, and takes the same options.
+
+- **The State's list** comes from one read of the State's statewide layer, [NYS Tax Parcels Public](https://nysgeohub.ny.gov/arcgis/rest/services/Parcels/NYS_Tax_Parcels_Public/FeatureServer), the endpoint the [NYS GIS Clearinghouse parcels page](https://gis.ny.gov/parcels) documents. It was read once, on 2026-11-14, for its service description only. The response is kept in `docs/parcels/`, and the 38 county names are parsed from it, not typed by hand. `data/parcel-sources.json` records the URL, time, status and ETag.
+- **Own layer in the index**: a dataset from the county's own portal whose name says parcel, tax lot, tax map or PLUTO.
+- **Own layer in the registry**: a REST layer or download that the county's registry row documents, reviewed by hand, with an exact quote (`registry_parcel_layers`). A viewer, search page or request form does not count.
+- **The State page's links** for each county (its parcel page, viewer and extras) are listed too, unchecked.
+
+On 2026-11-14 (registry 2026-11-13, index of 2026-11-05): 38 counties share with the State; 23 have their own parcel layer in the index and 11 more in the registry only; 18 have neither. The table is [`docs/parcels/2026-11-14-parcel-coverage.md`](docs/parcels/2026-11-14-parcel-coverage.md).
 ---
 
 ## Refresh

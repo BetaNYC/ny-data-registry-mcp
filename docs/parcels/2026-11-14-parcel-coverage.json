@@ -1,0 +1,2338 @@
+{
+  "generated_at": "2026-11-14T16:09:21.671Z",
+  "registry_generated": "2026-11-13",
+  "index_path": "index-latest (downloaded 2026-11-14)",
+  "index_last_harvest": "2026-11-05T18:44:22.100Z",
+  "state_layer": {
+    "name": "NYS Tax Parcels Public",
+    "service_url": "https://nysgeohub.ny.gov/arcgis/rest/services/Parcels/NYS_Tax_Parcels_Public/FeatureServer",
+    "documented_at": "https://gis.ny.gov/parcels",
+    "data_dictionary": "https://gis.ny.gov/standardized-tax-parcel-data-dictionary",
+    "read": {
+      "url": "https://nysgeohub.ny.gov/arcgis/rest/services/Parcels/NYS_Tax_Parcels_Public/FeatureServer?f=json",
+      "at": "2026-11-14T15:59:35Z",
+      "http_status": 200,
+      "etag": "\"9b07ecb91c990703a3fa7b4444b319888a498431dcd2e8672d3195328cdc7602\"",
+      "what": "the service description (ArcGIS REST Feature Service resource, f=json); no layer or feature query",
+      "evidence_file": "docs/parcels/2026-11-14-nys-tax-parcels-public-featureserver.json"
+    },
+    "publication_date": "May 2026 (\"Updated annually\"; parcel data from 2025)",
+    "layers": [
+      {
+        "id": 0,
+        "name": "NYS Tax Parcels Public Footprint"
+      },
+      {
+        "id": 1,
+        "name": "NYS Tax Parcels Public"
+      }
+    ],
+    "counties_sharing": [
+      "Albany",
+      "Bronx",
+      "Broome",
+      "Cayuga",
+      "Chautauqua",
+      "Cortland",
+      "Erie",
+      "Genesee",
+      "Greene",
+      "Hamilton",
+      "Kings",
+      "Lewis",
+      "Livingston",
+      "Montgomery",
+      "New York",
+      "Oneida",
+      "Onondaga",
+      "Ontario",
+      "Orange",
+      "Oswego",
+      "Otsego",
+      "Putnam",
+      "Queens",
+      "Rensselaer",
+      "Richmond",
+      "Rockland",
+      "St. Lawrence",
+      "Schuyler",
+      "Steuben",
+      "Suffolk",
+      "Sullivan",
+      "Tioga",
+      "Tompkins",
+      "Ulster",
+      "Warren",
+      "Wayne",
+      "Westchester",
+      "Wyoming"
+    ],
+    "unmatched": []
+  },
+  "summary": {
+    "counties": 62,
+    "shares_with_state": 38,
+    "own_layer_in_index": 23,
+    "own_layer_registry_only": 11,
+    "neither": 18,
+    "by_category": {
+      "state-and-own": 28,
+      "state-only": 10,
+      "own-only": 6,
+      "neither": 18
+    }
+  },
+  "rows": [
+    {
+      "county": "Albany",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "albany-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 2,
+      "index_examples": [
+        {
+          "portal_id": "albany-county",
+          "name": "Albany County Tax Parcels 2026",
+          "permalink": "https://albany-county-ny-open-data-albcountygis.hub.arcgis.com/datasets/AlbCountyGIS::albany-county-tax-parcels-2026"
+        },
+        {
+          "portal_id": "albany-county",
+          "name": "Climate Risk Data Tax Parcels",
+          "permalink": "https://albany-county-ny-open-data-albcountygis.hub.arcgis.com/datasets/AlbCountyGIS::climate-risk-data-tax-parcels"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://albany-county-ny-open-data-albcountygis.hub.arcgis.com/datasets/42aea2183c5544bfb4deca8b0d01d0c8_0/explore?location=42.613893%2C-73.971314%2C10",
+        "viewer": "https://experience.arcgis.com/experience/a4d863dc3e634edaa94fcc311d8e6511",
+        "additional": "https://experience.arcgis.com/experience/8b462d7c4ebb439b96fa3a55cb2a9976/page/Page?views=Planning"
+      }
+    },
+    {
+      "county": "Allegany",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "allegany-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "allegany-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.alleganyco.com/departments/real-property/",
+        "viewer": "https://beacon.schneidercorp.com/Application.aspx?App=AlleganyCountyNY&PageType=Map",
+        "additional": "https://allegany.sdgnys.com/search.aspx"
+      }
+    },
+    {
+      "county": "Bronx",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "board-of-elections-in-the-city-of-new-york",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "new-york-city",
+          "status": "live",
+          "platform_family": "socrata"
+        },
+        {
+          "source_id": "new-york-city-police-department",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-buildings",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--equitableexplorer-planning-nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--services5-arcgis-com",
+          "status": "live",
+          "platform_family": "arcgis-server"
+        },
+        {
+          "source_id": "nyc-department-of-citywide-administrative-services",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-finance",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-health-and-mental-hygiene",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-transportation",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-independent-budget-office",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--api-portal-nyc-gov",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--nycmaps-nyc-gov",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti-department-of-ci",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-public-schools-doe",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "office-of-the-new-york-city-comptroller",
+          "status": "live",
+          "platform_family": "custom-api"
+        }
+      ],
+      "index_parcel_datasets": 20,
+      "index_examples": [
+        {
+          "portal_id": "new-york-city",
+          "name": "Primary Land Use Tax Lot Output (PLUTO)",
+          "permalink": "https://data.cityofnewyork.us/d/64uk-42ks"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "Department of Finance Digital Tax Map",
+          "permalink": "https://data.cityofnewyork.us/d/smk3-tmxj"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "NYC Zoning Tax Lot Database",
+          "permalink": "https://data.cityofnewyork.us/d/fdkv-4t4z"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      }
+    },
+    {
+      "county": "Broome",
+      "shares_with_state": true,
+      "own_layer": "registry-documented",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "broome-county",
+          "status": "live",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "br_parcels MapServer"
+      },
+      "registry_text_mentions": [
+        "broome-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://gis.broomecountyny.gov/Website/GISWeb/Portal.htm",
+        "viewer": "https://gis.broomecountyny.gov/website/apps/parcel_mapper/viewer.html",
+        "additional": "https://imo.co.broome.ny.us/search.aspx?advanced=true"
+      }
+    },
+    {
+      "county": "Cattaraugus",
+      "shares_with_state": false,
+      "own_layer": "in-index",
+      "category": "own-only",
+      "county_rows": [
+        {
+          "source_id": "cattaraugus-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 9,
+      "index_examples": [
+        {
+          "portal_id": "cattaraugus-county",
+          "name": "New_Floodplain_Parcel_Data",
+          "permalink": "https://www.arcgis.com/home/item.html?id=dce1b94f4b164a5883343d86737665cc"
+        },
+        {
+          "portal_id": "cattaraugus-county",
+          "name": "ParcelsInCurrentDataOnly",
+          "permalink": "https://www.arcgis.com/home/item.html?id=e2349dbfcd614410aeea993cfb3a9b5d"
+        },
+        {
+          "portal_id": "cattaraugus-county",
+          "name": "ForeclosureParcels5_13_26",
+          "permalink": "https://www.arcgis.com/home/item.html?id=b70df5b6ee614461aa1cce64acbcb1b8"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.cattco.gov/real-property-and-gis/gis-pricing",
+        "viewer": "https://maps2.cattco.org/parcel/",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=CattaraugusCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Cayuga",
+      "shares_with_state": true,
+      "own_layer": "registry-documented",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "cayuga-county",
+          "status": "no-portal",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "download",
+        "field": "notes",
+        "quote": "a parcel shapefile ZIP (https://www.cayugacounty.gov/DocumentCenter/View/5489/Cayuga-County-Shapefile-ZIP)"
+      },
+      "registry_text_mentions": [
+        "cayuga-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.cayugacounty.gov/1268/Tax-Maps",
+        "viewer": "https://experience.arcgis.com/experience/9fd0043afb8949a1aedbff99ab1ab32e",
+        "additional": "https://cayugacounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Chautauqua",
+      "shares_with_state": true,
+      "own_layer": "registry-documented",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "chautauqua-county",
+          "status": "no-portal",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "The `Public` folder holds election precincts, polling places, parcels and basemap services."
+      },
+      "registry_text_mentions": [
+        "chautauqua-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://chqgov.com/information-services/Geographic-Information-Systems",
+        "viewer": "https://chautauquacounty.maps.arcgis.com/apps/webappviewer/index.html?id=82233170274a4e3a8f79f94ea90f278f",
+        "additional": "https://chautauqua.ny.us/349/Real-Property-Tax"
+      }
+    },
+    {
+      "county": "Chemung",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "chemung-county",
+          "status": "live",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "chemung-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.chemungcountyny.gov/1382/GIS-Mapping-Data",
+        "viewer": "https://chemungcgc.maps.arcgis.com/apps/webappviewer/index.html?id=7900479f2de747d981e01b362f5ba3da",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=ChemungCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Chenango",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "chenango-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "chenango-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.chenangocountyny.gov/323/Online-GIS-Information",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=ChenangoCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Clinton",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "clinton-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.clintoncountyny.gov/realproperty",
+        "viewer": "https://experience.arcgis.com/experience/fe5bd2d3891a4792ab3c2a49880e0ec4/page/Page?org=ClinCo%2CClinCo",
+        "additional": "https://clinton.sdgnys.com/index.aspx"
+      }
+    },
+    {
+      "county": "Columbia",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "columbia-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://geodata-cc-ny.opendata.arcgis.com/",
+        "viewer": "https://cc-ny.maps.arcgis.com/apps/webappviewer/index.html?id=73ddd97e6ace4698a1b85b24606636cd&extent=-8344454.7764%2C5126282.5211%2C-8050936.5878%2C5269525.5121%2C102100",
+        "additional": "https://columbiacounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Cortland",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "cortland-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 4,
+      "index_examples": [
+        {
+          "portal_id": "cortland-county",
+          "name": "2024 Cortland Parcels Feature Layer",
+          "permalink": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/datasets/198eda5ef44a46349326695fb1a01032_0"
+        },
+        {
+          "portal_id": "cortland-county",
+          "name": "NewParcels",
+          "permalink": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/datasets/456266cfe5a54db796f4eefe8d0f69a4_0"
+        },
+        {
+          "portal_id": "cortland-county",
+          "name": "2025 Cortland Parcels Feature Layer",
+          "permalink": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/datasets/b0724a72da8240df905dffa139550d6e_0"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/datasets/b0724a72da8240df905dffa139550d6e_0/explore?location=42.599304%2C-76.068304%2C10",
+        "viewer": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/",
+        "additional": "https://www.cortlandcountyny.gov/198/Beacon-Online"
+      }
+    },
+    {
+      "county": "Delaware",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "delaware-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "delaware-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.delcony.gov/rpt/",
+        "viewer": "https://spatial.vhb.com/comit/",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=DelawareCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Dutchess",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "dutchess-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.dutchessny.gov/Departments/Real-Property-Tax/digital-mapping-price-list.htm",
+        "viewer": "https://gis.dutchessny.gov/parcelaccess/",
+        "additional": "https://gis.dutchessny.gov/parcelaccess/"
+      }
+    },
+    {
+      "county": "Erie",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "erie-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "erie-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www3.erie.gov/gis/press/erie-county-tax-parcel-data-now-available",
+        "viewer": "https://erieny.maps.arcgis.com/apps/webappviewer/index.html?id=66e6b18a741948918ff55873edd333d9",
+        "additional": "https://paytax.erie.gov/(S(li0fm4vlh1p2sirpwpzdapbf))/WebPortal/WEB_PT_MAIN.aspx?command=REPORTPARAMETERSTYLE&style=&group=Group2"
+      }
+    },
+    {
+      "county": "Essex",
+      "shares_with_state": false,
+      "own_layer": "registry-documented",
+      "category": "own-only",
+      "county_rows": [
+        {
+          "source_id": "essex-county",
+          "status": "no-portal",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "The parcel viewer is not a catalog, but its MapServer is public and queryable."
+      },
+      "registry_text_mentions": [
+        "essex-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://rpts.essexcountyny.gov/",
+        "viewer": "https://essex-gis.co.essex.ny.us/viewer/",
+        "additional": "https://essexcounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Franklin",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "franklin-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "franklin-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.franklincountyny.gov/departments/finance/real_property_tax_services/",
+        "viewer": "https://maps.dancgis.org/ima/?IMA=Franklin",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=FranklinCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Fulton",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "fulton-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "fulton-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.fultoncountyny.gov/real-property-tax-service-agency",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?AppID=1343&LayerID=45641&PageTypeID=2&PageID=18146"
+      }
+    },
+    {
+      "county": "Genesee",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "genesee-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.geneseeny.gov/Department-Content/Treasurer-and-Real-Property",
+        "viewer": "https://cogeneseeny.maps.arcgis.com/apps/webappviewer/index.html?id=0600d51c145b44c1b13dfb773063af03",
+        "additional": "https://geneseecounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Greene",
+      "shares_with_state": true,
+      "own_layer": "registry-documented",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "greene-county",
+          "status": "no-portal",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "The `2025_WebMap` MapServer has parcels"
+      },
+      "registry_text_mentions": [
+        "greene-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://greenecountyny.gov/departments/rpts/",
+        "viewer": "https://gis.gcgovny.com/greenewebmap/",
+        "additional": "https://greenecounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Hamilton",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "hamilton-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "hamilton-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.hamiltoncountyny.gov/real-property",
+        "viewer": "https://beacon.schneidercorp.com/Application.aspx?App=HamiltonCountyNY&PageType=Map",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=HamiltonCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Herkimer",
+      "shares_with_state": false,
+      "own_layer": "registry-documented",
+      "category": "own-only",
+      "county_rows": [
+        {
+          "source_id": "herkimer-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "Herkimer tax parcels are served as 'HC_TAX_PARCELS' (41,660 features) from Oneida County's ArcGIS Server"
+      },
+      "registry_text_mentions": [
+        "herkimer-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.herkimercountyny.gov/government/real-property-tax-service/",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=HerkimerCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Jefferson",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "jefferson-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "jefferson-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.jeffersoncountyny.gov/gis-maps-property-search",
+        "viewer": "https://beacon.schneidercorp.com/Application.aspx?AppID=1336&LayerID=45587&PageTypeID=1",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=JeffersonCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Kings",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "board-of-elections-in-the-city-of-new-york",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "new-york-city",
+          "status": "live",
+          "platform_family": "socrata"
+        },
+        {
+          "source_id": "new-york-city-police-department",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-buildings",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--equitableexplorer-planning-nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--services5-arcgis-com",
+          "status": "live",
+          "platform_family": "arcgis-server"
+        },
+        {
+          "source_id": "nyc-department-of-citywide-administrative-services",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-finance",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-health-and-mental-hygiene",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-transportation",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-independent-budget-office",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--api-portal-nyc-gov",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--nycmaps-nyc-gov",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti-department-of-ci",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-public-schools-doe",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "office-of-the-new-york-city-comptroller",
+          "status": "live",
+          "platform_family": "custom-api"
+        }
+      ],
+      "index_parcel_datasets": 20,
+      "index_examples": [
+        {
+          "portal_id": "new-york-city",
+          "name": "Primary Land Use Tax Lot Output (PLUTO)",
+          "permalink": "https://data.cityofnewyork.us/d/64uk-42ks"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "Department of Finance Digital Tax Map",
+          "permalink": "https://data.cityofnewyork.us/d/smk3-tmxj"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "NYC Zoning Tax Lot Database",
+          "permalink": "https://data.cityofnewyork.us/d/fdkv-4t4z"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      }
+    },
+    {
+      "county": "Lewis",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "lewis-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://lewiscountyny.gov/departments/real-property/real-property-search/",
+        "viewer": "https://lewiscountyny.giscloud.com/",
+        "additional": "https://lewiscountyny.gov/departments/real-property/real-property-search/"
+      }
+    },
+    {
+      "county": "Livingston",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "livingston-county",
+          "status": "live",
+          "platform_family": "arcgis-enterprise"
+        }
+      ],
+      "index_parcel_datasets": 5,
+      "index_examples": [
+        {
+          "portal_id": "livingston-county",
+          "name": "Parcel_View",
+          "permalink": "https://gis.livingstoncountyny.gov/portal/home/item.html?id=af13bd2e96d04702b8d153c652312df3"
+        },
+        {
+          "portal_id": "livingston-county",
+          "name": "Land_Bank_Parcels",
+          "permalink": "https://gis.livingstoncountyny.gov/portal/home/item.html?id=d40336b9c14c452dac36e97b7aeaadac"
+        },
+        {
+          "portal_id": "livingston-county",
+          "name": "Protected Parcels",
+          "permalink": "https://gis.livingstoncountyny.gov/portal/home/item.html?id=27990f2883f44b648e521a1ea4ed5d49"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.livingstoncountyny.gov/232/Real-Property-Tax-Services",
+        "viewer": "https://gis.livingstoncountyny.gov/portal/apps/webappviewer/index.html?id=5d046e4756cb44c89e1bb2bc6c204486",
+        "additional": "https://livingstoncounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Madison",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "madison-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.madisoncounty.ny.gov/254/Prices-for-Map-Copies-GIS-Data",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=MadisonCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Monroe",
+      "shares_with_state": false,
+      "own_layer": "in-index",
+      "category": "own-only",
+      "county_rows": [
+        {
+          "source_id": "monroe-county",
+          "status": "live",
+          "platform_family": "arcgis-enterprise"
+        }
+      ],
+      "index_parcel_datasets": 2,
+      "index_examples": [
+        {
+          "portal_id": "monroe-county",
+          "name": "Parcels_Public",
+          "permalink": "https://maps.monroecounty.gov/portal/home/item.html?id=d5b67dab448147c2803a45a6e3b98c7e"
+        },
+        {
+          "portal_id": "monroe-county",
+          "name": "Protected_Not_Protected_Parcels_2024_View",
+          "permalink": "https://maps.monroecounty.gov/portal/home/item.html?id=aafa5dbf1cf044be8c26e872d3b57ee6"
+        }
+      ],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "evidence",
+        "quote": "Parcels_Public query returned 267,962 features."
+      },
+      "registry_text_mentions": [
+        "monroe-county"
+      ],
+      "city_portals_with_parcels": [
+        {
+          "source_id": "city-of-rochester",
+          "datasets": 17
+        }
+      ],
+      "state_page": {
+        "county_site": "https://maps.monroecounty.gov/portal/apps/sites/#/mcgis",
+        "viewer": "https://maps.monroecounty.gov/portal/apps/experiencebuilder/experience/?id=28cc349e5f28446ba51a5185695e68d3",
+        "additional": "https://www.monroecounty.gov/planning"
+      }
+    },
+    {
+      "county": "Montgomery",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "montgomery-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "montgomery-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.gis.ny.gov/datasets/14712aa7795440c399bcba0f0b5bf48f_0/explore?location=42.910223%2C-74.423430%2C11",
+        "viewer": null,
+        "additional": "https://www.montgomerycountyny.gov/web/sites/departments/realproperty/gis.asp"
+      }
+    },
+    {
+      "county": "Nassau",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "nassau-county",
+          "status": "live",
+          "platform_family": "socrata"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.nassaucountyny.gov/1501/Assessment",
+        "viewer": "https://lrv.nassaucountyny.gov/map/",
+        "additional": "https://lrv.nassaucountyny.gov/"
+      }
+    },
+    {
+      "county": "New York",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "board-of-elections-in-the-city-of-new-york",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "new-york-city",
+          "status": "live",
+          "platform_family": "socrata"
+        },
+        {
+          "source_id": "new-york-city-police-department",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-buildings",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--equitableexplorer-planning-nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--services5-arcgis-com",
+          "status": "live",
+          "platform_family": "arcgis-server"
+        },
+        {
+          "source_id": "nyc-department-of-citywide-administrative-services",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-finance",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-health-and-mental-hygiene",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-transportation",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-independent-budget-office",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--api-portal-nyc-gov",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--nycmaps-nyc-gov",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti-department-of-ci",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-public-schools-doe",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "office-of-the-new-york-city-comptroller",
+          "status": "live",
+          "platform_family": "custom-api"
+        }
+      ],
+      "index_parcel_datasets": 20,
+      "index_examples": [
+        {
+          "portal_id": "new-york-city",
+          "name": "Primary Land Use Tax Lot Output (PLUTO)",
+          "permalink": "https://data.cityofnewyork.us/d/64uk-42ks"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "Department of Finance Digital Tax Map",
+          "permalink": "https://data.cityofnewyork.us/d/smk3-tmxj"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "NYC Zoning Tax Lot Database",
+          "permalink": "https://data.cityofnewyork.us/d/fdkv-4t4z"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      }
+    },
+    {
+      "county": "Niagara",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "niagara-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.niagaracounty.gov/departments/m-r/real_property/index.php",
+        "viewer": "https://experience.arcgis.com/experience/b6036d1586dd47399d4482824ac845b4",
+        "additional": "https://niagaracounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Oneida",
+      "shares_with_state": true,
+      "own_layer": "registry-documented",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "oneida-county",
+          "status": "no-portal",
+          "platform_family": "arcgis-enterprise"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "The PARCELS folder"
+      },
+      "registry_text_mentions": [
+        "oneida-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://oneidacountyny.gov/departments/finance/real-property-services/",
+        "viewer": "https://experience.arcgis.com/experience/228579a27118422f85af50361048145b",
+        "additional": "https://countyoneida.digitaltowpathny.gov:10203/content/RealProperty"
+      }
+    },
+    {
+      "county": "Onondaga",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "onondaga-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [
+        {
+          "source_id": "city-of-syracuse",
+          "datasets": 13
+        }
+      ],
+      "state_page": {
+        "county_site": "https://onondaga.gov/rpts/",
+        "viewer": "https://spatial.vhb.com/onondaga/",
+        "additional": "https://ocfintax.ongov.net/Imate/index.aspx"
+      }
+    },
+    {
+      "county": "Ontario",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "ontario-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 1,
+      "index_examples": [
+        {
+          "portal_id": "ontario-county",
+          "name": "Tax Parcels",
+          "permalink": "https://ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com/datasets/790de4e44b7e4b409380be5df075526f_0"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com/datasets/790de4e44b7e4b409380be5df075526f_0/explore?location=42.807790%2C-77.288668%2C10",
+        "viewer": "https://oncorng.co.ontario.ny.us/Html5Viewer/index.html?viewer=oncor.OnCOR_HTML5",
+        "additional": "https://www.ontariocountyny.gov/146/Online-Record-Search"
+      }
+    },
+    {
+      "county": "Orange",
+      "shares_with_state": true,
+      "own_layer": "registry-documented",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "orange-county",
+          "status": "live",
+          "platform_family": "arcgis-enterprise"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "\"Orange County Parcels\" (146,065 features)"
+      },
+      "registry_text_mentions": [
+        "orange-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.orangecountygov.com/612/Parcel-Information",
+        "viewer": "https://gis.orangecountygov.com/portal/apps/webappviewer/index.html?id=12db127262e64e8ab62ca3dc15277d1e",
+        "additional": "https://propertydata.orangecountygov.com/search.aspx"
+      }
+    },
+    {
+      "county": "Orleans",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "orleans-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.orleanscountyny.gov/departments/real_property.php",
+        "viewer": "https://experience.arcgis.com/experience/74e119dcc89a4cde9a00f470e9410a8c",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=OrleansCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Oswego",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "oswego-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 3,
+      "index_examples": [
+        {
+          "portal_id": "oswego-county",
+          "name": "Oswego County Active Tax Parcels",
+          "permalink": "https://data-oswegogis.hub.arcgis.com/datasets/oswegogis::oswego-county-active-tax-parcels"
+        },
+        {
+          "portal_id": "oswego-county",
+          "name": "Proposed Parcels_Public",
+          "permalink": "https://data-oswegogis.hub.arcgis.com/datasets/oswegogis::proposed-parcels-public"
+        },
+        {
+          "portal_id": "oswego-county",
+          "name": "Historic Tax Parcels",
+          "permalink": "https://data-oswegogis.hub.arcgis.com/datasets/oswegogis::historic-tax-parcels"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.gis.ny.gov/datasets/b15088eeef32423b890e4e50b03775d6_0/explore?location=43.453656%2C-76.185090%2C10",
+        "viewer": "https://oswegogis.maps.arcgis.com/apps/instant/sidebar/index.html?appid=8a97b2f4301d475081c675764fb6e393",
+        "additional": "https://rptsweb.oswegocounty.com/index.aspx"
+      }
+    },
+    {
+      "county": "Otsego",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "otsego-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 2,
+      "index_examples": [
+        {
+          "portal_id": "otsego-county",
+          "name": "2025_Q4_TaxParcels",
+          "permalink": "https://otsego-county-gis-otsegocountyny.hub.arcgis.com/datasets/otsegocountyny::2025-q4-taxparcels"
+        },
+        {
+          "portal_id": "otsego-county",
+          "name": "Parcel Viewer subset data",
+          "permalink": "https://otsego-county-gis-otsegocountyny.hub.arcgis.com/maps/otsegocountyny::parcel-viewer-subset-data"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://otsego-county-gis-otsegocountyny.hub.arcgis.com/datasets/0d37aeda15ee487d8f7df6dca8a9e533_0/explore?location=42.612290%2C-75.027057%2C10",
+        "viewer": "https://experience.arcgis.com/experience/b85ecd75a2364e849d44446dba52ed17",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=OtsegoCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Putnam",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "putnam-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 10,
+      "index_examples": [
+        {
+          "portal_id": "putnam-county",
+          "name": "Putnam County Tax Parcels",
+          "permalink": "https://www.arcgis.com/home/item.html?id=87ae151efbec46d196e4c66d08a4a33c"
+        },
+        {
+          "portal_id": "putnam-county",
+          "name": "Carmel Tax Parcels",
+          "permalink": "https://www.arcgis.com/home/item.html?id=105fa13bf51540ec834347dd277f495f"
+        },
+        {
+          "portal_id": "putnam-county",
+          "name": "Patterson Tax Parcels",
+          "permalink": "https://www.arcgis.com/home/item.html?id=49e33aeb993f4fefa47440528cb0cfa9"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "putnam-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data-pcny.opendata.arcgis.com/",
+        "viewer": "https://data-pcny.opendata.arcgis.com/search?tags=land%2520records%2Cparcels%2Ctax%2520parcels",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=PutnamCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Queens",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "board-of-elections-in-the-city-of-new-york",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "new-york-city",
+          "status": "live",
+          "platform_family": "socrata"
+        },
+        {
+          "source_id": "new-york-city-police-department",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-buildings",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--equitableexplorer-planning-nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--services5-arcgis-com",
+          "status": "live",
+          "platform_family": "arcgis-server"
+        },
+        {
+          "source_id": "nyc-department-of-citywide-administrative-services",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-finance",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-health-and-mental-hygiene",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-transportation",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-independent-budget-office",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--api-portal-nyc-gov",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--nycmaps-nyc-gov",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti-department-of-ci",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-public-schools-doe",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "office-of-the-new-york-city-comptroller",
+          "status": "live",
+          "platform_family": "custom-api"
+        }
+      ],
+      "index_parcel_datasets": 20,
+      "index_examples": [
+        {
+          "portal_id": "new-york-city",
+          "name": "Primary Land Use Tax Lot Output (PLUTO)",
+          "permalink": "https://data.cityofnewyork.us/d/64uk-42ks"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "Department of Finance Digital Tax Map",
+          "permalink": "https://data.cityofnewyork.us/d/smk3-tmxj"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "NYC Zoning Tax Lot Database",
+          "permalink": "https://data.cityofnewyork.us/d/fdkv-4t4z"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      }
+    },
+    {
+      "county": "Rensselaer",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "rensselaer-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.gis.ny.gov/datasets/8843fe1f0f3a4a4fba2b0158c5b58405_0/explore?location=42.711424%2C-73.524866%2C10",
+        "viewer": "https://data.gis.ny.gov/datasets/8843fe1f0f3a4a4fba2b0158c5b58405_0/explore?location=42.711424%2C-73.524866%2C10",
+        "additional": "https://www.arcgis.com/home/item.html?id=8843fe1f0f3a4a4fba2b0158c5b58405"
+      }
+    },
+    {
+      "county": "Richmond",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "board-of-elections-in-the-city-of-new-york",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "new-york-city",
+          "status": "live",
+          "platform_family": "socrata"
+        },
+        {
+          "source_id": "new-york-city-police-department",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-buildings",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--equitableexplorer-planning-nyc-gov",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-city-planning--services5-arcgis-com",
+          "status": "live",
+          "platform_family": "arcgis-server"
+        },
+        {
+          "source_id": "nyc-department-of-citywide-administrative-services",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-finance",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-health-and-mental-hygiene",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-department-of-transportation",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-independent-budget-office",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--api-portal-nyc-gov",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti--nycmaps-nyc-gov",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        },
+        {
+          "source_id": "nyc-office-of-technology-and-innovation-oti-department-of-ci",
+          "status": "live",
+          "platform_family": "custom-api"
+        },
+        {
+          "source_id": "nyc-public-schools-doe",
+          "status": "live",
+          "platform_family": "none"
+        },
+        {
+          "source_id": "office-of-the-new-york-city-comptroller",
+          "status": "live",
+          "platform_family": "custom-api"
+        }
+      ],
+      "index_parcel_datasets": 20,
+      "index_examples": [
+        {
+          "portal_id": "new-york-city",
+          "name": "Primary Land Use Tax Lot Output (PLUTO)",
+          "permalink": "https://data.cityofnewyork.us/d/64uk-42ks"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "Department of Finance Digital Tax Map",
+          "permalink": "https://data.cityofnewyork.us/d/smk3-tmxj"
+        },
+        {
+          "portal_id": "new-york-city",
+          "name": "NYC Zoning Tax Lot Database",
+          "permalink": "https://data.cityofnewyork.us/d/fdkv-4t4z"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      }
+    },
+    {
+      "county": "Rockland",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "rockland-county",
+          "status": "live",
+          "platform_family": "arcgis-enterprise"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.rocklandgis.com/portal/apps/sites/#/data/search?sort=-created&tags=Parcels%2CZIP",
+        "viewer": "https://www.rocklandgis.com/webapps/base_public/",
+        "additional": "https://www.rocklandcountyny.gov/departments/planning/mapping-and-gis"
+      }
+    },
+    {
+      "county": "St. Lawrence",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "st-lawrence-county",
+          "status": "no-portal",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.stlawco.gov/Departments/RealProperty",
+        "viewer": "https://maps.dancgis.org/ima/?IMA=St.%20Lawrence",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=StLawrenceCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Saratoga",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "saratoga-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "saratoga-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.saratogacountyny.gov/departments/real-property-tax-service/",
+        "viewer": "https://spatial.vhb.com/SaratogaMapViewer/",
+        "additional": "https://saratogacounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Schenectady",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "schenectady-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "schenectady-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.schenectadycountyny.gov/taxmaps",
+        "viewer": "https://www.simsgis.org/lite/",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?AppID=1277&LayerID=43686&PageTypeID=2&PageID=15972"
+      }
+    },
+    {
+      "county": "Schoharie",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "schoharie-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "schoharie-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://cms2.revize.com/revize/schohariecountyny/departments/real_property_tax_office/index.php",
+        "viewer": "https://spatial.vhb.com/SchoharieMapViewer/",
+        "additional": "https://www2.schohariecounty-ny.gov/CountyWebSiteApp/faces/TaxLookUpIndex.xhtml"
+      }
+    },
+    {
+      "county": "Schuyler",
+      "shares_with_state": true,
+      "own_layer": "registry-documented",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "schuyler-county",
+          "status": "live",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "download",
+        "field": "notes",
+        "quote": "annual parcel shapefile downloads (DocumentCenter)"
+      },
+      "registry_text_mentions": [
+        "schuyler-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.schuylercountyny.gov/1066/GIS-Shapefile",
+        "viewer": "https://schuylerco.maps.arcgis.com/apps/webappviewer/index.html?id=b65af3edbf494b64883ec238d0206d22",
+        "additional": "https://schuylercounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Seneca",
+      "shares_with_state": false,
+      "own_layer": "none-found",
+      "category": "neither",
+      "county_rows": [
+        {
+          "source_id": "seneca-county",
+          "status": "no-portal",
+          "platform_family": "none"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "seneca-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.senecacountyny.gov/gov/admin/property-tax/",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=SenecaCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Steuben",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "steuben-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 1,
+      "index_examples": [
+        {
+          "portal_id": "steuben-county",
+          "name": "Tax Parcels SteubenCoNY",
+          "permalink": "https://www.arcgis.com/home/item.html?id=27ace726c41840098b52e974ac8434da"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "steuben-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.arcgis.com/home/item.html?id=27ace726c41840098b52e974ac8434da#overview",
+        "viewer": "https://scnygis.maps.arcgis.com/apps/webappviewer/index.html?id=52e7258379e24f27a634111d2493d386",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=SteubenCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Suffolk",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "suffolk-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 3,
+      "index_examples": [
+        {
+          "portal_id": "suffolk-county",
+          "name": "Ag District Parcel Polygon",
+          "permalink": "https://opendata.suffolkcountyny.gov/datasets/SuffolkGIS::ag-district-parcel-polygon"
+        },
+        {
+          "portal_id": "suffolk-county",
+          "name": "Tax Parcel",
+          "permalink": "https://opendata.suffolkcountyny.gov/datasets/SuffolkGIS::tax-parcel"
+        },
+        {
+          "portal_id": "suffolk-county",
+          "name": "Tax Parcel Owner",
+          "permalink": "https://opendata.suffolkcountyny.gov/datasets/SuffolkGIS::tax-parcel-owner-1"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://opendata.suffolkcountyny.gov/datasets/e3aeb4e052bb49ebaffe0dc12306b9e4_0/explore?location=40.936400%2C-72.645750%2C10",
+        "viewer": "https://opendata.suffolkcountyny.gov/apps/32901437e4c64836ac7c9aeee884afc4/explore",
+        "additional": "https://suffolk.munisselfservice.com/citizens/RealEstate/Default.aspx?mode=new"
+      }
+    },
+    {
+      "county": "Sullivan",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "sullivan-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 3,
+      "index_examples": [
+        {
+          "portal_id": "sullivan-county",
+          "name": "Parcels",
+          "permalink": "https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/maps/SullCoNYGISO::parcels-1"
+        },
+        {
+          "portal_id": "sullivan-county",
+          "name": "Tax Roll Parcels 2023",
+          "permalink": "https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/datasets/SullCoNYGISO::tax-roll-parcels-2023"
+        },
+        {
+          "portal_id": "sullivan-county",
+          "name": "Tax Roll Parcels 2022",
+          "permalink": "https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/datasets/SullCoNYGISO::tax-roll-parcels-2022"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/datasets/SullCoNYGISO::parcels/explore?location=41.718641%2C-74.754954%2C10",
+        "viewer": "https://gis.sullivanny.us/portal/apps/View/index.html?appid=e5e1929cc5a746d9944de673a98c3ae9",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?AppID=1330&LayerID=45411&PageTypeID=2&PageID=17808"
+      }
+    },
+    {
+      "county": "Tioga",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "tioga-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 11,
+      "index_examples": [
+        {
+          "portal_id": "tioga-county",
+          "name": "Parcel_Properties_2025",
+          "permalink": "https://www.arcgis.com/home/item.html?id=67c45fce92a24dbc9afa22770ec98faa"
+        },
+        {
+          "portal_id": "tioga-county",
+          "name": "ParcelProperties2024",
+          "permalink": "https://www.arcgis.com/home/item.html?id=f6d4e6f98ce949218551863db0df6eac"
+        },
+        {
+          "portal_id": "tioga-county",
+          "name": "ToO_Zoning_Parcel2023",
+          "permalink": "https://www.arcgis.com/home/item.html?id=34fbca347bfb4d8099dd2c4d540db895"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.gis.ny.gov/datasets/b43e9c35b8a340788868a9d91222e9e1_0/explore?location=42.204357%2C-76.322197%2C11",
+        "viewer": "https://tiogacountyny.maps.arcgis.com/apps/webappviewer/index.html?id=8028655b485d4fe7b9bcf3b1bcc8d98d",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=TiogaCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Tompkins",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "tompkins-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 1,
+      "index_examples": [
+        {
+          "portal_id": "tompkins-county",
+          "name": "Parcels",
+          "permalink": "https://tcdata-tompkinscounty.opendata.arcgis.com/datasets/tompkinscounty::parcels"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://tcdata-tompkinscounty.opendata.arcgis.com/datasets/505beb987c93401b8445777a8bb9bda6_0/explore?location=42.444866%2C-76.466245%2C10",
+        "viewer": "https://beacon.schneidercorp.com/Application.aspx?App=TompkinsCountyNY&PageType=Search",
+        "additional": "https://tompkinscounty.maps.arcgis.com/home/index.html"
+      }
+    },
+    {
+      "county": "Ulster",
+      "shares_with_state": true,
+      "own_layer": "registry-documented",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "ulster-county",
+          "status": "live",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "the `Parcel_Viewer/Tax_Parcel_Data` MapServer answers queries."
+      },
+      "registry_text_mentions": [
+        "ulster-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.ulstercountyny.gov/Departments/Information-Services/GIS-Services/GIS-Data",
+        "viewer": "https://gis.ulstercountyny.gov/parcel-viewer/",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=UlsterCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Warren",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "warren-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 1,
+      "index_examples": [
+        {
+          "portal_id": "warren-county",
+          "name": "Parcels: WCNY Master View Layer",
+          "permalink": "https://warren-county-gis-warrencountyny.hub.arcgis.com/datasets/warrencountyny::parcels-wcny-master-view-layer"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://warren-county-gis-warrencountyny.hub.arcgis.com/pages/data",
+        "viewer": "https://warrencountyny.maps.arcgis.com/apps/webappviewer/index.html?id=8d1eadedc64445439cadeaa5c957b512",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?AppID=1283&LayerID=43880&PageTypeID=2&PageID=16068"
+      }
+    },
+    {
+      "county": "Washington",
+      "shares_with_state": false,
+      "own_layer": "registry-documented",
+      "category": "own-only",
+      "county_rows": [
+        {
+          "source_id": "washington-county",
+          "status": "no-portal",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "The Layers service has parcels"
+      },
+      "registry_text_mentions": [
+        "washington-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.washingtoncountyny.gov/263/Real-Property-Tax-Service",
+        "viewer": "https://gis.washingtoncountyny.gov/webmap/",
+        "additional": "https://imo.washingtoncountyny.gov/index.aspx"
+      }
+    },
+    {
+      "county": "Wayne",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "wayne-county",
+          "status": "live",
+          "platform_family": "arcgis-enterprise"
+        }
+      ],
+      "index_parcel_datasets": 24,
+      "index_examples": [
+        {
+          "portal_id": "wayne-county",
+          "name": "Parcels_2025",
+          "permalink": "https://gis.co.wayne.ny.us/portal/home/item.html?id=bf82c51c7ef74f3a906dd1641e9b3f5f"
+        },
+        {
+          "portal_id": "wayne-county",
+          "name": "Parcels_2024",
+          "permalink": "https://gis.co.wayne.ny.us/portal/home/item.html?id=a2c57d608ba84fa39d57ebbf85d44735"
+        },
+        {
+          "portal_id": "wayne-county",
+          "name": "Parcels_2023",
+          "permalink": "https://gis.co.wayne.ny.us/portal/home/item.html?id=d4dd59599e9a45038e912f992ab41b48"
+        }
+      ],
+      "registry_layer": {
+        "kind": "rest",
+        "field": "notes",
+        "quote": "The Parcels_2025 layer id is 73"
+      },
+      "registry_text_mentions": [
+        "wayne-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://gis.co.wayne.ny.us/portal/apps/sites/#/wcgis/datasets/bf82c51c7ef74f3a906dd1641e9b3f5f/explore?location=43.174137%2C-77.041772%2C9.52",
+        "viewer": "https://gis.co.wayne.ny.us/pv/",
+        "additional": "https://waynecounty.prosgar.com/"
+      }
+    },
+    {
+      "county": "Westchester",
+      "shares_with_state": true,
+      "own_layer": "in-index",
+      "category": "state-and-own",
+      "county_rows": [
+        {
+          "source_id": "westchester-county",
+          "status": "live",
+          "platform_family": "arcgis-hub"
+        }
+      ],
+      "index_parcel_datasets": 1,
+      "index_examples": [
+        {
+          "portal_id": "westchester-county",
+          "name": "Tax Parcels",
+          "permalink": "https://www.arcgis.com/home/item.html?id=02e7f9092db64c54adc745653dd195fc"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [
+        "westchester-county"
+      ],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.gis.ny.gov/datasets/e62dde218ebc4eb3a4cbd06b2aa94201_0/explore?location=41.121646%2C-73.730951%2C10",
+        "viewer": "https://giswww.westchestergov.com/taxmaps/",
+        "additional": "https://gis.westchestercountyny.gov/"
+      }
+    },
+    {
+      "county": "Wyoming",
+      "shares_with_state": true,
+      "own_layer": "none-found",
+      "category": "state-only",
+      "county_rows": [
+        {
+          "source_id": "wyoming-county",
+          "status": "no-portal",
+          "platform_family": "arcgis-server"
+        }
+      ],
+      "index_parcel_datasets": 0,
+      "index_examples": [],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://data.gis.ny.gov/datasets/3a408906bbcb46d58b74b835c11e639d_0/explore?location=42.694719%2C-78.221290%2C11",
+        "viewer": "https://wyco.maps.arcgis.com/apps/webappviewer/index.html?id=b78025bd5e3646bcb182f3dac077a3b3",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=WyomingCountyNY&PageType=Search"
+      }
+    },
+    {
+      "county": "Yates",
+      "shares_with_state": false,
+      "own_layer": "in-index",
+      "category": "own-only",
+      "county_rows": [
+        {
+          "source_id": "yates-county",
+          "status": "live",
+          "platform_family": "arcgis-enterprise"
+        }
+      ],
+      "index_parcel_datasets": 11,
+      "index_examples": [
+        {
+          "portal_id": "yates-county",
+          "name": "Tax Map Sections",
+          "permalink": "https://gisportal.yatescounty.org/portal/home/item.html?id=3d09a08856b74305944dad983a871ba9"
+        },
+        {
+          "portal_id": "yates-county",
+          "name": "2022 Parcel Map W Anno_MIL1",
+          "permalink": "https://gisportal.yatescounty.org/portal/home/item.html?id=47d3b80264584a05b3e82c5639d8f46b"
+        },
+        {
+          "portal_id": "yates-county",
+          "name": "Parcels",
+          "permalink": "https://gisportal.yatescounty.org/portal/home/item.html?id=0cca149f5569422fb2a2ff2b6ca92de3"
+        }
+      ],
+      "registry_layer": null,
+      "registry_text_mentions": [],
+      "city_portals_with_parcels": [],
+      "state_page": {
+        "county_site": "https://www.yatescounty.org/250/Tax-Mapping",
+        "viewer": "https://gisportal.yatescounty.org/portal/apps/webappviewer/index.html?id=f73dd0463ae747a7a011564b20c17409",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=YatesCountyNY&PageType=Search"
+      }
+    }
+  ]
+}

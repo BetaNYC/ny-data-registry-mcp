@@ -1,0 +1,417 @@
+{
+  "_readme": [
+    "Hand-recorded facts about tax parcels, used by `ny-data-registry parcels` (issue #16, milestone 2). Reviewable: every value says where it came from.",
+    "`state_layer` is the State's statewide public tax parcel service. Its endpoint is the one the NYS GIS Clearinghouse parcels page documents. It was read once, on the date below (epic #7, decision D3): one request for the service description, nothing else. The full response is kept in `evidence_file` (re-indented for review, otherwise unchanged).",
+    "The counties that share their parcels are parsed from that response's serviceDescription by `parseStateParcelCounties` (src/parcels.ts), not typed by hand. The same 38 names are listed on the documentation page.",
+    "`county_resources` is the 'County Parcel Data Resources (Revised May 2026)' table on the documentation page: the link the State gives for each county's own parcel data, viewer and extra resources. null means the page gives none ('NA'). These links were not checked.",
+    "`registry_parcel_layers` was reviewed by hand on 2026-11-14 against the registry of 2026-11-13: each county row whose own registry text documents a parcel layer (a REST service that answers, or a download). `quote` is copied exactly from that row's `field`; a test checks it. A row that names only a viewer, a search page or a request form is not listed. Herkimer's layer is hosted on Oneida County's server."
+  ],
+  "state_layer": {
+    "name": "NYS Tax Parcels Public",
+    "service_url": "https://nysgeohub.ny.gov/arcgis/rest/services/Parcels/NYS_Tax_Parcels_Public/FeatureServer",
+    "documented_at": "https://gis.ny.gov/parcels",
+    "data_dictionary": "https://gis.ny.gov/standardized-tax-parcel-data-dictionary",
+    "read": {
+      "url": "https://nysgeohub.ny.gov/arcgis/rest/services/Parcels/NYS_Tax_Parcels_Public/FeatureServer?f=json",
+      "at": "2026-11-14T15:59:35Z",
+      "http_status": 200,
+      "etag": "\"9b07ecb91c990703a3fa7b4444b319888a498431dcd2e8672d3195328cdc7602\"",
+      "what": "the service description (ArcGIS REST Feature Service resource, f=json); no layer or feature query",
+      "evidence_file": "docs/parcels/2026-11-14-nys-tax-parcels-public-featureserver.json"
+    },
+    "publication_date": "May 2026 (\"Updated annually\"; parcel data from 2025)",
+    "layers": [
+      {
+        "id": 0,
+        "name": "NYS Tax Parcels Public Footprint"
+      },
+      {
+        "id": 1,
+        "name": "NYS Tax Parcels Public"
+      }
+    ]
+  },
+  "state_page": {
+    "url": "https://gis.ny.gov/parcels",
+    "read_at": "2026-11-14",
+    "county_resources": {
+      "Albany": {
+        "county_site": "https://albany-county-ny-open-data-albcountygis.hub.arcgis.com/datasets/42aea2183c5544bfb4deca8b0d01d0c8_0/explore?location=42.613893%2C-73.971314%2C10",
+        "viewer": "https://experience.arcgis.com/experience/a4d863dc3e634edaa94fcc311d8e6511",
+        "additional": "https://experience.arcgis.com/experience/8b462d7c4ebb439b96fa3a55cb2a9976/page/Page?views=Planning"
+      },
+      "Allegany": {
+        "county_site": "https://www.alleganyco.com/departments/real-property/",
+        "viewer": "https://beacon.schneidercorp.com/Application.aspx?App=AlleganyCountyNY&PageType=Map",
+        "additional": "https://allegany.sdgnys.com/search.aspx"
+      },
+      "Bronx": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      },
+      "Broome": {
+        "county_site": "https://gis.broomecountyny.gov/Website/GISWeb/Portal.htm",
+        "viewer": "https://gis.broomecountyny.gov/website/apps/parcel_mapper/viewer.html",
+        "additional": "https://imo.co.broome.ny.us/search.aspx?advanced=true"
+      },
+      "Cattaraugus": {
+        "county_site": "https://www.cattco.gov/real-property-and-gis/gis-pricing",
+        "viewer": "https://maps2.cattco.org/parcel/",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=CattaraugusCountyNY&PageType=Search"
+      },
+      "Cayuga": {
+        "county_site": "https://www.cayugacounty.gov/1268/Tax-Maps",
+        "viewer": "https://experience.arcgis.com/experience/9fd0043afb8949a1aedbff99ab1ab32e",
+        "additional": "https://cayugacounty.prosgar.com/"
+      },
+      "Chautauqua": {
+        "county_site": "https://chqgov.com/information-services/Geographic-Information-Systems",
+        "viewer": "https://chautauquacounty.maps.arcgis.com/apps/webappviewer/index.html?id=82233170274a4e3a8f79f94ea90f278f",
+        "additional": "https://chautauqua.ny.us/349/Real-Property-Tax"
+      },
+      "Chemung": {
+        "county_site": "https://www.chemungcountyny.gov/1382/GIS-Mapping-Data",
+        "viewer": "https://chemungcgc.maps.arcgis.com/apps/webappviewer/index.html?id=7900479f2de747d981e01b362f5ba3da",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=ChemungCountyNY&PageType=Search"
+      },
+      "Chenango": {
+        "county_site": "https://www.chenangocountyny.gov/323/Online-GIS-Information",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=ChenangoCountyNY&PageType=Search"
+      },
+      "Clinton": {
+        "county_site": "https://www.clintoncountyny.gov/realproperty",
+        "viewer": "https://experience.arcgis.com/experience/fe5bd2d3891a4792ab3c2a49880e0ec4/page/Page?org=ClinCo%2CClinCo",
+        "additional": "https://clinton.sdgnys.com/index.aspx"
+      },
+      "Columbia": {
+        "county_site": "https://geodata-cc-ny.opendata.arcgis.com/",
+        "viewer": "https://cc-ny.maps.arcgis.com/apps/webappviewer/index.html?id=73ddd97e6ace4698a1b85b24606636cd&extent=-8344454.7764%2C5126282.5211%2C-8050936.5878%2C5269525.5121%2C102100",
+        "additional": "https://columbiacounty.prosgar.com/"
+      },
+      "Cortland": {
+        "county_site": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/datasets/b0724a72da8240df905dffa139550d6e_0/explore?location=42.599304%2C-76.068304%2C10",
+        "viewer": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/",
+        "additional": "https://www.cortlandcountyny.gov/198/Beacon-Online"
+      },
+      "Delaware": {
+        "county_site": "https://www.delcony.gov/rpt/",
+        "viewer": "https://spatial.vhb.com/comit/",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=DelawareCountyNY&PageType=Search"
+      },
+      "Dutchess": {
+        "county_site": "https://www.dutchessny.gov/Departments/Real-Property-Tax/digital-mapping-price-list.htm",
+        "viewer": "https://gis.dutchessny.gov/parcelaccess/",
+        "additional": "https://gis.dutchessny.gov/parcelaccess/"
+      },
+      "Erie": {
+        "county_site": "https://www3.erie.gov/gis/press/erie-county-tax-parcel-data-now-available",
+        "viewer": "https://erieny.maps.arcgis.com/apps/webappviewer/index.html?id=66e6b18a741948918ff55873edd333d9",
+        "additional": "https://paytax.erie.gov/(S(li0fm4vlh1p2sirpwpzdapbf))/WebPortal/WEB_PT_MAIN.aspx?command=REPORTPARAMETERSTYLE&style=&group=Group2"
+      },
+      "Essex": {
+        "county_site": "https://rpts.essexcountyny.gov/",
+        "viewer": "https://essex-gis.co.essex.ny.us/viewer/",
+        "additional": "https://essexcounty.prosgar.com/"
+      },
+      "Franklin": {
+        "county_site": "https://www.franklincountyny.gov/departments/finance/real_property_tax_services/",
+        "viewer": "https://maps.dancgis.org/ima/?IMA=Franklin",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=FranklinCountyNY&PageType=Search"
+      },
+      "Fulton": {
+        "county_site": "https://www.fultoncountyny.gov/real-property-tax-service-agency",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?AppID=1343&LayerID=45641&PageTypeID=2&PageID=18146"
+      },
+      "Genesee": {
+        "county_site": "https://www.geneseeny.gov/Department-Content/Treasurer-and-Real-Property",
+        "viewer": "https://cogeneseeny.maps.arcgis.com/apps/webappviewer/index.html?id=0600d51c145b44c1b13dfb773063af03",
+        "additional": "https://geneseecounty.prosgar.com/"
+      },
+      "Greene": {
+        "county_site": "https://greenecountyny.gov/departments/rpts/",
+        "viewer": "https://gis.gcgovny.com/greenewebmap/",
+        "additional": "https://greenecounty.prosgar.com/"
+      },
+      "Hamilton": {
+        "county_site": "https://www.hamiltoncountyny.gov/real-property",
+        "viewer": "https://beacon.schneidercorp.com/Application.aspx?App=HamiltonCountyNY&PageType=Map",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=HamiltonCountyNY&PageType=Search"
+      },
+      "Herkimer": {
+        "county_site": "https://www.herkimercountyny.gov/government/real-property-tax-service/",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=HerkimerCountyNY&PageType=Search"
+      },
+      "Jefferson": {
+        "county_site": "https://www.jeffersoncountyny.gov/gis-maps-property-search",
+        "viewer": "https://beacon.schneidercorp.com/Application.aspx?AppID=1336&LayerID=45587&PageTypeID=1",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=JeffersonCountyNY&PageType=Search"
+      },
+      "Kings": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      },
+      "Lewis": {
+        "county_site": "https://lewiscountyny.gov/departments/real-property/real-property-search/",
+        "viewer": "https://lewiscountyny.giscloud.com/",
+        "additional": "https://lewiscountyny.gov/departments/real-property/real-property-search/"
+      },
+      "Livingston": {
+        "county_site": "https://www.livingstoncountyny.gov/232/Real-Property-Tax-Services",
+        "viewer": "https://gis.livingstoncountyny.gov/portal/apps/webappviewer/index.html?id=5d046e4756cb44c89e1bb2bc6c204486",
+        "additional": "https://livingstoncounty.prosgar.com/"
+      },
+      "Madison": {
+        "county_site": "https://www.madisoncounty.ny.gov/254/Prices-for-Map-Copies-GIS-Data",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=MadisonCountyNY&PageType=Search"
+      },
+      "Monroe": {
+        "county_site": "https://maps.monroecounty.gov/portal/apps/sites/#/mcgis",
+        "viewer": "https://maps.monroecounty.gov/portal/apps/experiencebuilder/experience/?id=28cc349e5f28446ba51a5185695e68d3",
+        "additional": "https://www.monroecounty.gov/planning"
+      },
+      "Montgomery": {
+        "county_site": "https://data.gis.ny.gov/datasets/14712aa7795440c399bcba0f0b5bf48f_0/explore?location=42.910223%2C-74.423430%2C11",
+        "viewer": null,
+        "additional": "https://www.montgomerycountyny.gov/web/sites/departments/realproperty/gis.asp"
+      },
+      "Nassau": {
+        "county_site": "https://www.nassaucountyny.gov/1501/Assessment",
+        "viewer": "https://lrv.nassaucountyny.gov/map/",
+        "additional": "https://lrv.nassaucountyny.gov/"
+      },
+      "New York": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      },
+      "Niagara": {
+        "county_site": "https://www.niagaracounty.gov/departments/m-r/real_property/index.php",
+        "viewer": "https://experience.arcgis.com/experience/b6036d1586dd47399d4482824ac845b4",
+        "additional": "https://niagaracounty.prosgar.com/"
+      },
+      "Oneida": {
+        "county_site": "https://oneidacountyny.gov/departments/finance/real-property-services/",
+        "viewer": "https://experience.arcgis.com/experience/228579a27118422f85af50361048145b",
+        "additional": "https://countyoneida.digitaltowpathny.gov:10203/content/RealProperty"
+      },
+      "Onondaga": {
+        "county_site": "https://onondaga.gov/rpts/",
+        "viewer": "https://spatial.vhb.com/onondaga/",
+        "additional": "https://ocfintax.ongov.net/Imate/index.aspx"
+      },
+      "Ontario": {
+        "county_site": "https://ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com/datasets/790de4e44b7e4b409380be5df075526f_0/explore?location=42.807790%2C-77.288668%2C10",
+        "viewer": "https://oncorng.co.ontario.ny.us/Html5Viewer/index.html?viewer=oncor.OnCOR_HTML5",
+        "additional": "https://www.ontariocountyny.gov/146/Online-Record-Search"
+      },
+      "Orange": {
+        "county_site": "https://www.orangecountygov.com/612/Parcel-Information",
+        "viewer": "https://gis.orangecountygov.com/portal/apps/webappviewer/index.html?id=12db127262e64e8ab62ca3dc15277d1e",
+        "additional": "https://propertydata.orangecountygov.com/search.aspx"
+      },
+      "Orleans": {
+        "county_site": "https://www.orleanscountyny.gov/departments/real_property.php",
+        "viewer": "https://experience.arcgis.com/experience/74e119dcc89a4cde9a00f470e9410a8c",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=OrleansCountyNY&PageType=Search"
+      },
+      "Oswego": {
+        "county_site": "https://data.gis.ny.gov/datasets/b15088eeef32423b890e4e50b03775d6_0/explore?location=43.453656%2C-76.185090%2C10",
+        "viewer": "https://oswegogis.maps.arcgis.com/apps/instant/sidebar/index.html?appid=8a97b2f4301d475081c675764fb6e393",
+        "additional": "https://rptsweb.oswegocounty.com/index.aspx"
+      },
+      "Otsego": {
+        "county_site": "https://otsego-county-gis-otsegocountyny.hub.arcgis.com/datasets/0d37aeda15ee487d8f7df6dca8a9e533_0/explore?location=42.612290%2C-75.027057%2C10",
+        "viewer": "https://experience.arcgis.com/experience/b85ecd75a2364e849d44446dba52ed17",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=OtsegoCountyNY&PageType=Search"
+      },
+      "Putnam": {
+        "county_site": "https://data-pcny.opendata.arcgis.com/",
+        "viewer": "https://data-pcny.opendata.arcgis.com/search?tags=land%2520records%2Cparcels%2Ctax%2520parcels",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=PutnamCountyNY&PageType=Search"
+      },
+      "Queens": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      },
+      "Rensselaer": {
+        "county_site": "https://data.gis.ny.gov/datasets/8843fe1f0f3a4a4fba2b0158c5b58405_0/explore?location=42.711424%2C-73.524866%2C10",
+        "viewer": "https://data.gis.ny.gov/datasets/8843fe1f0f3a4a4fba2b0158c5b58405_0/explore?location=42.711424%2C-73.524866%2C10",
+        "additional": "https://www.arcgis.com/home/item.html?id=8843fe1f0f3a4a4fba2b0158c5b58405"
+      },
+      "Richmond": {
+        "county_site": "https://data.cityofnewyork.us/City-Government/Primary-Land-Use-Tax-Lot-Output-PLUTO-/64uk-42ks/about_data",
+        "viewer": "https://experience.arcgis.com/experience/d826b115c87841d491c2b41fcb175305",
+        "additional": "https://propertyinformationportal.nyc.gov/parcels/parcel/1008750074"
+      },
+      "Rockland": {
+        "county_site": "https://www.rocklandgis.com/portal/apps/sites/#/data/search?sort=-created&tags=Parcels%2CZIP",
+        "viewer": "https://www.rocklandgis.com/webapps/base_public/",
+        "additional": "https://www.rocklandcountyny.gov/departments/planning/mapping-and-gis"
+      },
+      "Saratoga": {
+        "county_site": "https://www.saratogacountyny.gov/departments/real-property-tax-service/",
+        "viewer": "https://spatial.vhb.com/SaratogaMapViewer/",
+        "additional": "https://saratogacounty.prosgar.com/"
+      },
+      "Schenectady": {
+        "county_site": "https://www.schenectadycountyny.gov/taxmaps",
+        "viewer": "https://www.simsgis.org/lite/",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?AppID=1277&LayerID=43686&PageTypeID=2&PageID=15972"
+      },
+      "Schoharie": {
+        "county_site": "https://cms2.revize.com/revize/schohariecountyny/departments/real_property_tax_office/index.php",
+        "viewer": "https://spatial.vhb.com/SchoharieMapViewer/",
+        "additional": "https://www2.schohariecounty-ny.gov/CountyWebSiteApp/faces/TaxLookUpIndex.xhtml"
+      },
+      "Schuyler": {
+        "county_site": "https://www.schuylercountyny.gov/1066/GIS-Shapefile",
+        "viewer": "https://schuylerco.maps.arcgis.com/apps/webappviewer/index.html?id=b65af3edbf494b64883ec238d0206d22",
+        "additional": "https://schuylercounty.prosgar.com/"
+      },
+      "Seneca": {
+        "county_site": "https://www.senecacountyny.gov/gov/admin/property-tax/",
+        "viewer": null,
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=SenecaCountyNY&PageType=Search"
+      },
+      "St. Lawrence": {
+        "county_site": "https://www.stlawco.gov/Departments/RealProperty",
+        "viewer": "https://maps.dancgis.org/ima/?IMA=St.%20Lawrence",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=StLawrenceCountyNY&PageType=Search"
+      },
+      "Steuben": {
+        "county_site": "https://www.arcgis.com/home/item.html?id=27ace726c41840098b52e974ac8434da#overview",
+        "viewer": "https://scnygis.maps.arcgis.com/apps/webappviewer/index.html?id=52e7258379e24f27a634111d2493d386",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=SteubenCountyNY&PageType=Search"
+      },
+      "Suffolk": {
+        "county_site": "https://opendata.suffolkcountyny.gov/datasets/e3aeb4e052bb49ebaffe0dc12306b9e4_0/explore?location=40.936400%2C-72.645750%2C10",
+        "viewer": "https://opendata.suffolkcountyny.gov/apps/32901437e4c64836ac7c9aeee884afc4/explore",
+        "additional": "https://suffolk.munisselfservice.com/citizens/RealEstate/Default.aspx?mode=new"
+      },
+      "Sullivan": {
+        "county_site": "https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/datasets/SullCoNYGISO::parcels/explore?location=41.718641%2C-74.754954%2C10",
+        "viewer": "https://gis.sullivanny.us/portal/apps/View/index.html?appid=e5e1929cc5a746d9944de673a98c3ae9",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?AppID=1330&LayerID=45411&PageTypeID=2&PageID=17808"
+      },
+      "Tioga": {
+        "county_site": "https://data.gis.ny.gov/datasets/b43e9c35b8a340788868a9d91222e9e1_0/explore?location=42.204357%2C-76.322197%2C11",
+        "viewer": "https://tiogacountyny.maps.arcgis.com/apps/webappviewer/index.html?id=8028655b485d4fe7b9bcf3b1bcc8d98d",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=TiogaCountyNY&PageType=Search"
+      },
+      "Tompkins": {
+        "county_site": "https://tcdata-tompkinscounty.opendata.arcgis.com/datasets/505beb987c93401b8445777a8bb9bda6_0/explore?location=42.444866%2C-76.466245%2C10",
+        "viewer": "https://beacon.schneidercorp.com/Application.aspx?App=TompkinsCountyNY&PageType=Search",
+        "additional": "https://tompkinscounty.maps.arcgis.com/home/index.html"
+      },
+      "Ulster": {
+        "county_site": "https://www.ulstercountyny.gov/Departments/Information-Services/GIS-Services/GIS-Data",
+        "viewer": "https://gis.ulstercountyny.gov/parcel-viewer/",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=UlsterCountyNY&PageType=Search"
+      },
+      "Warren": {
+        "county_site": "https://warren-county-gis-warrencountyny.hub.arcgis.com/pages/data",
+        "viewer": "https://warrencountyny.maps.arcgis.com/apps/webappviewer/index.html?id=8d1eadedc64445439cadeaa5c957b512",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?AppID=1283&LayerID=43880&PageTypeID=2&PageID=16068"
+      },
+      "Washington": {
+        "county_site": "https://www.washingtoncountyny.gov/263/Real-Property-Tax-Service",
+        "viewer": "https://gis.washingtoncountyny.gov/webmap/",
+        "additional": "https://imo.washingtoncountyny.gov/index.aspx"
+      },
+      "Wayne": {
+        "county_site": "https://gis.co.wayne.ny.us/portal/apps/sites/#/wcgis/datasets/bf82c51c7ef74f3a906dd1641e9b3f5f/explore?location=43.174137%2C-77.041772%2C9.52",
+        "viewer": "https://gis.co.wayne.ny.us/pv/",
+        "additional": "https://waynecounty.prosgar.com/"
+      },
+      "Westchester": {
+        "county_site": "https://data.gis.ny.gov/datasets/e62dde218ebc4eb3a4cbd06b2aa94201_0/explore?location=41.121646%2C-73.730951%2C10",
+        "viewer": "https://giswww.westchestergov.com/taxmaps/",
+        "additional": "https://gis.westchestercountyny.gov/"
+      },
+      "Wyoming": {
+        "county_site": "https://data.gis.ny.gov/datasets/3a408906bbcb46d58b74b835c11e639d_0/explore?location=42.694719%2C-78.221290%2C11",
+        "viewer": "https://wyco.maps.arcgis.com/apps/webappviewer/index.html?id=b78025bd5e3646bcb182f3dac077a3b3",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=WyomingCountyNY&PageType=Search"
+      },
+      "Yates": {
+        "county_site": "https://www.yatescounty.org/250/Tax-Mapping",
+        "viewer": "https://gisportal.yatescounty.org/portal/apps/webappviewer/index.html?id=f73dd0463ae747a7a011564b20c17409",
+        "additional": "https://beacon.schneidercorp.com/Application.aspx?App=YatesCountyNY&PageType=Search"
+      }
+    }
+  },
+  "registry_parcel_layers": {
+    "Broome": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "br_parcels MapServer"
+    },
+    "Cayuga": {
+      "kind": "download",
+      "field": "notes",
+      "quote": "a parcel shapefile ZIP (https://www.cayugacounty.gov/DocumentCenter/View/5489/Cayuga-County-Shapefile-ZIP)"
+    },
+    "Chautauqua": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "The `Public` folder holds election precincts, polling places, parcels and basemap services."
+    },
+    "Essex": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "The parcel viewer is not a catalog, but its MapServer is public and queryable."
+    },
+    "Greene": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "The `2025_WebMap` MapServer has parcels"
+    },
+    "Herkimer": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "Herkimer tax parcels are served as 'HC_TAX_PARCELS' (41,660 features) from Oneida County's ArcGIS Server"
+    },
+    "Monroe": {
+      "kind": "rest",
+      "field": "evidence",
+      "quote": "Parcels_Public query returned 267,962 features."
+    },
+    "Oneida": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "The PARCELS folder"
+    },
+    "Orange": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "\"Orange County Parcels\" (146,065 features)"
+    },
+    "Schuyler": {
+      "kind": "download",
+      "field": "notes",
+      "quote": "annual parcel shapefile downloads (DocumentCenter)"
+    },
+    "Ulster": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "the `Parcel_Viewer/Tax_Parcel_Data` MapServer answers queries."
+    },
+    "Washington": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "The Layers service has parcels"
+    },
+    "Wayne": {
+      "kind": "rest",
+      "field": "notes",
+      "quote": "The Parcels_2025 layer id is 73"
+    }
+  }
+}

@@ -139,6 +139,12 @@ Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data
   config and index only; it never calls a portal.
 - `adapters` in `harvest-config.json`: one on/off switch per adapter. An adapter switched off
   stops alone; its portals report `adapter-off` and keep their datasets.
+- `ny-data-registry parcels`: a tax parcel table for all 62 counties. 38 share their parcels
+  with the State's public layer; 23 have their own parcel layer in the index and 11 more in
+  the registry only; 18 have neither (2026-11-14). The State's list comes from one read of the
+  State's service description on 2026-11-14 (D3), kept in `docs/parcels/` and recorded in
+  `data/parcel-sources.json` with the State page's per-county links and the hand-reviewed
+  registry layers. The table: `docs/parcels/2026-11-14-parcel-coverage.md`.
 
 ### Changed
 
