@@ -150,6 +150,16 @@ Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data
   weekly per host (D5), at most 400 requests and 30 minutes per host, 2 s apart (or the
   robots.txt Crawl-delay), `Utilities` and `System` folders skipped, robots.txt honored.
   Settings in `arcgis_server` in `harvest-config.json`. Switched on.
+- GeoBlacklight adapter (`geoblacklight`, milestone 6): Cornell's CUGIR, read from its
+  OpenGeoMetadata repository as one GitHub archive per week, never from the GeoBlacklight site.
+  GeoBlacklight 1.0 and Aardvark records; public, unsuppressed, not withdrawn, Cornell's own,
+  not wholly outside New York. Switched on. The harvest step now gets the run's `GITHUB_TOKEN`
+  for this one read.
+- InvenioRDM adapter (`invenio-rdm`, milestone 6): NYU UltraViolet's Spatial Data Repository
+  community, weekly, oldest first. Keeps public records whose location touches New York, or
+  that name New York when they have no location. **Switched off** until a supervised run
+  checks that filter: locations are optional in InvenioRDM and the repository is worldwide.
+- `politeFetch` can read a binary body (`binary: true`), never cached.
 - Hand-kept list (`data/hand-kept.json`, milestone 5, D6): for rows with no data link, what the
   place does offer (pages, viewers, search pages, request forms). The `hand-kept` adapter adds
   each link to the index as type `hand-kept <kind>`, with no endpoint or columns, and makes no

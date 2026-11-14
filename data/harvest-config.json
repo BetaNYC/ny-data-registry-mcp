@@ -57,6 +57,14 @@
     "hand-kept": {
       "enabled": true,
       "note": "data/hand-kept.json: what rows with no data link offer (issue #16, milestone 5, D6). No network calls."
+    },
+    "geoblacklight": {
+      "enabled": true,
+      "note": "GeoBlacklight records read from the institution's OpenGeoMetadata repository on GitHub (one archive per read), never from the GeoBlacklight site (issue #16, milestone 6)."
+    },
+    "invenio-rdm": {
+      "enabled": false,
+      "note": "Off until a supervised run (harvest --only new-york-university-libraries--ultraviolet-library-nyu-edu --ignore-cadence) shows the New York filter works: InvenioRDM locations are optional, and NYU's Spatial Data Repository holds places worldwide. Records without a location are kept only when they name New York."
     }
   },
   "allow_no_portal": {
@@ -93,6 +101,22 @@
     "max_layers_per_service": 5,
     "max_seconds_per_host": 1800
   },
+  "geoblacklight": {
+    "_note": "OpenGeoMetadata repository for each GeoBlacklight registry row, by source id (issue #16, milestone 6). The adapter downloads the repository archive once per read through the GitHub REST API, keeps public, unsuppressed, not-withdrawn records from `provider`, and drops records wholly outside New York. Columbia's GeoBlacklight is excluded in skip.by_entity.",
+    "repos_by_source": {
+      "cornell-university-library--cugir-library-cornell-edu": {
+        "repo": "OpenGeoMetadata/edu.cornell",
+        "ref": "main",
+        "provider": "Cornell"
+      }
+    },
+    "max_archive_mb": 200
+  },
+  "invenio_rdm": {
+    "_note": "InvenioRDM community records (NYU UltraViolet). page_size 25 is the documented example; at most max_pages pages per read.",
+    "page_size": 25,
+    "max_pages": 200
+  },
   "cadence": {
     "_note": "Days between reads. Self-hosted county ArcGIS portals (the `enterprise` adapter) and ArcGIS Server REST directories (`arcgis-server`) are read weekly, to be gentle on small county servers (epic #7, decision D5). Everything else nightly. A portal is due `slack_hours` early so a late scheduled start does not slip a whole week. `harvest --ignore-cadence` reads everything.",
     "days_by_adapter": {
@@ -100,7 +124,9 @@
       "hub": 1,
       "agol-org": 1,
       "enterprise": 7,
-      "arcgis-server": 7
+      "arcgis-server": 7,
+      "geoblacklight": 7,
+      "invenio-rdm": 7
     },
     "days_by_source": {},
     "slack_hours": 6

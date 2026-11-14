@@ -10,6 +10,8 @@ import { bboxIntersectsNY } from "../places.js";
 import { harvestSocrata } from "./socrata.js";
 import { DEFAULT_SERVER_CONFIG, harvestArcgisServer, serverRootOf, type ServerConfig } from "./arcgis-server.js";
 import { handKeptEntry, mapHandKept, type HandKeptEntry } from "./hand-kept.js";
+import { harvestOgm, type OgmRepo } from "./geoblacklight.js";
+import { harvestInvenio, invenioTarget, type InvenioTarget } from "./invenio.js";
 import { buildTopics } from "../topics.js";
 import {
   dcatByItem, fetchServiceColumns, filterItems, itemsFromDcat, listHubItems, mapArcgisItem, mergeDcat, mostCommonOrg,
@@ -29,6 +31,9 @@ interface HarvestConfig {
   adapters?: Record<string, AdapterSwitch>;
   allow_no_portal?: Record<string, AllowNoPortal | string>;
   arcgis_server?: Partial<ServerConfig>;
+  /** OpenGeoMetadata repository per GeoBlacklight registry row, by source id. */
+  geoblacklight?: { repos_by_source: Record<string, OgmRepo | string>; max_archive_mb?: number };
+  invenio_rdm?: { page_size?: number; max_pages?: number };
 }
 
 /**
@@ -97,6 +102,8 @@ export type Plan =
   | { kind: "agol-org"; orgId: string }
   | { kind: "arcgis-server"; root: string }
   | { kind: "hand-kept"; entry: HandKeptEntry }
+  | { kind: "geoblacklight"; repo: OgmRepo }
+  | { kind: "invenio-rdm"; target: InvenioTarget }
   | { kind: "skip"; reason: string; code: SkipCode };
 
 /**
@@ -200,12 +207,21 @@ function basePlan(s: Source, cfg: HarvestConfig): Plan {
       const root = serverRootOf(s.url, s.api_endpoint);
       return root ? { kind: "arcgis-server", root } : { kind: "skip", code: "incomplete-row", reason: "ArcGIS Server row without a REST services directory URL" };
     }
-    case "geoblacklight":
-      return { kind: "skip", code: "no-adapter", reason: "GeoBlacklight: no adapter in this build" };
+    case "geoblacklight": {
+      const repo = cfg.geoblacklight?.repos_by_source?.[s.source_id];
+      return repo && typeof repo !== "string"
+        ? { kind: "geoblacklight", repo }
+        : { kind: "skip", code: "no-adapter", reason: "GeoBlacklight: no OpenGeoMetadata repository configured for this row (geoblacklight.repos_by_source)" };
+    }
     case "ckan":
       return { kind: "skip", code: "no-adapter", reason: "CKAN: no adapter in this build (a one-time comparison only, epic #7 D7; data.gov's copies re-harvest portals indexed directly)" };
-    case "custom-api":
+    case "custom-api": {
+      if (s.platform === "InvenioRDM") {
+        const t = invenioTarget(s.api_endpoint);
+        if (t) return { kind: "invenio-rdm", target: t };
+      }
       return { kind: "skip", code: "described-only", reason: "custom API: described by the registry, not harvested" };
+    }
     case "none":
       return { kind: "skip", code: "no-api", reason: "no API (web pages, viewers or downloads only)" };
     default:
@@ -403,6 +419,23 @@ export async function runHarvest(opts: RunOpts = {}) {
         datasets = h.datasets;
         complete = h.complete;
         Object.assign(st, { listed: h.resultSetSize, requests: h.requests, error: h.error, columns_fetched_for: datasets.filter((d) => d.columns_status === "from-search").length });
+      } else if (plan.kind === "geoblacklight") {
+        const h = await harvestOgm(plan.repo, (cfg.geoblacklight?.max_archive_mb ?? 200) * 1024 * 1024);
+        Object.assign(st, { listed: h.records, kept: h.filter.kept.length, requests: h.requests, error: h.error, out_of_state_check: h.filter.portal_in_ny,
+          excluded: { esri: 0, other_org: h.filter.excluded.other_provider, out_of_state: h.filter.excluded.out_of_state, not_public: h.filter.excluded.not_public + h.filter.excluded.suppressed + h.filter.excluded.withdrawn } });
+        if (h.filter.portal_in_ny.refuse) {
+          purgePortal(db, s.source_id);
+          setPortalHarvest(db, s.source_id, { adapter: st.adapter, status: "refused", note: "out-of-state guard: most record extents are outside New York" });
+          return { ...st, outcome: "refused", reason: "out-of-state guard", seconds: Math.round((Date.now() - t0) / 1000) };
+        }
+        datasets = h.datasets;
+        complete = h.complete;
+      } else if (plan.kind === "invenio-rdm") {
+        const h = await harvestInvenio(plan.target, { pageSize: cfg.invenio_rdm?.page_size, maxPages: cfg.invenio_rdm?.max_pages });
+        datasets = h.datasets;
+        complete = h.complete;
+        Object.assign(st, { listed: h.total, kept: datasets.length, requests: h.requests, error: h.error,
+          excluded: { esri: 0, other_org: 0, out_of_state: h.excluded["geometry-outside"] + h.excluded["no-location"], not_public: h.excluded.restricted } });
       } else if (plan.kind === "hand-kept") {
         datasets = plan.entry.resources.map(mapHandKept);
         complete = true;
