@@ -42,13 +42,15 @@ async function requireIndex(): Promise<void> {
 const FAMILY_ENUM = [...FAMILIES];
 /** One sentence, shared by every tool whose reply names a data site. */
 const REGISTRY_ID_NOTE = "registry_id, when a row has one, is the id of the row's government body in BetaNYC/ny-gov-web-registry, for joining the two.";
+/** For the tools whose source rows carry runs_it. */
+const RUNS_IT_NOTE = "runs_it names the government body that runs the site (name, government_level, classification, website), looked up by registry_id in that list; null when the row has no id, found: false when the list lacks it. runs_it_source says which copy of the list answered.";
 const STATUS_ENUM = ["live", "no-portal", "UNCONFIRMED", "dead", "any"] as const;
 
 export const TOOLS = [
   {
     name: "find_sources",
     description:
-      "Find New York open data portals and sources (state, county, city, agency, library, nonprofit) in BetaNYC's registry by topic, name or place. Returns each source's portal URL, platform family, API type, dataset count, status and last-verified date. Searches portal names and notes, not dataset titles (use search_datasets for datasets). Default status filter is 'live'. " + REGISTRY_ID_NOTE,
+      "Find New York open data portals and sources (state, county, city, agency, library, nonprofit) in BetaNYC's registry by topic, name or place. Returns each source's portal URL, platform family, API type, dataset count, status and last-verified date. Searches portal names and notes, not dataset titles (use search_datasets for datasets). Default status filter is 'live'. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -68,7 +70,7 @@ export const TOOLS = [
   {
     name: "list_sources_for_place",
     description:
-      "Everything the registry knows for one New York place (county, one of the 62 cities, an NYC borough, or a region): its own portal(s), sources for cities inside it, regional sources, and statewide sources that cover it. Says plainly whether the place has a portal, was checked and has none ('no-portal-exists'), or is not in the registry ('not-in-registry', which means unchecked, not absent). " + REGISTRY_ID_NOTE,
+      "Everything the registry knows for one New York place (county, one of the 62 cities, an NYC borough, or a region): its own portal(s), sources for cities inside it, regional sources, and statewide sources that cover it. Says plainly whether the place has a portal, was checked and has none ('no-portal-exists'), or is not in the registry ('not-in-registry', which means unchecked, not absent). " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -82,7 +84,7 @@ export const TOOLS = [
   {
     name: "how_to_query",
     description:
-      "How to get data from one registry source: its endpoint (copied verbatim, never guessed), API type, whether a key is needed and which env var holds it, an example request, and which MCP server to hand off to (the `socrata` MCP with the right domain, or the matching @betanyc MCP). Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows. " + REGISTRY_ID_NOTE,
+      "How to get data from one registry source: its endpoint (copied verbatim, never guessed), API type, whether a key is needed and which env var holds it, an example request, and which MCP server to hand off to (the `socrata` MCP with the right domain, or the matching @betanyc MCP). Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -96,7 +98,7 @@ export const TOOLS = [
   {
     name: "check_source",
     description:
-      "Live check of one source's portal URL: one polite request, redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. Never calls key-required or account-gated sources, and reports a bot block rather than working around it. " + REGISTRY_ID_NOTE,
+      "Live check of one source's portal URL: one polite request, redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. Never calls key-required or account-gated sources, and reports a bot block rather than working around it. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -109,7 +111,7 @@ export const TOOLS = [
   },
   {
     name: "registry_info",
-    description: "Registry row counts by status, tier and platform family, and how many rows carry a registry_id; when the registry was generated and where this copy came from (bundled or refreshed from GitHub Pages); unmapped platform strings; and the harvested index's size and last harvest date.",
+    description: "Registry row counts by status, tier and platform family, and how many rows carry a registry_id; which copy of the master list of government bodies (BetaNYC/ny-gov-web-registry) is loaded and which row ids it lacks; when the registry was generated and where this copy came from (bundled or refreshed from GitHub Pages); unmapped platform strings; and the harvested index's size and last harvest date.",
     inputSchema: { type: "object", additionalProperties: false, properties: {} },
   },
   {

@@ -25,6 +25,15 @@ See [#10](https://github.com/BetaNYC/ny-data-registry-mcp/issues/10) (part of
 - `search_datasets` and `whats_new`: `portal` also accepts a `registry_id`,
   meaning every data site of that government and nothing else.
 - `registry_info`: `with_registry_id`, how many rows carry one.
+- `runs_it` on source rows (`find_sources`, `list_sources_for_place`,
+  `how_to_query`, `check_source`): the government body that runs the data
+  site (name, level, classification, website), looked up by `registry_id` in
+  BetaNYC/ny-gov-web-registry `data/registry.json`. `null` with no id;
+  `found: false` when the list lacks the id. Each reply's `runs_it_source`
+  says which copy answered; `registry_info` gains `master_list`. The list is
+  fetched and cached like the registry, with a small bundled fallback
+  (`data/gov-bodies.json`, rebuilt by `scripts/bundle_gov_bodies.mjs`)
+  ([#19](https://github.com/BetaNYC/ny-data-registry-mcp/issues/19)).
 
 ### Changed
 

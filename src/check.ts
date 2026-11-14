@@ -1,5 +1,6 @@
 import { BlockedError, OfflineError, politeFetch } from "./http.js";
 import { lookupSource, sourceSummary } from "./sources.js";
+import { runsItSource } from "./govbodies.js";
 import { readDataJson } from "./paths.js";
 import type { Source } from "./registry.js";
 
@@ -19,9 +20,9 @@ export function refuseReason(s: Source): string | null {
 export async function checkSource(ref: { source_id?: string; registry_id?: string; url?: string }) {
   const found = lookupSource(ref);
   if (found.error) return { error: found.error };
-  if (found.candidates) return { ambiguous: true, candidates: found.candidates.map(sourceSummary) };
+  if (found.candidates) return { ambiguous: true, candidates: found.candidates.map(sourceSummary), runs_it_source: runsItSource() };
   const s = found.source!;
-  const base = { source: sourceSummary(s), registry_status: s.status };
+  const base = { source: sourceSummary(s), runs_it_source: runsItSource(), registry_status: s.status };
   const refuse = refuseReason(s);
   if (refuse) return { ...base, checked: false, reason: refuse };
   const target = s.url ? s.url.trim().split(/\s/)[0] : null;
