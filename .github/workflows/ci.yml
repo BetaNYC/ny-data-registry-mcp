@@ -17,3 +17,20 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm test
+
+  # The What's changed standard (betanyc-ai-workspace
+  # platform/system/whats-changed-standard.md § 10). scripts/whats_changed.py is a copy of the
+  # workspace's canonical file: never edit it here. `check --base-ref` needs the base branch's
+  # history (fetch-depth: 0): old entries are append-only, and a package.json version bump
+  # needs an MCP entry naming the new version. No website, so no page check. Stdlib only.
+  whats-changed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check WHATS-CHANGED.md
+        run: python3 scripts/whats_changed.py check WHATS-CHANGED.md --base-ref "origin/${{ github.base_ref || 'main' }}"

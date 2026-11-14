@@ -6,6 +6,23 @@ import { checkSource } from "./check.js";
 import { DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
+import { createBetanycTools } from "./betanyc-tools.js";
+import { VERSION } from "./paths.js";
+
+/**
+ * whats_changed and about_betanyc, the two tools BetaNYC is adding to each of its MCP servers
+ * (betanyc-ai-workspace platform/system/whats-changed-standard.md § 7). betanyc-tools.ts is
+ * a copy of the workspace's canonical file: never edit it here. WHATS-CHANGED.md ships in
+ * the npm package (package.json `files`), one level above dist/. There is no website, so
+ * entry links go to the file on GitHub. whats_changed is about this server; whats_new
+ * (below) is about datasets on the portals.
+ */
+const betanyc = createBetanycTools({
+  serverName: "ny-data-registry-mcp",
+  version: VERSION,
+  repoUrl: "https://github.com/BetaNYC/ny-data-registry-mcp",
+  whatsChangedPath: new URL("../WHATS-CHANGED.md", import.meta.url),
+});
 
 const INDEX_TOOLS = new Set(["search_datasets", "get_dataset_columns", "find_joinable", "whats_new"]);
 /** How long a dataset tool waits for a first-run download before answering "still downloading". */
@@ -148,7 +165,9 @@ export const TOOLS = [
   },
   {
     name: "whats_new",
-    description: "Datasets added, changed or removed in the index since a date, and datasets whose portal says they were updated since then. Optional portal filter.",
+    description:
+      "Datasets added, changed or removed in the index since a date, and datasets whose portal says they were updated since then. Optional portal filter. " +
+      "For changes to this server itself (new tools, fixes, corrections), use whats_changed instead.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -160,6 +179,8 @@ export const TOOLS = [
       required: ["since"],
     },
   },
+  // What's changed in this server, and who built it (BetaNYC standard tools).
+  ...betanyc.tools,
 ];
 
 const family = z.enum(FAMILIES);
@@ -216,6 +237,8 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
 const text = (v: unknown) => ({ content: [{ type: "text", text: toolJson(v) }] });
 
 export async function callTool(name: string, args: unknown) {
+  // The shared tools answer in plain text plus structuredContent, and need no index.
+  if (betanyc.handles(name)) return betanyc.call(name, args);
   try {
     if (INDEX_TOOLS.has(name)) await requireIndex();
     switch (name) {

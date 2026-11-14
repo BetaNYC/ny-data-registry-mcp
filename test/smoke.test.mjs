@@ -22,8 +22,13 @@ const CALLS = [
   ["find_joinable", { dataset: "test-0001" }],
   ["whats_new", { since: "2000-01-01" }],
 ];
+// The two BetaNYC standard tools answer in plain text plus structuredContent, not JSON text.
+const SHARED_CALLS = [
+  ["whats_changed", { limit: 2 }],
+  ["about_betanyc", {}],
+];
 
-test("stdio server starts, lists 9 tools, and answers every one", async () => {
+test("stdio server starts, lists 11 tools, and answers every one", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [server],
@@ -33,12 +38,18 @@ test("stdio server starts, lists 9 tools, and answers every one", async () => {
   await client.connect(transport);
   try {
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 9);
+    assert.equal(tools.length, 11);
     for (const [name, args] of CALLS) {
       const r = await client.callTool({ name, arguments: args });
       assert.notEqual(r.isError, true, `${name}: ${r.content?.[0]?.text}`);
       const body = JSON.parse(r.content[0].text);
       assert.ok(body && typeof body === "object", name);
+    }
+    for (const [name, args] of SHARED_CALLS) {
+      // Client.callTool validates structuredContent against the tool's outputSchema.
+      const r = await client.callTool({ name, arguments: args });
+      assert.notEqual(r.isError, true, `${name}: ${r.content?.[0]?.text}`);
+      assert.equal(r.structuredContent.server.name, "ny-data-registry-mcp", name);
     }
     const erie = JSON.parse((await client.callTool({ name: "list_sources_for_place", arguments: { place: "Erie County" } })).content[0].text);
     assert.equal(erie.answer, "no-portal-exists");

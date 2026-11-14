@@ -7,21 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.0] — 2026-11-12
+## [0.3.0] — 2026-11-13
 
-See [#8](https://github.com/BetaNYC/ny-data-registry-mcp/issues/8) (epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+`search_datasets` gives the whole answer in one call. Its reply has a new shape, which is
+why this is 0.3.0 and not 0.2.1: see Changed and Removed below. See
+[#8](https://github.com/BetaNYC/ny-data-registry-mcp/issues/8) (epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
 
 ### Added
 
-- README: a "Questions to try" section with sample questions for every tool,
-  what each found on 2026-11-05, and search tips.
-- `.github/workflows/publish-mcp.yml`: publishes `server.json` to the official
-  MCP Registry as `io.github.BetaNYC/ny-data-registry-mcp`. Runs after each
-  successful Release of a `v*` tag, or by hand for a given tag. GitHub OIDC
-  login, no stored secret; `mcp-publisher` pinned to v1.8.8 and checked with
-  cosign.
-- `glama.json`: lets BetaNYC claim this server's listing on Glama
-  (maintainer: `noneck`).
 - `search_datasets`: `total_matches`, the true number of matching datasets
   (an uncapped count with the same filters), and `ranked_pool`, which says
   plainly when only the best 5,000 text matches were re-ranked.
@@ -79,7 +72,49 @@ See [#8](https://github.com/BetaNYC/ny-data-registry-mcp/issues/8) (epic [#7](ht
 - `search_datasets` `total_candidates`. It stopped at 400 and read like a real
   total. Use `total_matches`.
 
-## [0.1.0] — unreleased
+## [0.2.0] — 2026-11-13
+
+Adds the two tools BetaNYC is adding to each of its MCP servers. Tracking:
+BetaNYC/betanyc-ai-workspace#1645 (epic #1637).
+
+### Added
+
+- `whats_changed`: what changed in this server, newest first, from `WHATS-CHANGED.md`
+  (filters: `since`, `tag`, `limit`). Answers with readable text and `structuredContent`
+  matching a declared `outputSchema`. Not to be confused with `whats_new`, which lists
+  datasets added or changed on the portals and is unchanged.
+- `about_betanyc`: who built the server, the repository, where to report a bug in this server or ask for a new feature, and
+  BetaNYC's links.
+- `src/betanyc-tools.ts`, copied unchanged from the workspace's
+  `scripts/mcp_shared/betanyc-tools.ts` (v1.2.1). Never edit the copy; change the canonical
+  file and copy it again.
+- `WHATS-CHANGED.md`, the reader-facing record of changes, backfilled to 0.1.0, and shipped
+  in the npm package (`files`). There is no website; GitHub's rendering of the file is the
+  page.
+- `scripts/whats_changed.py`, copied unchanged from the workspace. CI runs
+  `check --base-ref` (append-only, and a version bump needs an entry), and the release
+  workflow runs `check --release` before `npm publish`, so a release cannot ship while the
+  `WHATS-CHANGED.md` entry still says `Unreleased`.
+- README: a "Questions to try" section with sample questions for every tool,
+  what each found on 2026-11-05, and search tips.
+- `.github/workflows/publish-mcp.yml`: publishes `server.json` to the official
+  MCP Registry as `io.github.BetaNYC/ny-data-registry-mcp`. Runs after each
+  successful Release of a `v*` tag, or by hand for a given tag. GitHub OIDC
+  login, no stored secret; `mcp-publisher` pinned to v1.8.8 and checked with
+  cosign.
+- `glama.json`: lets BetaNYC claim this server's listing on Glama
+  (maintainer: `noneck`).
+
+### Changed
+
+- Eleven tools instead of nine: README, tool-list and smoke tests.
+- `whats_new`'s description ends with one sentence pointing to `whats_changed` for changes
+  to the server itself, so an assistant picks the right one. Its inputs and answers are
+  unchanged.
+- The `0.1.0` heading below carries its release date, 2026-11-05 (npm publish
+  2026-11-05T21:13Z), in place of "unreleased".
+
+## [0.1.0] — 2026-11-05
 
 First public release.
 
