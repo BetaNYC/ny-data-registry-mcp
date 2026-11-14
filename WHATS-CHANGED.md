@@ -7,6 +7,13 @@ This page lists the changes to ny-data-registry-mcp that a reader would notice: 
 
 To report a bug in this server or ask for a new feature, [open an issue on GitHub](https://github.com/BetaNYC/ny-data-registry-mcp/issues).
 
+## 2026-11-13: Dataset search gives the whole answer in one call
+
+- **Tags:** MCP
+- **What changed:** A dataset search now counts every match, with no cap. When the matches do not all fit in one reply, the server counts them by portal, lists the best ones, and saves the full list as a CSV file on your computer. Each result is shorter by default: name, portal, type, update date, link and formats. Ask for full detail to get the description, API endpoint and the rest, as before. The old total_candidates number, which stopped at 400, is gone; total_matches replaces it. A search for "tax lot" now also finds map layers named just "Parcels", and three synonyms that pulled in wrong results were removed.
+- **MCP version:** [ny-data-registry-mcp 0.3.0](CHANGELOG.md#030--2026-11-13)
+- **More detail:** [Release notes](CHANGELOG.md#030--2026-11-13)
+
 ## 2026-11-13: A What's changed record, and two tools that explain the server
 
 - **Tags:** MCP

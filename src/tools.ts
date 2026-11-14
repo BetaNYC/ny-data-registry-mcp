@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { basename } from "node:path";
 import { FAMILIES } from "./families.js";
 import { findSources, howToQuery, listSourcesForPlace, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { findJoinable, getDatasetColumns, indexInfo, NoIndexError, searchDatasets, whatsNew } from "./datasets.js";
+import { DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { createBetanycTools } from "./betanyc-tools.js";
@@ -112,7 +113,11 @@ export const TOOLS = [
   {
     name: "search_datasets",
     description:
-      "Search dataset titles, descriptions, tags and column names across the harvested Socrata and ArcGIS portals in New York (needs the harvested index). Filter by place, portal, platform family, download format (csv, geojson, shapefile, kml, api, xlsx) or last-updated date. Each result gives the portal, link, formats, update date, and for Socrata the domain + 4x4 to hand to the `socrata` MCP.",
+      "Search dataset titles, descriptions, tags and column names across the harvested Socrata and ArcGIS portals in New York (needs the harvested index). Filter by place, portal, platform family, download format (csv, geojson, shapefile, kml, api, xlsx) or last-updated date. " +
+      "One call gives the whole answer. total_matches is the true number of matching datasets. When they all fit, the reply lists them. When they do not, the reply summarizes every match by portal (count and top titles per portal, auto_grouped: true), lists the best-ranked rows that fit, and writes every match to a CSV file on this machine (export.path, export.rows; also a resource_link). " +
+      "Use group_by to summarize by entity, county or platform_family instead. " +
+      "Rows are compact (id, name, portal, type, update date, link, formats); detail: 'full' adds description, API endpoint, views, column count and, for Socrata, the domain + 4x4 to hand to the `socrata` MCP. " +
+      `Replies stay under about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists.`,
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -123,7 +128,12 @@ export const TOOLS = [
         platform_family: { type: "string", enum: FAMILY_ENUM },
         format: { type: "string", description: "csv, json, geojson, shapefile, kml, api, arcgis, xlsx, geopackage, pdf" },
         updated_since: { type: "string", description: "YYYY-MM-DD" },
-        limit: { type: "integer", minimum: 1, maximum: 50 },
+        limit: { type: "integer", minimum: 1, maximum: MAX_LIMIT, description: "Most rows to list in the reply. Default 10. More matches than this are summarized by portal and written to the CSV. Not with group_by" },
+        offset: { type: "integer", minimum: 0, maximum: RANK_POOL_MAX, description: "Rarely needed: skip this many ranked rows to page by hand (next_offset). Turns off the auto-summary and the automatic CSV. Not with group_by" },
+        detail: { type: "string", enum: [...DETAIL], description: "'compact' (default) or 'full'. Not with group_by" },
+        group_by: { type: "string", enum: [...GROUP_BY], description: "Group every match by portal, entity, county or platform_family, with counts and top titles per group, instead of a page of results" },
+        top_per_group: { type: "integer", minimum: 0, maximum: MAX_TOP_PER_GROUP, description: "Titles listed per group with group_by. Default 3" },
+        export: { type: "string", enum: [...EXPORT_MODE], description: "'auto' (default): write the CSV of every match when the reply cannot list them all. 'always' or 'never'" },
       },
       required: ["query"],
     },
@@ -196,7 +206,12 @@ const ARG_SHAPES = {
     platform_family: family.optional(),
     format: z.string().optional(),
     updated_since: z.string().regex(/^\d{4}-\d{2}-\d{2}/).optional(),
-    limit: z.number().int().min(1).max(50).optional(),
+    limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
+    offset: z.number().int().min(0).max(RANK_POOL_MAX).optional(),
+    detail: z.enum(DETAIL).optional(),
+    group_by: z.enum(GROUP_BY).optional(),
+    top_per_group: z.number().int().min(0).max(MAX_TOP_PER_GROUP).optional(),
+    export: z.enum(EXPORT_MODE).optional(),
   },
   get_dataset_columns: { dataset: z.string().min(1) },
   find_joinable: { dataset: z.string().min(1), column: z.string().optional(), limit_per_key: z.number().int().min(1).max(50).optional() },
@@ -219,7 +234,7 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
   );
 }
 
-const text = (v: unknown) => ({ content: [{ type: "text", text: JSON.stringify(v, null, 2) }] });
+const text = (v: unknown) => ({ content: [{ type: "text", text: toolJson(v) }] });
 
 export async function callTool(name: string, args: unknown) {
   // The shared tools answer in plain text plus structuredContent, and need no index.
@@ -246,8 +261,24 @@ export async function callTool(name: string, args: unknown) {
       case "registry_info":
         parseToolArgs("registry_info", args);
         return text({ ...registryInfo(indexInfo()), index_download: downloadState() });
-      case "search_datasets":
-        return text(searchDatasets(parseToolArgs("search_datasets", args)));
+      case "search_datasets": {
+        const r = searchDatasets(parseToolArgs("search_datasets", args)) as Record<string, any>;
+        const out = text(r);
+        // MCP resource_link content (spec 2025-06-18 and later, "Resource Links" under Tool Result).
+        // The JSON text block above stays the answer; this lets a client open or attach the file.
+        if (r.export?.uri) {
+          (out.content as unknown[]).push({
+            type: "resource_link",
+            uri: r.export.uri,
+            name: basename(r.export.path),
+            title: `All ${r.export.rows} matches for '${r.query}' (CSV)`,
+            description: `Every dataset matching '${r.query}', best-ranked first, one row each.`,
+            mimeType: "text/csv",
+            size: r.export.bytes,
+          });
+        }
+        return out;
+      }
       case "get_dataset_columns":
         return text(getDatasetColumns(parseToolArgs("get_dataset_columns", args).dataset));
       case "find_joinable": {

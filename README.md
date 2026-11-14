@@ -4,7 +4,7 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 
 It complements the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP rather than replacing it. This server knows *where* data is (140 sources across state, county, city, agency, library and nonprofit portals) and hands the agent the right Socrata domain or ArcGIS service. Querying the data stays with `socrata` and the other BetaNYC MCPs.
 
-Built by [BetaNYC](https://beta.nyc). **Status: 0.2.0.** Package: `@betanyc/ny-data-registry-mcp`.
+Built by [BetaNYC](https://beta.nyc). **Status: 0.3.0.** Package: `@betanyc/ny-data-registry-mcp`.
 
 What changed in this server, newest first, including corrections: [WHATS-CHANGED.md](WHATS-CHANGED.md).
 
@@ -28,7 +28,7 @@ Eleven tools, in three groups.
 
 | Tool | What it answers |
 |---|---|
-| `search_datasets` | Dataset titles, descriptions, tags and **column names** across Socrata and ArcGIS portals. Filters: place, portal, platform family, format (csv, geojson, shapefile, kml, api, xlsx …), updated since |
+| `search_datasets` | Dataset titles, descriptions, tags and **column names** across Socrata and ArcGIS portals. Filters: place, portal, platform family, format (csv, geojson, shapefile, kml, api, xlsx …), updated since. One call gives the whole answer: the true number of matches, a count per portal when they don't all fit, the best rows, and a CSV file with every match. `group_by` summarizes by entity, county or platform family instead |
 | `get_dataset_columns` | Fields and types, every distribution (format + URL), license, publisher, extent, and per-field provenance |
 | `find_joinable` | Datasets sharing a join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), from a curated key-column map, not raw name equality |
 | `whats_new` | Datasets added, changed or removed since a date |
@@ -43,6 +43,10 @@ Eleven tools, in three groups.
 These two come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
 
 All tool inputs are strict: an unknown parameter is rejected by name, never silently dropped (same rule as `nyc-311-mcp`).
+
+**How `search_datasets` answers.** One call gives the whole answer. `total_matches` counts every dataset that matches, with no cap. If they all fit in the reply (10 rows by default, up to 50), the reply lists them. If they don't, the reply does three things at once: it counts every match by portal (`auto_grouped: true`, with each portal's top titles), it lists the best-ranked rows that fit, and it writes every match to a CSV file on your computer (`export.path`, plus an MCP `resource_link`). So "which portals have tax lot data?" comes back complete in one call, and the CSV holds the full list for a spreadsheet. `group_by` summarizes by entity, county or platform family instead of portal. Replies stay under about 20 KB so they fit in an AI client's tool-result limit. Each reply also lists the registry portals the index does not search (no portal, not harvested, or a failed harvest), so an empty result is not read as "no such data".
+
+**The CSV files.** One row per matching dataset, best-ranked first: id, name, portal, type, update date, link, formats, API endpoint, Socrata domain and 4x4, platform, counties, geometry type and column count. Standard CSV (RFC 4180), UTF-8, values as the portal published them, with one safety exception: a text value that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so a spreadsheet shows it as text instead of running it as a formula. Numbers are never changed. They go in `${HOME}/.cache/betanyc/ny-data-registry/exports/` (change with `NY_DATA_EXPORT_DIR`). The newest 50 are kept, none older than 7 days; nothing else in that folder is touched. `export: "never"` turns the file off and `export: "always"` writes one even for a short answer. `offset` still pages by hand for clients that need it, but nothing depends on it.
 
 ---
 
@@ -87,6 +91,7 @@ Ask your AI assistant these once the server is connected. Where we ran a questio
 - **Try more than one wording.** Cities name the same thing differently: "code enforcement" finds datasets that "housing code violations" misses.
 - **New York City crowds the results.** NYC's matches tend to fill the top of the list. To see the rest of the state, name a place or ask a second time for results outside New York City.
 - **Add a date to skip old data.** "School enrollment" alone returns NYC tables from 2010–2011; add a date, such as "updated since 2025-01-01", to skip them.
+- **Ask which portals have something.** "Which portals have tax parcel data?" groups every match by portal in one answer, with a count for each.
 - **An empty result can still have data elsewhere.** The index covers Socrata and ArcGIS portals only. A city may publish on a site this server does not search.
 - **Some maps are not official.** The Westchester and Tioga county zoning layers say they are not the legal boundaries. Check the town's own map before relying on one.
 - **It finds the data; another tool fetches it.** Hand a Socrata dataset to the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP. For an ArcGIS layer, open or download it from the portal.

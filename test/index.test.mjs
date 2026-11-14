@@ -14,7 +14,7 @@ const { registry } = await import("../dist/registry.js");
 test("search_datasets finds a dataset by title and by column name, across platforms", () => {
   const z = searchDatasets({ query: "zoning" });
   assert.equal(z.results[0].dataset_id, "cortland-county:dea35a11cfbf4adeb083df6d63cf1f88");
-  const byCol = searchDatasets({ query: "medicaid provider" });
+  const byCol = searchDatasets({ query: "medicaid provider", detail: "full" });
   assert.equal(byCol.results[0].portal_id, "nys-department-of-health");
   assert.deepEqual(byCol.results[0].query_with.mcp, "socrata");
 });
