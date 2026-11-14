@@ -3,25 +3,46 @@ import { basename } from "node:path";
 import { FAMILIES } from "./families.js";
 import { findSources, howToQuery, listSourcesForPlace, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
+import { db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
-import { createBetanycTools } from "./betanyc-tools.js";
+import { createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
+import { registry } from "./registry.js";
 import { VERSION } from "./paths.js";
 
 /**
- * whats_changed and about_betanyc, the two tools BetaNYC is adding to each of its MCP servers
- * (betanyc-ai-workspace platform/system/whats-changed-standard.md § 7). betanyc-tools.ts is
- * a copy of the workspace's canonical file: never edit it here. WHATS-CHANGED.md ships in
- * the npm package (package.json `files`), one level above dist/. There is no website, so
- * entry links go to the file on GitHub. whats_changed is about this server; whats_new
- * (below) is about datasets on the portals.
+ * When the harvested index on this machine was built: the `last_harvest` time the harvester
+ * writes into the index's meta table. FRESHNESS_NOT_FETCHED while there is no index yet (the
+ * first-run download has not finished, or is turned off). Read-only, no network.
  */
-const betanyc = createBetanycTools({
+export function indexHarvestedAt(): string | null | typeof FRESHNESS_NOT_FETCHED {
+  if (!indexExists()) return FRESHNESS_NOT_FETCHED;
+  const row = db().prepare("SELECT value FROM meta WHERE key = 'last_harvest'").get() as { value: string } | undefined;
+  return row?.value ?? null;
+}
+
+/**
+ * whats_changed, about_betanyc and about_data, the three tools BetaNYC is adding to each of its
+ * MCP servers (betanyc-ai-workspace platform/system/whats-changed-standard.md § 7 and
+ * about-data-standard.md). betanyc-tools.ts is a copy of the workspace's canonical file: never
+ * edit it here. WHATS-CHANGED.md and DATA-SOURCES.json ship in the npm package (package.json
+ * `files`), one level above dist/. There is no website, so entry links go to the file on GitHub.
+ * whats_changed is about this server; whats_new (below) is about datasets on the portals.
+ *
+ * about_data's freshness: the registry answers with the `generated` date of the copy this
+ * server loaded (bundled or refreshed from GitHub Pages); both catalog sources answer with the
+ * harvested index's last harvest. Both hooks are synchronous and make no request.
+ */
+export const betanyc = createBetanycTools({
   serverName: "ny-data-registry-mcp",
   version: VERSION,
   repoUrl: "https://github.com/BetaNYC/ny-data-registry-mcp",
   whatsChangedPath: new URL("../WHATS-CHANGED.md", import.meta.url),
+  dataSourcesPath: new URL("../DATA-SOURCES.json", import.meta.url),
+  freshness: {
+    registry_generated: () => registry().generated,
+    index_harvested: indexHarvestedAt,
+  },
 });
 
 const INDEX_TOOLS = new Set(["search_datasets", "get_dataset_columns", "find_joinable", "whats_new"]);

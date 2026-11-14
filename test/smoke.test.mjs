@@ -22,13 +22,14 @@ const CALLS = [
   ["find_joinable", { dataset: "test-0001" }],
   ["whats_new", { since: "2000-01-01" }],
 ];
-// The two BetaNYC standard tools answer in plain text plus structuredContent, not JSON text.
+// The three BetaNYC standard tools answer in plain text plus structuredContent, not JSON text.
 const SHARED_CALLS = [
   ["whats_changed", { limit: 2 }],
   ["about_betanyc", {}],
+  ["about_data", {}],
 ];
 
-test("stdio server starts, lists 11 tools, and answers every one", async () => {
+test("stdio server starts, lists 12 tools, and answers every one", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [server],
@@ -38,7 +39,8 @@ test("stdio server starts, lists 11 tools, and answers every one", async () => {
   await client.connect(transport);
   try {
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 11);
+    assert.equal(tools.length, 12);
+    assert.match(client.getInstructions() ?? "", /about_data/, "the server's instructions say when to call about_data");
     for (const [name, args] of CALLS) {
       const r = await client.callTool({ name, arguments: args });
       assert.notEqual(r.isError, true, `${name}: ${r.content?.[0]?.text}`);

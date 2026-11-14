@@ -7,6 +7,13 @@ This page lists the changes to ny-data-registry-mcp that a reader would notice: 
 
 To report a bug in this server or ask for a new feature, [open an issue on GitHub](https://github.com/BetaNYC/ny-data-registry-mcp/issues).
 
+## Unreleased: Ask where the data comes from
+
+- **Tags:** MCP
+- **What changed:** A new tool lets your AI assistant answer "where does this come from?" for any answer from this server. It names the sources: BetaNYC's own list of New York data portals, which is BetaNYC's work and not an official record, and the catalogs of the Socrata and ArcGIS portals that the dataset index is built from. For each, it says how current it is on your computer, the terms that apply, where to check it and where to report a mistake. It also gives BetaNYC's address for questions about the data, lab@beta.nyc.
+- **MCP version:** [ny-data-registry-mcp 0.4.0](CHANGELOG.md)
+- **More detail:** [Where the data comes from](DATA-SOURCES.json)
+
 ## 2026-11-13: Dataset search gives the whole answer in one call
 
 - **Tags:** MCP

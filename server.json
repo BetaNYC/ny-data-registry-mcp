@@ -7,12 +7,12 @@
     "url": "https://github.com/BetaNYC/ny-data-registry-mcp",
     "source": "github"
   },
-  "version": "0.3.0",
+  "version": "0.4.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@betanyc/ny-data-registry-mcp",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "transport": {
         "type": "stdio"
       },
