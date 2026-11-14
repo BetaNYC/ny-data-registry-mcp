@@ -192,7 +192,9 @@ If anything fails, the server keeps the index it has and tries again at the next
   - `ny-places.json`: 62 counties, 62 cities, 5 boroughs, 8 regions.
   - `key-columns.json`: the curated join keys.
   - `handoffs.json`: which BetaNYC MCP serves which registry row.
-  - `harvest-config.json`: skips (ANHD, Rockland, Columbia GeoBlacklight) and caps.
+  - `harvest-config.json`: skips (ANHD, Rockland, Columbia GeoBlacklight), caps, one on/off switch per adapter, the "no portal" rows let through (`allow_no_portal`), and the settings for the ArcGIS Server, GeoBlacklight and InvenioRDM adapters.
+  - `hand-kept.json`: what rows with no data link offer (see "Hand-kept list").
+  - `parcel-sources.json`: the State's parcel layer, read once, its per-county links, and the hand-reviewed registry parcel layers (see "Tax parcel coverage").
   - `synonyms.json`: a short civic synonym list ("property" → parcels, tax lots, BBL).
 - **The harvested index**, built from the portals themselves (next section).
 
