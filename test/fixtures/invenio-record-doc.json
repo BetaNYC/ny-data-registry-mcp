@@ -1,0 +1,78 @@
+{
+  "_source": "InvenioRDM REST API reference, 'Get a record' example response (https://inveniordm.docs.cern.ch/reference/rest_api_drafts_records/), read 2026-11-14. Placeholders {id} and {scheme+hostname} filled with the docs' own example id (cbc2k-q9x58) and NYU's host; the trailing comma in the docs' metadata object removed. locations is the docs' Locations example (https://inveniordm.docs.cern.ch/reference/metadata/).",
+  "access": {
+    "record": "restricted",
+    "files": "restricted",
+    "embargo": {
+      "reason": null,
+      "active": false
+    }
+  },
+  "created": "2020-11-27 10:52:23.945755",
+  "expires_at": "2020-11-27 10:52:23.945868",
+  "files": {
+    "enabled": true
+  },
+  "id": "cbc2k-q9x58",
+  "is_published": true,
+  "links": {
+    "latest": "https://ultraviolet.library.nyu.edu/api/records/cbc2k-q9x58/versions/latest",
+    "versions": "https://ultraviolet.library.nyu.edu/api/records/cbc2k-q9x58/versions",
+    "self_html": "https://ultraviolet.library.nyu.edu/records/cbc2k-q9x58",
+    "latest_html": "https://ultraviolet.library.nyu.edu/records/cbc2k-q9x58/latest",
+    "self": "https://ultraviolet.library.nyu.edu/api/records/cbc2k-q9x58",
+    "files": "https://ultraviolet.library.nyu.edu/api/records/cbc2k-q9x58/files"
+  },
+  "metadata": {
+    "resource_type": {
+      "id": "image-photo",
+      "title": {
+        "en": "Photo"
+      }
+    },
+    "title": "An Updated Romans story",
+    "publication_date": "2020-06-01",
+    "creators": [
+      {
+        "person_or_org": {
+          "given_name": "Troy",
+          "type": "personal",
+          "name": "Brown, Troy",
+          "family_name": "Brown"
+        }
+      }
+    ],
+    "locations": {
+      "features": [
+        {
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              46.23333,
+              6.05
+            ]
+          },
+          "identifiers": [
+            {
+              "scheme": "geonames",
+              "identifier": "2661235"
+            }
+          ],
+          "place": "CERN",
+          "description": "Invenio birth place."
+        }
+      ]
+    }
+  },
+  "parent": {
+    "id": "{parent-id}"
+  },
+  "pids": {},
+  "revision_id": 3,
+  "updated": "2020-11-27 10:52:23.969244",
+  "versions": {
+    "index": 1,
+    "is_latest": true,
+    "is_latest_draft": true
+  }
+}

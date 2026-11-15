@@ -6,7 +6,12 @@ import { openDb, upsertPortal, setPortalHarvest, writePortalDatasets, purgePorta
 import { registry, type Source } from "../registry.js";
 import { socrataDomain } from "../sources.js";
 import { refuseReason } from "../check.js";
+import { bboxIntersectsNY } from "../places.js";
 import { harvestSocrata } from "./socrata.js";
+import { DEFAULT_SERVER_CONFIG, harvestArcgisServer, serverRootOf, type ServerConfig } from "./arcgis-server.js";
+import { handKeptEntry, mapHandKept, type HandKeptEntry } from "./hand-kept.js";
+import { harvestOgm, type OgmRepo } from "./geoblacklight.js";
+import { harvestInvenio, invenioTarget, type InvenioTarget } from "./invenio.js";
 import { buildTopics } from "../topics.js";
 import {
   dcatByItem, fetchServiceColumns, filterItems, itemsFromDcat, listHubItems, mapArcgisItem, mergeDcat, mostCommonOrg,
@@ -23,6 +28,37 @@ interface HarvestConfig {
   };
   skip: { by_entity: Record<string, string> };
   cadence?: CadenceConfig;
+  adapters?: Record<string, AdapterSwitch>;
+  allow_no_portal?: Record<string, AllowNoPortal | string>;
+  arcgis_server?: Partial<ServerConfig>;
+  /** OpenGeoMetadata repository per GeoBlacklight registry row, by source id. */
+  geoblacklight?: { repos_by_source: Record<string, OgmRepo | string>; max_archive_mb?: number };
+  invenio_rdm?: { page_size?: number; max_pages?: number };
+}
+
+/**
+ * A registry row marked "no portal" that still has a documented data endpoint, let through to
+ * one named adapter (epic #7, decision D4). `endpoint` must still appear in the row's
+ * api_endpoint, so a changed row is skipped until someone checks it again.
+ */
+export interface AllowNoPortal {
+  adapter: "agol-org" | "enterprise" | "arcgis-server";
+  endpoint: string;
+  /** How the row was checked to be New York, not a look-alike. */
+  checked_new_york: string;
+  /** One live read of the endpoint when the row was added: URL, time, status and what it showed. */
+  checked_live?: { url: string; at: string; http_status: number; result: string };
+}
+
+/** One adapter's on/off switch in harvest-config.json (`adapters`). Missing means on. */
+export interface AdapterSwitch {
+  enabled: boolean;
+  note?: string;
+}
+
+/** Whether an adapter is switched on. An adapter not listed is on. */
+export function adapterEnabled(kind: string, cfg: { adapters?: Record<string, AdapterSwitch> }): boolean {
+  return cfg.adapters?.[kind]?.enabled !== false;
 }
 
 /**
@@ -66,7 +102,26 @@ export type Plan =
   | { kind: "hub"; site: string; agolOrg: string | null }
   | { kind: "enterprise"; portalBase: string }
   | { kind: "agol-org"; orgId: string }
-  | { kind: "skip"; reason: string };
+  | { kind: "arcgis-server"; root: string }
+  | { kind: "hand-kept"; entry: HandKeptEntry }
+  | { kind: "geoblacklight"; repo: OgmRepo }
+  | { kind: "invenio-rdm"; target: InvenioTarget }
+  | { kind: "skip"; reason: string; code: SkipCode };
+
+/**
+ * Why a registry row is not harvested, as a fixed code (the `coverage` command groups by it).
+ * - not-live: registry status 'dead' or 'UNCONFIRMED'.
+ * - no-portal: registry status 'no-portal'.
+ * - policy: never called (key required, account-gated, blocks automated clients, or excluded in harvest-config.json).
+ * - adapter-off: the adapter exists but is switched off in harvest-config.json.
+ * - no-adapter: the platform has an API but this build has no adapter for it.
+ * - described-only: a custom API the registry describes; not harvested.
+ * - no-api: web pages, viewers or downloads only.
+ * - unmapped / unconfirmed: the platform string is not in platform-families.json, or its family is deliberately null.
+ * - incomplete-row: the row lacks the URL or domain the adapter needs.
+ */
+export type SkipCode =
+  | "not-live" | "no-portal" | "policy" | "adapter-off" | "no-adapter" | "described-only" | "no-api" | "unmapped" | "unconfirmed" | "incomplete-row";
 
 const AGOL_SERVICES = /https:\/\/services\d*\.arcgis\.com\/([A-Za-z0-9]{10,})\/arcgis\/rest\/services/;
 
@@ -83,36 +138,96 @@ export function enterprisePortalBase(s: Source): string | null {
   return null;
 }
 
+/** Rows with no data link: the hand-kept list (D6) may describe what they offer instead. */
+const HAND_KEPT_CODES = new Set<SkipCode>(["no-portal", "no-api", "unconfirmed"]);
+
 export function planFor(s: Source, cfg: HarvestConfig): Plan {
-  if (s.status !== "live") return { kind: "skip", reason: `registry status '${s.status}'` };
+  let p = basePlan(s, cfg);
+  if (p.kind === "skip" && HAND_KEPT_CODES.has(p.code) && !refuseReason(s) && !cfg.skip.by_entity[s.entity]) {
+    const e = handKeptEntry(s);
+    if (e) p = { kind: "hand-kept", entry: e };
+  }
+  if (p.kind !== "skip" && !adapterEnabled(p.kind, cfg)) {
+    const note = cfg.adapters?.[p.kind]?.note;
+    return { kind: "skip", code: "adapter-off", reason: `the '${p.kind}' adapter is switched off in harvest-config.json${note ? `: ${note}` : ""}` };
+  }
+  return p;
+}
+
+/** The plan for a "no portal" row on the allow list, or null when the row is not on it. */
+export function allowedNoPortalPlan(s: Source, cfg: HarvestConfig): Plan | null {
+  const a = cfg.allow_no_portal?.[s.entity];
+  if (!a || typeof a === "string") return null;
+  if (!(s.api_endpoint ?? "").includes(a.endpoint)) {
+    return { kind: "skip", code: "no-portal", reason: `on allow_no_portal, but the registry row's api_endpoint no longer contains ${a.endpoint}; check the row again` };
+  }
+  if (a.adapter === "agol-org") {
+    const org = agolOrgOf(s);
+    return org ? { kind: "agol-org", orgId: org } : { kind: "skip", code: "incomplete-row", reason: "on allow_no_portal, but no ArcGIS Online org in the row" };
+  }
+  if (a.adapter === "enterprise") {
+    const b = enterprisePortalBase(s);
+    return b ? { kind: "enterprise", portalBase: b } : { kind: "skip", code: "incomplete-row", reason: "on allow_no_portal, but no portal URL in the row" };
+  }
+  if (a.adapter === "arcgis-server") {
+    const root = serverRootOf(s.url, s.api_endpoint);
+    return root ? { kind: "arcgis-server", root } : { kind: "skip", code: "incomplete-row", reason: "on allow_no_portal, but no REST services directory in the row" };
+  }
+  return { kind: "skip", code: "incomplete-row", reason: `on allow_no_portal with adapter '${a.adapter}', which this row cannot use` };
+}
+
+function basePlan(s: Source, cfg: HarvestConfig): Plan {
+  if (s.status === "no-portal") {
+    const allowed = allowedNoPortalPlan(s, cfg);
+    if (!allowed) return { kind: "skip", code: "no-portal", reason: "registry status 'no-portal'" };
+    if (allowed.kind === "skip") return allowed;
+    const refuse = refuseReason(s);
+    if (refuse) return { kind: "skip", code: "policy", reason: refuse };
+    if (cfg.skip.by_entity[s.entity]) return { kind: "skip", code: "policy", reason: cfg.skip.by_entity[s.entity] };
+    return allowed;
+  }
+  if (s.status !== "live") return { kind: "skip", code: "not-live", reason: `registry status '${s.status}'` };
   const refuse = refuseReason(s);
-  if (refuse) return { kind: "skip", reason: refuse };
-  if (cfg.skip.by_entity[s.entity]) return { kind: "skip", reason: cfg.skip.by_entity[s.entity] };
+  if (refuse) return { kind: "skip", code: "policy", reason: refuse };
+  if (cfg.skip.by_entity[s.entity]) return { kind: "skip", code: "policy", reason: cfg.skip.by_entity[s.entity] };
   switch (s.platform_family) {
     case "socrata": {
       const d = socrataDomain(s);
-      return d ? { kind: "socrata", domain: d } : { kind: "skip", reason: "no Socrata domain in the registry row" };
+      return d ? { kind: "socrata", domain: d } : { kind: "skip", code: "incomplete-row", reason: "no Socrata domain in the registry row" };
     }
     case "arcgis-hub":
-      return s.url ? { kind: "hub", site: s.url.trim().split(/\s/)[0].replace(/\/+$/, ""), agolOrg: agolOrgOf(s) } : { kind: "skip", reason: "no site URL" };
+      return s.url ? { kind: "hub", site: s.url.trim().split(/\s/)[0].replace(/\/+$/, ""), agolOrg: agolOrgOf(s) } : { kind: "skip", code: "incomplete-row", reason: "no site URL" };
     case "arcgis-enterprise": {
       const b = enterprisePortalBase(s);
-      return b ? { kind: "enterprise", portalBase: b } : { kind: "skip", reason: "ArcGIS Enterprise without a portal (server REST directory only): no catalog adapter in this build" };
+      if (b) return { kind: "enterprise", portalBase: b };
+      const root = serverRootOf(s.url, s.api_endpoint);
+      return root ? { kind: "arcgis-server", root } : { kind: "skip", code: "incomplete-row", reason: "ArcGIS Enterprise with neither a portal nor a REST services directory in the row" };
     }
     case "arcgis-server": {
       const org = agolOrgOf(s);
-      return org ? { kind: "agol-org", orgId: org } : { kind: "skip", reason: "standalone ArcGIS Server REST directory: no catalog adapter in this build" };
+      if (org) return { kind: "agol-org", orgId: org };
+      const root = serverRootOf(s.url, s.api_endpoint);
+      return root ? { kind: "arcgis-server", root } : { kind: "skip", code: "incomplete-row", reason: "ArcGIS Server row without a REST services directory URL" };
     }
-    case "geoblacklight":
-      return { kind: "skip", reason: "GeoBlacklight: no adapter in this build" };
+    case "geoblacklight": {
+      const repo = cfg.geoblacklight?.repos_by_source?.[s.source_id];
+      return repo && typeof repo !== "string"
+        ? { kind: "geoblacklight", repo }
+        : { kind: "skip", code: "no-adapter", reason: "GeoBlacklight: no OpenGeoMetadata repository configured for this row (geoblacklight.repos_by_source)" };
+    }
     case "ckan":
-      return { kind: "skip", reason: "CKAN (catalog.data.gov): a re-harvest of portals indexed directly; no adapter in this build" };
-    case "custom-api":
-      return { kind: "skip", reason: "custom API: described by the registry, not harvested" };
+      return { kind: "skip", code: "no-adapter", reason: "CKAN: no adapter in this build (a one-time comparison only, epic #7 D7; data.gov's copies re-harvest portals indexed directly)" };
+    case "custom-api": {
+      if (s.platform === "InvenioRDM") {
+        const t = invenioTarget(s.api_endpoint);
+        if (t) return { kind: "invenio-rdm", target: t };
+      }
+      return { kind: "skip", code: "described-only", reason: "custom API: described by the registry, not harvested" };
+    }
     case "none":
-      return { kind: "skip", reason: "no API (web pages, viewers or downloads only)" };
+      return { kind: "skip", code: "no-api", reason: "no API (web pages, viewers or downloads only)" };
     default:
-      return { kind: "skip", reason: `platform family ${s.platform_family_status}` };
+      return { kind: "skip", code: s.platform_family_status === "unconfirmed" ? "unconfirmed" : "unmapped", reason: `platform family ${s.platform_family_status}` };
   }
 }
 
@@ -306,6 +421,39 @@ export async function runHarvest(opts: RunOpts = {}) {
         datasets = h.datasets;
         complete = h.complete;
         Object.assign(st, { listed: h.resultSetSize, requests: h.requests, error: h.error, columns_fetched_for: datasets.filter((d) => d.columns_status === "from-search").length });
+      } else if (plan.kind === "geoblacklight") {
+        const h = await harvestOgm(plan.repo, (cfg.geoblacklight?.max_archive_mb ?? 200) * 1024 * 1024);
+        Object.assign(st, { listed: h.records, kept: h.filter.kept.length, requests: h.requests, error: h.error, out_of_state_check: h.filter.portal_in_ny,
+          excluded: { esri: 0, other_org: h.filter.excluded.other_provider, out_of_state: h.filter.excluded.out_of_state, not_public: h.filter.excluded.not_public + h.filter.excluded.suppressed + h.filter.excluded.withdrawn } });
+        if (h.filter.portal_in_ny.refuse) {
+          purgePortal(db, s.source_id);
+          setPortalHarvest(db, s.source_id, { adapter: st.adapter, status: "refused", note: "out-of-state guard: most record extents are outside New York" });
+          return { ...st, outcome: "refused", reason: "out-of-state guard", seconds: Math.round((Date.now() - t0) / 1000) };
+        }
+        datasets = h.datasets;
+        complete = h.complete;
+      } else if (plan.kind === "invenio-rdm") {
+        const h = await harvestInvenio(plan.target, { pageSize: cfg.invenio_rdm?.page_size, maxPages: cfg.invenio_rdm?.max_pages });
+        datasets = h.datasets;
+        complete = h.complete;
+        Object.assign(st, { listed: h.total, kept: datasets.length, requests: h.requests, error: h.error,
+          excluded: { esri: 0, other_org: 0, out_of_state: h.excluded["geometry-outside"] + h.excluded["no-location"], not_public: h.excluded.restricted } });
+      } else if (plan.kind === "hand-kept") {
+        datasets = plan.entry.resources.map(mapHandKept);
+        complete = true;
+        Object.assign(st, { listed: datasets.length, requests: 0 });
+      } else if (plan.kind === "arcgis-server") {
+        const h = await harvestArcgisServer(plan.root, { ...DEFAULT_SERVER_CONFIG, ...(cfg.arcgis_server ?? {}) });
+        // The out-of-state guard, as for ArcGIS items: drop services whose extent is outside New York.
+        const kept = h.datasets.filter((d) => bboxIntersectsNY(d.extent) !== false);
+        datasets = kept;
+        complete = h.complete;
+        Object.assign(st, {
+          listed: h.listed, kept: kept.length, requests: h.requests, error: h.error,
+          excluded: { esri: 0, other_org: 0, out_of_state: h.datasets.length - kept.length, not_public: 0 },
+          columns_fetched_for: kept.filter((d) => d.columns_status === "fetched").length,
+          columns_not_fetched: kept.filter((d) => d.columns_status === "not-fetched").length,
+        });
       } else {
         let items: ArcgisItem[] = [];
         let listingComplete = false;

@@ -3,13 +3,14 @@ import { basename } from "node:path";
 import { FAMILIES } from "./families.js";
 import { findSources, howToQuery, listSourcesForPlace, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
+import { datasetStandard, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
 import { createBetanycTools } from "./betanyc-tools.js";
 import { VERSION } from "./paths.js";
 import { topicRules } from "./topics.js";
+import { STANDARDS } from "./standards/build.js";
 
 /**
  * whats_changed and about_betanyc, the two tools BetaNYC is adding to each of its MCP servers
@@ -155,11 +156,17 @@ export const TOOLS = [
   },
   {
     name: "get_dataset_columns",
-    description: "Column names, field names, types and descriptions for one dataset from the index, plus every distribution (format + URL), license, publisher, extent and per-field provenance (from the portal vs derived here).",
+    description:
+      "Column names, field names, types and descriptions for one dataset from the index, plus every distribution (format + URL), license, publisher, extent and per-field provenance (from the portal vs derived here). " +
+      "With standard 'croissant' (read by AI and ML tools) or 'dcat-us' (DCAT-US 3.0, read by government catalogs and data.gov), returns the dataset's description in that standard instead, with which required fields the portal did not give. " +
+      "A license is never inferred: where the portal gives none, a terms page may be linked, labeled 'terms page, not a license'.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
-      properties: { dataset: { type: "string", description: "dataset_id from search_datasets, a Socrata 4x4, an ArcGIS item id, or the dataset URL" } },
+      properties: {
+        dataset: { type: "string", description: "dataset_id from search_datasets, a Socrata 4x4, an ArcGIS item id, or the dataset URL" },
+        standard: { type: "string", enum: [...STANDARDS], description: "Return the description as Croissant 1.1 ('croissant') or DCAT-US 3.0 ('dcat-us') instead of the column list" },
+      },
       required: ["dataset"],
     },
   },
@@ -230,7 +237,7 @@ const ARG_SHAPES = {
     export: z.enum(EXPORT_MODE).optional(),
   },
   list_topics: { portal: z.string().optional() },
-  get_dataset_columns: { dataset: z.string().min(1) },
+  get_dataset_columns: { dataset: z.string().min(1), standard: z.enum(STANDARDS).optional() },
   find_joinable: { dataset: z.string().min(1), column: z.string().optional(), limit_per_key: z.number().int().min(1).max(50).optional() },
   whats_new: { since: z.string(), portal: z.string().optional(), limit: z.number().int().min(1).max(200).optional() },
 };
@@ -298,8 +305,10 @@ export async function callTool(name: string, args: unknown) {
       }
       case "list_topics":
         return text(listTopics(parseToolArgs("list_topics", args)));
-      case "get_dataset_columns":
-        return text(getDatasetColumns(parseToolArgs("get_dataset_columns", args).dataset));
+      case "get_dataset_columns": {
+        const a = parseToolArgs("get_dataset_columns", args);
+        return text(a.standard ? datasetStandard(a.dataset, a.standard) : getDatasetColumns(a.dataset));
+      }
       case "find_joinable": {
         const a = parseToolArgs("find_joinable", args);
         return text(findJoinable(a.dataset, a.column, a.limit_per_key));

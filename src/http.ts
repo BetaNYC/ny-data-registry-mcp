@@ -42,6 +42,8 @@ export interface PoliteResponse {
   notModified: boolean;
   headers: Record<string, string>;
   body: string;
+  /** The raw bytes, only when `binary` was asked for (then `body` is empty). */
+  bytes?: Buffer;
   elapsedMs: number;
 }
 
@@ -57,6 +59,8 @@ export interface PoliteOptions {
   skipRobots?: boolean;
   /** Extra request headers (e.g. a Socrata X-App-Token). */
   headers?: Record<string, string>;
+  /** Read the body as bytes (an archive), not text. Never cached. */
+  binary?: boolean;
 }
 
 const lastRequestAt = new Map<string, number>();
@@ -64,6 +68,7 @@ const hostLocks = new Map<string, Promise<void>>();
 const robotsCache = new Map<string, RobotsRules>();
 const hostDelayMs = new Map<string, number>();
 const widenedGapMs = new Map<string, number>();
+const adapterFloorMs = new Map<string, number>();
 export const requestLog: { url: string; status: number; at: string }[] = [];
 
 export function minIntervalMs(): number {
@@ -84,7 +89,15 @@ export function isSocrataHost(host: string): boolean {
 
 /** The minimum gap this client keeps between two requests to `host`, before any Crawl-delay. */
 export function hostFloorMs(host: string): number {
-  return Math.max(minIntervalMs(), isSocrataHost(host) ? SOCRATA_MIN_INTERVAL_MS : 0, widenedGapMs.get(host) ?? 0);
+  return Math.max(minIntervalMs(), isSocrataHost(host) ? SOCRATA_MIN_INTERVAL_MS : 0, widenedGapMs.get(host) ?? 0, adapterFloorMs.get(host) ?? 0);
+}
+
+/**
+ * Widen the gap for one host for the rest of the run (an adapter's own politeness setting, such
+ * as the ArcGIS Server adapter's). It can only widen: values under the package floor are ignored.
+ */
+export function setHostFloorMs(host: string, ms: number): void {
+  if (Number.isFinite(ms) && ms > (adapterFloorMs.get(host) ?? 0)) adapterFloorMs.set(host, Math.min(ms, MAX_WAIT_MS));
 }
 
 /**
@@ -234,16 +247,21 @@ export async function politeFetch(url: string, opts: PoliteOptions = {}): Promis
         const c = (e as { cause?: { code?: string; message?: string } }).cause;
         throw new Error(`network error for ${url}: ${c?.code ?? ""} ${c?.message ?? (e as Error).message}`.trim());
       }
-      const body = res.status === 304 ? "" : await res.text();
+      let bytes: Buffer | undefined;
+      let body = "";
+      if (res.status !== 304) {
+        if (opts.binary && res.ok) bytes = Buffer.from(await res.arrayBuffer());
+        else body = await res.text();
+      }
       requestLog.push({ url, status: res.status, at: new Date().toISOString() });
-      return { res, body, elapsed: Date.now() - started };
+      return { res, body, bytes, elapsed: Date.now() - started };
     });
 
-  let { res, body, elapsed } = await doFetch();
+  let { res, body, bytes, elapsed } = await doFetch();
   for (let attempt = 1; RETRY_STATUSES.has(res.status) && attempt <= MAX_RETRIES; attempt++) {
     if (res.status === 429) widenedGapMs.set(u.host, Math.min(hostFloorMs(u.host) * 2, MAX_WIDENED_GAP_MS));
     await sleep(retryWaitMs(res.headers.get("retry-after"), attempt));
-    ({ res, body, elapsed } = await doFetch());
+    ({ res, body, bytes, elapsed } = await doFetch());
   }
   if (res.status === 429) throw new BlockedError(url, `HTTP 429 after ${MAX_RETRIES} retries (rate limited); stopped`);
   const hdrs: Record<string, string> = {};
@@ -261,14 +279,14 @@ export async function politeFetch(url: string, opts: PoliteOptions = {}): Promis
   if (res.status === 403 && /captcha|challenge|access denied|cloudflare|incapsula|akamai/i.test(body.slice(0, 4000))) {
     throw new BlockedError(url, "HTTP 403 bot challenge");
   }
-  if (opts.cache && res.status === 200 && (hdrs.etag || hdrs["last-modified"])) {
+  if (opts.cache && !opts.binary && res.status === 200 && (hdrs.etag || hdrs["last-modified"])) {
     mkdirSync(cp.dir, { recursive: true });
     writeFileSync(cp.body, body);
     writeFileSync(cp.meta, JSON.stringify({ url, etag: hdrs.etag, lastModified: hdrs["last-modified"] }));
   }
   return {
     url, finalUrl: res.url || url, status: res.status, ok: res.ok, fromCache: false, notModified: false,
-    headers: hdrs, body, elapsedMs: elapsed,
+    headers: hdrs, body, bytes, elapsedMs: elapsed,
   };
 }
 
@@ -291,5 +309,6 @@ export function resetHttpState(): void {
   robotsCache.clear();
   hostDelayMs.clear();
   widenedGapMs.clear();
+  adapterFloorMs.clear();
   requestLog.length = 0;
 }

@@ -128,6 +128,98 @@ Search by topic. See [#18](https://github.com/BetaNYC/ny-data-registry-mcp/issue
   them on a local index. New `topics` and `dataset_topics` tables; the schema version is
   unchanged, so older servers still read new indexes. Method: `docs/topics.md`.
 
+Standard metadata. See [#17](https://github.com/BetaNYC/ny-data-registry-mcp/issues/17) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- `get_dataset_columns` takes `standard: "croissant" | "dcat-us"` and returns that dataset as
+  Croissant 1.1 or DCAT-US 3.0, with its license kind and the required fields its portal does
+  not give (`missing`). Each published index carries `ny-data-dcat-us.json.gz` (one DCAT-US
+  Catalog) and `ny-data-croissant.jsonl.gz` (one Croissant document per line), about 3 MB
+  each on the 2026-11-05 index; `ny-data-registry standards [--out-dir dir]` builds them
+  locally. They are optional side files: a rollback treats them like `topic-crosswalk.csv`.
+  Licenses are never inferred: a known license name is a license; otherwise a terms-of-use
+  link is labeled "terms page, not a license" (from the dataset's own text or
+  `data/terms-pages.json`, checked by hand on 2026-11-14: 10 of 35 portals have a terms page,
+  25 have none or were blocked), and other portal text is kept as a rights statement. On the
+  2026-11-05 index: 791 licenses, 5,312 terms pages, 1,360 statements only, 2,106 nothing.
+  DCAT-US's required contact email is always left out (portals do not give one). Tests check
+  DCAT-US output against GSA's JSON Schema (vendored in `test/fixtures/dcat-us-3.0/`). Plan
+  and field mapping: `docs/standard-metadata-plan.md`.
+
+Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data-registry-mcp/issues/16)
+(epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- `ny-data-registry coverage [--json] [--out file] [--index path] [--refresh]`: for every
+  registry row, whether the harvest reads it, and if not, why, as a fixed code (`no-portal`,
+  `policy`, `adapter-off`, `no-adapter`, `no-api` and others). Offline: registry, harvest
+  config and index only; it never calls a portal.
+- `adapters` in `harvest-config.json`: one on/off switch per adapter. An adapter switched off
+  stops alone; its portals report `adapter-off` and keep their datasets.
+- `allow_no_portal` in `harvest-config.json` (D4): the City of Utica, Wyoming County and the
+  City of Mount Vernon are marked "no portal" but document a data endpoint, and are now read
+  (ArcGIS Online org, ArcGIS Online org, ArcGIS Enterprise). Each was checked to be New York,
+  not Utica, Minnesota or Wyoming County, Pennsylvania. A changed registry endpoint stops the
+  row until it is checked again.
+- Five more `allow_no_portal` rows, read by the `arcgis-server` adapter: Greene, Washington,
+  Cayuga, Essex and Chautauqua counties. Each is New York, not the same-named county in Ohio,
+  Wisconsin (and four other states), Ontario or Kansas. Each server answered one read of its
+  services directory root on 2026-11-14 and lists the service or folder the registry says holds
+  parcels; the entry records the URL, time, status and result (`checked_live`). St. Lawrence
+  County was left out: its server is the Development Authority of the North Country's, shared
+  with five other counties, so reading it would file their layers under St. Lawrence. The parcel
+  table does not change until a harvest reads the five servers.
+- ArcGIS Server REST directory adapter (`arcgis-server`, milestone 4): the State's GIS servers
+  (`nysgeohub`, `gisservices`, `orthos`, `elevation`), DOT, DEC's server, Broome and Ulster.
+  One dataset per map, feature or image service; layer fields for up to 5 layers each. Read
+  weekly per host (D5), at most 400 requests and 30 minutes per host, 2 s apart (or the
+  robots.txt Crawl-delay), `Utilities` and `System` folders skipped, robots.txt honored.
+  Settings in `arcgis_server` in `harvest-config.json`. Switched on.
+- GeoBlacklight adapter (`geoblacklight`, milestone 6): Cornell's CUGIR, read from its
+  OpenGeoMetadata repository as one GitHub archive per week, never from the GeoBlacklight site.
+  GeoBlacklight 1.0 and Aardvark records; public, unsuppressed, not withdrawn, Cornell's own,
+  not wholly outside New York. Switched on. The harvest step now gets the run's `GITHUB_TOKEN`
+  for this one read.
+- InvenioRDM adapter (`invenio-rdm`, milestone 6): NYU UltraViolet's Spatial Data Repository
+  community, weekly, oldest first. Keeps public records whose location touches New York, or
+  that name New York when they have no location. **Switched off** until a supervised run
+  checks that filter: locations are optional in InvenioRDM and the repository is worldwide.
+- `docs/ckan-comparison.md` (milestone 7, D7): data.gov's copies of the State and NYC
+  catalogs against the index, from counts already on record; no CKAN site called, no adapter.
+- `politeFetch` can read a binary body (`binary: true`), never cached.
+- Hand-kept list (`data/hand-kept.json`, milestone 5, D6): for rows with no data link, what the
+  place does offer (pages, viewers, search pages, request forms). The `hand-kept` adapter adds
+  each link to the index as type `hand-kept <kind>`, with no endpoint or columns, and makes no
+  network call. Seeded with 82 parcel links the State's parcel page lists for 30 counties.
+  Switched on.
+- Each hand-kept link was checked once on 2026-11-14 (`link_check`: date, final URL, HTTP status,
+  result): 48 ok, 3 redirected, 2 broken, 29 blocked (bot challenges, mostly Beacon's; logins;
+  robots.txt; and one TLS error on our side). HEAD first, GET only if HEAD was refused; 2 s
+  apart per host; robots.txt honored; no login or CAPTCHA bypassed. A broken link stays in the
+  file but is left out of the index; other results are noted in the entry's description.
+- The publish gate needs nothing new for the first run with the new adapters: its drop checks
+  compare only what the published index had, so growth passes. The question set must still
+  pass.
+- `ny-data-registry parcels`: a tax parcel table for all 62 counties. 38 share their parcels
+  with the State's public layer; 23 have their own parcel layer in the index and 11 more in
+  the registry only; 18 have neither (2026-11-14). The State's list comes from one read of the
+  State's service description on 2026-11-14 (D3), kept in `docs/parcels/` and recorded in
+  `data/parcel-sources.json` with the State page's per-county links and the hand-reviewed
+  registry layers. The table: `docs/parcels/2026-11-14-parcel-coverage.md`.
+
+### Changed
+
+- The bundled registry is the 2026-11-13 copy (224 rows, was 140). `platform-families.json`
+  maps its 156 platform strings; 3 strings no longer in the registry are gone. Newly mapped:
+  two ArcGIS Hub sites on custom domains (NYC's `nycmaps.nyc.gov`, DEC's Bond Act site), two
+  self-hosted ArcGIS Enterprise portals (DOT, Watertown), and research repositories
+  (`custom-api`, described only). Source ids follow the registry rows, so two changed:
+  `nys-department-of-environmental-conservation--services6-arcgis-com` and
+  `columbia-university-libraries--geodata-library-columbia-edu`.
+
 ## [0.3.0] — 2026-11-13
 
 `search_datasets` gives the whole answer in one call. Its reply has a new shape, which is
