@@ -9,6 +9,7 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { runHarvest } from "./harvest/run.js";
 import { refreshRegistry } from "./registry.js";
+import { refreshGovBodies } from "./govbodies.js";
 import { indexInfo } from "./datasets.js";
 import { runEval } from "./eval.js";
 import { downloadIndex, indexUrl } from "./fetchindex.js";
@@ -20,6 +21,7 @@ function arg(name: string): string | undefined {
 
 const cmd = process.argv[2];
 if (cmd !== "download") await refreshRegistry();
+if (cmd === "eval") await refreshGovBodies();
 if (cmd === "download") {
   const force = process.argv.includes("--force");
   console.error(`downloading ${indexUrl()} ...`);

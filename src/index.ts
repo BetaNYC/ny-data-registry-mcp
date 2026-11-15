@@ -4,6 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { TOOLS, callTool } from "./tools.js";
 import { refreshRegistry } from "./registry.js";
+import { refreshGovBodies } from "./govbodies.js";
 import { VERSION } from "./paths.js";
 import { ensureIndex } from "./fetchindex.js";
 
@@ -11,8 +12,9 @@ const server = new Server({ name: "ny-data-registry-mcp", version: VERSION }, { 
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
-// The first call waits (max 5 s) for the conditional registry refresh; it falls back to the bundled copy.
-const ready = refreshRegistry().catch(() => undefined);
+// The first call waits (max 5 s) for the conditional refreshes of the registry and the master
+// list of government bodies, run side by side; each falls back to its cache, then its bundled copy.
+const ready = Promise.all([refreshRegistry().catch(() => undefined), refreshGovBodies().catch(() => undefined)]);
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   await ready;

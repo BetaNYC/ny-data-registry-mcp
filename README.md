@@ -53,6 +53,12 @@ All tool inputs are strict: an unknown parameter is rejected by name, never sile
 - To start from a government: `how_to_query` and `check_source` accept `registry_id` (when several sources share it, the reply lists them), and `portal` in `search_datasets` and `whats_new` accepts it to mean every data site of that government. `registry_info` counts the rows that carry one.
 - Dataset rows read the id from the registry when they answer, not from the index, so ids added to the registry show up without a new harvest.
 
+**`runs_it`: who runs this data site.** Source rows from `find_sources`, `list_sources_for_place`, `how_to_query` and `check_source` also carry `runs_it`: the government body that runs the site, looked up by `registry_id` in the master list of government bodies ([BetaNYC/ny-gov-web-registry](https://github.com/BetaNYC/ny-gov-web-registry) `data/registry.json`). It gives the body's `name`, `government_level` (state, city, county, authority…), `classification` and `website` (its current primary domain, as the list writes it, such as `mta.info`). `short_name` appears when the list has one, and `status` when the body is not active.
+
+- No `registry_id` means `runs_it: null`. Nothing is guessed from names.
+- An id the master list does not have yet gives `runs_it: { "found": false, "note": … }`.
+- Each reply has one `runs_it_source` block: which list, which copy (`fresh`, `cache` or `bundled`) and how current it is. `registry_info` adds a `master_list` block that lists the row ids the loaded list lacks.
+
 **The CSV files.** One row per matching dataset, best-ranked first: id, name, portal, portal id, `registry_id`, type, update date, link, formats, API endpoint, Socrata domain and 4x4, platform, counties, geometry type and column count. Standard CSV (RFC 4180), UTF-8, values as the portal published them, with one safety exception: a text value that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so a spreadsheet shows it as text instead of running it as a formula. Numbers are never changed. They go in `${HOME}/.cache/betanyc/ny-data-registry/exports/` (change with `NY_DATA_EXPORT_DIR`). The newest 50 are kept, none older than 7 days; nothing else in that folder is touched. `export: "never"` turns the file off and `export: "always"` writes one even for a short answer. `offset` still pages by hand for clients that need it, but nothing depends on it.
 
 ---
@@ -155,7 +161,7 @@ The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`,
 | `NY_DATA_INDEX_AUTO_DOWNLOAD` | on | `0` = never download the index on first run |
 | `NY_DATA_INDEX_URL` | the `index-latest` release | Download the index from somewhere else (it must have a `SHA256SUMS` beside it) |
 | `NY_DATA_CACHE_DIR` | `${HOME}/.cache/betanyc/ny-data-registry` | Registry refresh cache and HTTP cache |
-| `NY_DATA_REGISTRY_REFRESH` | on | `0` = never fetch the published registry; use the bundled copy |
+| `NY_DATA_REGISTRY_REFRESH` | on | `0` = never fetch the published registry or the master list of government bodies; use the bundled copies |
 | `NY_DATA_OFFLINE` | off | `1` = refuse every network call, including the first-run download (tests use this) |
 | `NY_DATA_MAX_LAYERS` | 250 | Per-portal cap on ArcGIS field requests per harvest |
 | `NY_DATA_MIN_INTERVAL_MS` | 1000 | Minimum gap between requests to one host (cannot be set below 1000) |
@@ -166,6 +172,7 @@ The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`,
 ## Data sources
 
 - **The registry.** `BetaNYC/grounding-ai-with-ny-open-data` `resources/ny-data-portal-registry.json` (140 rows). A copy is bundled in `data/`. On startup the server makes a conditional request (ETag) for the published copy on GitHub Pages, caches it under `${HOME}/.cache/betanyc/`, and falls back to the bundled copy on any failure. This server never edits the registry.
+- **The master list of government bodies.** `BetaNYC/ny-gov-web-registry` `data/registry.json`, read from `raw.githubusercontent.com` on the `main` branch. It answers `runs_it`. The server fetches it the same way as the registry (a conditional request with the ETag, side by side with the registry refresh), keeps only the few fields a reply uses in `${HOME}/.cache/betanyc/ny-data-registry/gov-bodies.json`, and falls back to that cache, then to `data/gov-bodies.json`. The bundled copy holds only the bodies the bundled registry's rows point to (19 today, of 567 on the list), not the whole list. Rebuild it with `npm run build && node scripts/bundle_gov_bodies.mjs` (`--from <file>` to use a local copy). This server never edits the master list.
 - **Human-editable tables** in `data/`:
   - `platform-families.json`: maps each of the registry's **101** free-text `platform` strings to one family (`socrata`, `arcgis-hub`, `arcgis-enterprise`, `arcgis-server`, `ckan`, `geoblacklight`, `custom-api`, `none`). A string not in the table is reported as *unmapped*, never guessed; 7 strings are deliberately `null` because the registry marks them UNCONFIRMED.
   - `ny-places.json`: 62 counties, 62 cities, 5 boroughs, 8 regions.
