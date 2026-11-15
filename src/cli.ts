@@ -18,6 +18,7 @@ import { runHarvest } from "./harvest/run.js";
 import { loadLocal, refreshRegistry, setRegistry } from "./registry.js";
 import { buildCoverage, coverageMarkdown } from "./coverage.js";
 import { buildParcelTable, parcelMarkdown, type ParcelSources } from "./parcels.js";
+import { refreshGovBodies } from "./govbodies.js";
 import { indexInfo } from "./datasets.js";
 import { runEval } from "./eval.js";
 import { downloadIndex, indexUrl } from "./fetchindex.js";
@@ -36,6 +37,7 @@ function arg(name: string): string | undefined {
 const cmd = process.argv[2];
 const OFFLINE_CMDS = new Set(["download", "update", "topics", "coverage", "parcels", "standards"]);
 if (!OFFLINE_CMDS.has(cmd)) await refreshRegistry();
+if (cmd === "eval") await refreshGovBodies();
 if (cmd === "update") {
   const extra = process.argv.slice(3).filter((a) => a !== "--check");
   if (extra.length) {

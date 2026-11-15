@@ -4,6 +4,7 @@
 import { readDataJson } from "./paths.js";
 import { registry, type Source } from "./registry.js";
 import { resolvePlace, NYC_COUNTIES, type ResolvedPlace } from "./places.js";
+import { govBodies, runsIt, runsItSource, GOV_REGISTRY_REPO, GOV_REGISTRY_FILE, GOV_REGISTRY_URL } from "./govbodies.js";
 
 // ─── text helpers ────────────────────────────────────────────────────────────
 
@@ -51,6 +52,8 @@ export function expandTerms(tokens: string[]): { term: string; weight: number }[
 export function sourceSummary(s: Source) {
   return {
     source_id: s.source_id,
+    registry_id: s.registry_id,
+    runs_it: runsIt(s.registry_id),
     entity: s.entity,
     portal_name: s.portal_name,
     url: s.url,
@@ -178,6 +181,7 @@ export function findSources(args: FindArgs) {
     registry_generated: reg.generated,
     total_matches: scored.length,
     results: scored.slice(0, limit).map((x) => ({ ...sourceSummary(x.s), match: x.pm ?? "keyword", score: Math.round(x.score * 100) / 100 })),
+    runs_it_source: runsItSource(),
     note:
       scored.length === 0
         ? "No registry row matched. This searches portal names and notes, not dataset titles; try search_datasets (needs the harvested index) or list_sources_for_place."
@@ -243,6 +247,7 @@ export function listSourcesForPlace(placeInput: string, includeStatewide = true)
     statewide: includeStatewide
       ? statewide.filter((s) => s.status === "live").map(sourceSummary)
       : `${statewide.filter((s) => s.status === "live").length} live statewide sources also cover this place (include_statewide=true to list them)`,
+    runs_it_source: runsItSource(),
     registry_generated: reg.generated,
   };
 }
@@ -267,10 +272,12 @@ export function lookupSource(ref: { source_id?: string; registry_id?: string; en
     return s ? { source: s } : { error: `no source with source_id '${ref.source_id}'` };
   }
   if (ref.registry_id) {
-    const m = reg.filter((x) => x.registry_id === ref.registry_id);
+    const rid = ref.registry_id.trim();
+    const m = reg.filter((x) => x.registry_id === rid);
     if (m.length === 1) return { source: m[0] };
     if (m.length > 1) return { candidates: m };
-    return { error: `no row with registry_id '${ref.registry_id}' (only 22 of 140 rows carry one; try entity)` };
+    const n = reg.filter((x) => x.registry_id).length;
+    return { error: `no row with registry_id '${rid}' (${n} of ${reg.length} rows carry one; try entity)` };
   }
   if (ref.url) {
     const host = safeHost(ref.url);
@@ -320,7 +327,7 @@ export function howToQuery(ref: { source_id?: string; registry_id?: string; enti
   const found = lookupSource(ref);
   if (found.error) return { error: found.error };
   if (found.candidates) {
-    return { ambiguous: true, message: "Several rows match; call again with a source_id.", candidates: found.candidates.map(sourceSummary) };
+    return { ambiguous: true, message: "Several rows match; call again with a source_id.", candidates: found.candidates.map(sourceSummary), runs_it_source: runsItSource() };
   }
   const s = found.source!;
   handoffs ??= readDataJson<{ servers: Handoff[] }>("handoffs.json").servers;
@@ -357,6 +364,7 @@ export function howToQuery(ref: { source_id?: string; registry_id?: string; enti
   }
   return {
     source: sourceSummary(s),
+    runs_it_source: runsItSource(),
     platform_family_note: s.platform_family_note,
     endpoint,
     api_type: s.api_type,
@@ -392,9 +400,29 @@ export function registryInfo(index: Record<string, unknown> | null) {
     by_status: count((s) => s.status),
     by_tier: count((s) => s.tier),
     by_platform_family: count((s) => s.platform_family ?? `(${s.platform_family_status})`),
+    with_registry_id: reg.sources.filter((s) => s.registry_id).length,
+    master_list: masterListInfo(reg.sources),
     unmapped_platform_strings: reg.sources.filter((s) => s.platform_family_status === "unmapped").map((s) => s.platform),
     unconfirmed_platform_strings: [...new Set(reg.sources.filter((s) => s.platform_family_status === "unconfirmed").map((s) => s.platform))],
     source: "BetaNYC/grounding-ai-with-ny-open-data resources/ny-data-portal-registry.json",
     index,
+  };
+}
+
+/** registry_info's view of the master list: which copy is loaded, and which row ids it lacks. */
+function masterListInfo(sources: Source[]) {
+  const g = govBodies();
+  const ids = [...new Set(sources.map((s) => s.registry_id).filter((x): x is string => !!x))];
+  const missing = ids.filter((id) => !g.byId.has(id)).sort();
+  return {
+    list: `${GOV_REGISTRY_REPO} ${GOV_REGISTRY_FILE}`,
+    url: GOV_REGISTRY_URL,
+    copy: g.origin,
+    fetched_at: g.fetched_at,
+    snapshot_date: g.snapshot_date,
+    refresh_error: g.refresh_error,
+    bodies: g.byId.size,
+    row_ids_found: ids.length - missing.length,
+    row_ids_not_in_list: missing,
   };
 }

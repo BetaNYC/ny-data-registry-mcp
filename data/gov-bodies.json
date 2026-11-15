@@ -1,0 +1,179 @@
+{
+  "source": "https://raw.githubusercontent.com/BetaNYC/ny-gov-web-registry/main/data/registry.json",
+  "snapshot_date": "2026-11-14",
+  "source_commit": "ee250e2a684fb4cf080fc98a57a0addca66338fa",
+  "note": "Bundled fallback: only the bodies the bundled registry's rows point to. Rebuild with scripts/bundle_gov_bodies.mjs.",
+  "bodies": [
+    {
+      "id": "board-of-elections",
+      "name": "Board of Elections",
+      "short_name": "BOE",
+      "government_level": "nyc",
+      "classification": "Advisory or Regulatory Organization",
+      "primary_domain": "vote.nyc",
+      "status": "active"
+    },
+    {
+      "id": "campaign-finance-board",
+      "name": "Campaign Finance Board",
+      "short_name": "CFB",
+      "government_level": "nyc",
+      "classification": "Advisory or Regulatory Organization",
+      "primary_domain": "www.nyccfb.info",
+      "status": "active"
+    },
+    {
+      "id": "department-of-buildings",
+      "name": "Department of Buildings",
+      "short_name": "DOB",
+      "government_level": "nyc",
+      "classification": "Mayoral Agency",
+      "primary_domain": "www.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "department-of-city-planning",
+      "name": "Department of City Planning",
+      "short_name": "DCP",
+      "government_level": "nyc",
+      "classification": "Mayoral Agency",
+      "primary_domain": "www.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "department-of-citywide-administrative-services",
+      "name": "Department of Citywide Administrative Services",
+      "short_name": "DCAS",
+      "government_level": "nyc",
+      "classification": "Mayoral Agency",
+      "primary_domain": "www.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "department-of-finance",
+      "name": "Department of Finance",
+      "short_name": "DOF",
+      "government_level": "nyc",
+      "classification": "Mayoral Agency",
+      "primary_domain": "www.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "department-of-health-and-mental-hygiene",
+      "name": "Department of Health and Mental Hygiene",
+      "short_name": "DOHMH",
+      "government_level": "nyc",
+      "classification": "Mayoral Agency",
+      "primary_domain": "www.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "independent-budget-office",
+      "name": "Independent Budget Office",
+      "short_name": "IBO",
+      "government_level": "nyc",
+      "classification": "Advisory or Regulatory Organization",
+      "primary_domain": "www.ibo.nyc.ny.us",
+      "status": "active"
+    },
+    {
+      "id": "mta",
+      "name": "Metropolitan Transportation Authority",
+      "short_name": "MTA",
+      "government_level": "authority",
+      "classification": "public-benefit-corporation",
+      "primary_domain": "mta.info",
+      "status": "active"
+    },
+    {
+      "id": "new-york-city-council",
+      "name": "New York City Council",
+      "short_name": "NYCC",
+      "government_level": "nyc",
+      "classification": "Elected Office",
+      "primary_domain": "council.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-city-department-of-transportation",
+      "name": "New York City Department of Transportation",
+      "short_name": "NYC DOT",
+      "government_level": "nyc",
+      "classification": "Mayoral Agency",
+      "primary_domain": "www.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-city-police-department",
+      "name": "New York City Police Department",
+      "short_name": "NYPD",
+      "government_level": "nyc",
+      "classification": "Mayoral Agency",
+      "primary_domain": "www.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "nyc-doe",
+      "name": "New York City Department of Education",
+      "short_name": "DOE",
+      "government_level": "nyc",
+      "classification": "mayoral-agency",
+      "primary_domain": "schools.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "nyc311",
+      "name": "NYC311",
+      "short_name": "311",
+      "government_level": "nyc",
+      "classification": "Division",
+      "primary_domain": "portal.311.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "nyct",
+      "name": "New York City Transit Authority",
+      "short_name": "NYCT",
+      "government_level": "authority",
+      "classification": "mta-subsidiary",
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "nyserda",
+      "name": "New York State Energy Research and Development Authority",
+      "short_name": "NYSERDA",
+      "government_level": "authority",
+      "classification": "public-benefit-corporation",
+      "primary_domain": "nyserda.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "office-of-the-new-york-city-comptroller",
+      "name": "Office of the New York City Comptroller",
+      "short_name": null,
+      "government_level": "nyc",
+      "classification": "Elected Office",
+      "primary_domain": "comptroller.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "oti",
+      "name": "Office of Technology and Innovation",
+      "short_name": "OTI",
+      "government_level": "nyc",
+      "classification": "mayoral-agency",
+      "primary_domain": "nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "panynj",
+      "name": "Port Authority of New York and New Jersey",
+      "short_name": "PANYNJ",
+      "government_level": "bi-state",
+      "classification": "bi-state-authority",
+      "primary_domain": "panynj.gov",
+      "status": "active"
+    }
+  ]
+}
