@@ -68,8 +68,9 @@ export function slug(s: string): string {
 }
 
 /**
- * Stable id per row, derived (the registry has no row id; only 22 rows carry a
- * registry_id). entity slug, plus the portal's host when an entity has several rows.
+ * Stable id per row, derived (the registry has no row id, and registry_id names the
+ * government body, which several rows can share). entity slug, plus the portal's host when
+ * an entity has several rows.
  */
 export function assignSourceIds(rows: RegistryRow[]): string[] {
   const byEntity = new Map<string, number>();
@@ -110,6 +111,7 @@ export function buildSources(doc: RegistryDoc): Source[] {
       : REGISTRY_PAGE;
     return {
       ...row,
+      registry_id: cleanRegistryId(row.registry_id),
       source_id: ids[i],
       platform_family: fam.family,
       platform_family_status: fam.status,
@@ -119,6 +121,48 @@ export function buildSources(doc: RegistryDoc): Source[] {
       derived: ["source_id", "platform_family", "place", "page_url"],
     };
   });
+}
+
+/**
+ * registry_id is the id of the government body in BetaNYC/ny-gov-web-registry
+ * (data/registry.json). Copied from the row as is; an empty string or the registry's "—"
+ * placeholder becomes null. Never derived or guessed.
+ */
+export function cleanRegistryId(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t && t !== "—" ? t : null;
+}
+
+const ridBySource = new WeakMap<Source[], Map<string, string | null>>();
+const sourcesByRid = new WeakMap<Source[], Map<string, string[]>>();
+
+function ridMaps(): { bySource: Map<string, string | null>; byRid: Map<string, string[]> } {
+  const sources = registry().sources;
+  let bySource = ridBySource.get(sources);
+  let byRid = sourcesByRid.get(sources);
+  if (!bySource || !byRid) {
+    bySource = new Map(sources.map((s) => [s.source_id, s.registry_id]));
+    byRid = new Map();
+    for (const s of sources) if (s.registry_id) byRid.set(s.registry_id, [...(byRid.get(s.registry_id) ?? []), s.source_id]);
+    ridBySource.set(sources, bySource);
+    sourcesByRid.set(sources, byRid);
+  }
+  return { bySource, byRid };
+}
+
+/**
+ * The registry_id of a source (an index portal_id is a source_id), read from the registry
+ * loaded now, not the index, so ids added upstream show without a new harvest. Null when
+ * the row has none or the source is no longer in the registry.
+ */
+export function registryIdFor(sourceId: string): string | null {
+  return ridMaps().bySource.get(sourceId) ?? null;
+}
+
+/** The source_ids of every row whose registry_id is exactly this value (several rows can share one). */
+export function sourceIdsForRegistryId(registryId: string): string[] {
+  return ridMaps().byRid.get(registryId.trim()) ?? [];
 }
 
 function validDoc(x: any): x is RegistryDoc {

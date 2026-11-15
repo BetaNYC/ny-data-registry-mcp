@@ -51,6 +51,7 @@ export function expandTerms(tokens: string[]): { term: string; weight: number }[
 export function sourceSummary(s: Source) {
   return {
     source_id: s.source_id,
+    registry_id: s.registry_id,
     entity: s.entity,
     portal_name: s.portal_name,
     url: s.url,
@@ -267,10 +268,12 @@ export function lookupSource(ref: { source_id?: string; registry_id?: string; en
     return s ? { source: s } : { error: `no source with source_id '${ref.source_id}'` };
   }
   if (ref.registry_id) {
-    const m = reg.filter((x) => x.registry_id === ref.registry_id);
+    const rid = ref.registry_id.trim();
+    const m = reg.filter((x) => x.registry_id === rid);
     if (m.length === 1) return { source: m[0] };
     if (m.length > 1) return { candidates: m };
-    return { error: `no row with registry_id '${ref.registry_id}' (only 22 of 140 rows carry one; try entity)` };
+    const n = reg.filter((x) => x.registry_id).length;
+    return { error: `no row with registry_id '${rid}' (${n} of ${reg.length} rows carry one; try entity)` };
   }
   if (ref.url) {
     const host = safeHost(ref.url);
@@ -392,6 +395,7 @@ export function registryInfo(index: Record<string, unknown> | null) {
     by_status: count((s) => s.status),
     by_tier: count((s) => s.tier),
     by_platform_family: count((s) => s.platform_family ?? `(${s.platform_family_status})`),
+    with_registry_id: reg.sources.filter((s) => s.registry_id).length,
     unmapped_platform_strings: reg.sources.filter((s) => s.platform_family_status === "unmapped").map((s) => s.platform),
     unconfirmed_platform_strings: [...new Set(reg.sources.filter((s) => s.platform_family_status === "unconfirmed").map((s) => s.platform))],
     source: "BetaNYC/grounding-ai-with-ny-open-data resources/ny-data-portal-registry.json",
