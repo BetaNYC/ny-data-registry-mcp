@@ -111,6 +111,23 @@ demand. See [#15](https://github.com/BetaNYC/ny-data-registry-mcp/issues/15) (ep
   sqlite sum in `SHA256SUMS` decides whether the installed index is current. An automatic
   check then leaves alone a file it did not install itself.
 
+Search by topic. See [#18](https://github.com/BetaNYC/ny-data-registry-mcp/issues/18) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- 24 shared topics, built from the categories, tags and departments New York's portals already
+  use. Each dataset gets its topics from its own labels; a dataset can have several.
+  `search_datasets` takes `topic` (with a query, or alone: then `query` is optional, and the
+  topic is listed most-viewed first), and its rows carry their topic ids. New `list_topics` tool:
+  the 24 topics with dataset and portal counts, and the share of datasets with a topic (8,910 of
+  9,569, 93.1%, on the 2026-11-05 index). The rules are data: `data/topics.json` and
+  `data/topic-hand-assigned.json` (broad and ambiguous words, each with a reason). The harvest
+  rebuilds every dataset's topics at the end of each run, and each published index carries
+  `topic-crosswalk.csv` (every portal label and its topics). `ny-data-registry topics` rebuilds
+  them on a local index. New `topics` and `dataset_topics` tables; the schema version is
+  unchanged, so older servers still read new indexes. Method: `docs/topics.md`.
+
 ## [0.3.0] — 2026-11-13
 
 `search_datasets` gives the whole answer in one call. Its reply has a new shape, which is

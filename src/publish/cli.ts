@@ -24,9 +24,9 @@ import { readDataJson } from "../paths.js";
 import { SCHEMA_VERSION } from "../db.js";
 import { indexSummary, type IndexSummary } from "./summary.js";
 import { evaluateGate, gateMarkdown, type EvalResult, type GateResult, type GateThresholds } from "./gate.js";
-import { preparePublish, publishedManifest, MANIFEST_NAME, type Manifest } from "./prepare.js";
+import { preparePublish, publishedManifest, MANIFEST_NAME, OPTIONAL_SIDE_FILES, REQUIRED_SIDE_FILES, type Manifest } from "./prepare.js";
 import {
-  findSnapshotTag, rollbackCommands, rollbackProblems, rollbackRecord, rollbackSummaryMarkdown, rolledBackManifest, verifySnapshotFiles,
+  findSnapshotTag, rollbackCommands, rollbackProblems, rollbackSideFiles, rollbackRecord, rollbackSummaryMarkdown, rolledBackManifest, verifySnapshotFiles,
 } from "./rollback.js";
 import {
   LATEST_TAG, parseSnapshotTag, newYorkDate, nextSnapshotTag, pickTagTarget, planRetention, publishCommands, retentionCommands, type GhCommand, type ReleaseInfo,
@@ -34,7 +34,7 @@ import {
 import { FAILURE_LABEL, FAILURE_TITLE, failureIssueBody, runSummaryMarkdown, type HarvestStats } from "./report.js";
 
 /** Files beside the index in every snapshot and in index-latest. */
-export const SIDE_FILES = ["harvest-stats.json", "eval.md", "gate.json"];
+export const SIDE_FILES = [...REQUIRED_SIDE_FILES, ...OPTIONAL_SIDE_FILES];
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -200,14 +200,17 @@ if (cmd === "summary") {
   if (exists) download(to, targetDir);
   const target = readJson<Manifest>(join(targetDir, MANIFEST_NAME));
   const current = download(LATEST_TAG, join(tmp, "latest"), MANIFEST_NAME) ? readJson<Manifest>(join(tmp, "latest", MANIFEST_NAME)) : null;
+  const targetFiles = existsSync(targetDir) ? readdirSync(targetDir) : [];
+  const latestFiles = (JSON.parse(gh(["release", "view", LATEST_TAG, "--json", "assets"], { capture: true }) || "{}").assets ?? []).map((x: { name: string }) => x.name) as string[];
+  const side = rollbackSideFiles({ required: REQUIRED_SIDE_FILES, optional: OPTIONAL_SIDE_FILES, targetFiles, latestFiles });
   const problems = rollbackProblems({
     to,
     reason,
     releases,
     current,
     target,
-    targetFiles: existsSync(targetDir) ? readdirSync(targetDir) : [],
-    sideFiles: SIDE_FILES,
+    targetFiles,
+    sideFiles: side.check,
     schemaVersion: SCHEMA_VERSION,
   });
   if (!problems.length && target) problems.push(...(await verifySnapshotFiles(targetDir, target)));
@@ -234,7 +237,7 @@ if (cmd === "summary") {
       const r = releases.find((x) => x.tagName === tag);
       if (r) r.body = JSON.parse(gh(["release", "view", r.tagName, "--json", "body"], { capture: true })).body ?? "";
     }
-    runAll(rollbackCommands({ dir: targetDir, sideFiles: SIDE_FILES, manifest, rec, releases }));
+    runAll(rollbackCommands({ dir: targetDir, sideFiles: side.upload, manifest, rec, releases, removeFromLatest: side.removeFromLatest }));
     summaryOut(rollbackSummaryMarkdown({ rec, problems: [], dryRun }));
   }
 } else if (cmd === "failure-issue") {

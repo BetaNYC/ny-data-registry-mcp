@@ -75,6 +75,9 @@ export async function buildFixtureIndex(path, { lastHarvest = "2026-11-05T00:00:
   writePortalDatasets(db, nyc, [mk("test-0001", "SYNTHETIC 311 test rows", ["unique_key", "bbl", "borough", "incident_zip", "community_board"]), mk("test-0002", "SYNTHETIC pluto test rows", ["bbl", "borocode", "cd", "zipcode", "name"])], run, true);
   setPortalHarvest(db, nyc.id, { adapter: "socrata", status: "ok", note: null, socrata_domain: "data.cityofnewyork.us" });
 
+  // As the harvest does at the end of every run (issue #18).
+  const { buildTopics } = await import("../dist/topics.js");
+  buildTopics(db);
   db.prepare("INSERT OR REPLACE INTO meta(key, value) VALUES ('last_harvest', ?)").run(lastHarvest);
   db.close();
   return path;

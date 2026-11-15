@@ -10,7 +10,9 @@
  *   by, from_last_harvest, from_sqlite_sha256}`. Servers that see it replace an index newer than
  *   the target with the target (src/refresh.ts).
  * - The bad snapshot is relabeled "(rolled back)" and the target "(current)", each with a line
- *   at the top of its notes. Nothing is deleted.
+ *   at the top of its notes. No release is deleted. A side file added after the target was made
+ *   (topic-crosswalk.csv) is removed from `index-latest`, last, so it never describes another
+ *   index than the one beside it.
  * - The next normal publish uploads a fresh `index.json` without `rolled_back`, which clears it.
  */
 import { createHash } from "node:crypto";
@@ -134,11 +136,30 @@ export function currentAgainNote(rec: RollbackRecord): string {
 }
 
 /**
+ * Which side files a rollback needs, copies and removes. Required files must be in the target.
+ * Optional ones are copied when the target has them; when it does not, they are removed from
+ * `index-latest` (if there), since they describe the newer index.
+ */
+export function rollbackSideFiles(o: { required: string[]; optional: string[]; targetFiles: string[]; latestFiles: string[] }): {
+  check: string[];
+  upload: string[];
+  removeFromLatest: string[];
+} {
+  const has = (f: string) => o.targetFiles.includes(f);
+  return {
+    check: [...o.required],
+    upload: [...o.required, ...o.optional.filter(has)],
+    removeFromLatest: o.optional.filter((f) => !has(f) && o.latestFiles.includes(f)),
+  };
+}
+
+/**
  * Every gh call for one rollback, in order: the target's files over `index-latest` (.gz,
- * SHA256SUMS, side files, index.json last), `index-latest`'s notes, then the two snapshot labels.
+ * SHA256SUMS, side files, index.json last), `index-latest`'s notes, the two snapshot labels, then
+ * the removal of side files the target lacks (last, so a failure there leaves a whole rollback).
  * Same order as a publish, for the same reason (src/publish/releases.ts publishCommands).
  */
-export function rollbackCommands(o: { dir: string; sideFiles: string[]; manifest: Manifest; rec: RollbackRecord; releases: ReleaseInfo[] }): GhCommand[] {
+export function rollbackCommands(o: { dir: string; sideFiles: string[]; manifest: Manifest; rec: RollbackRecord; releases: ReleaseInfo[]; removeFromLatest?: string[] }): GhCommand[] {
   const f = (n: string) => join(o.dir, n);
   const body = (tag: string | null) => o.releases.find((r) => r.tagName === tag)?.body ?? "";
   const cmds: GhCommand[] = [
@@ -152,6 +173,7 @@ export function rollbackCommands(o: { dir: string; sideFiles: string[]; manifest
     cmds.push({ args: ["release", "edit", o.rec.from, "--title", snapshotTitle(o.rec.from, "rolled back"), "--latest=false"], notes: rolledBackNote(o.rec) + body(o.rec.from) });
   }
   cmds.push({ args: ["release", "edit", o.rec.to, "--title", snapshotTitle(o.rec.to, "current"), "--latest=false"], notes: currentAgainNote(o.rec) + body(o.rec.to) });
+  for (const name of o.removeFromLatest ?? []) cmds.push({ args: ["release", "delete-asset", LATEST_TAG, name, "--yes"] });
   return cmds;
 }
 

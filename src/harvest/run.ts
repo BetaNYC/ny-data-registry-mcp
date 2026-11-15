@@ -7,6 +7,7 @@ import { registry, type Source } from "../registry.js";
 import { socrataDomain } from "../sources.js";
 import { refuseReason } from "../check.js";
 import { harvestSocrata } from "./socrata.js";
+import { buildTopics } from "../topics.js";
 import {
   dcatByItem, fetchServiceColumns, filterItems, itemsFromDcat, listHubItems, mapArcgisItem, mergeDcat, mostCommonOrg,
   portalSelf, searchPortal, type ArcgisItem, type FilterResult,
@@ -432,6 +433,10 @@ export async function runHarvest(opts: RunOpts = {}) {
     })
   );
 
+  // Topics come from each dataset's own labels, rebuilt for every live dataset (also the
+  // portals not read tonight), so a change to the topic rules reaches the whole index.
+  const topics = buildTopics(db);
+  log(`✓ topics: ${topics.datasets_with_topic} of ${topics.datasets} datasets (${topics.coverage_percent}%) have at least one`);
   const finished = new Date();
   const totals = db.prepare(
     "SELECT (SELECT COUNT(*) FROM datasets WHERE removed_at IS NULL) AS datasets, (SELECT COUNT(*) FROM dataset_columns) AS columns, (SELECT COUNT(*) FROM dataset_columns WHERE key_label IS NOT NULL) AS key_columns"
@@ -458,6 +463,7 @@ export async function runHarvest(opts: RunOpts = {}) {
     datasets_in_index: totals.datasets,
     columns_in_index: totals.columns,
     key_columns_in_index: totals.key_columns,
+    topics: { rules_version: topics.rules_version, datasets_with_topic: topics.datasets_with_topic, coverage_percent: topics.coverage_percent, by_topic: topics.by_topic },
     http_requests: requestLog.length,
     crawl_delays_honored_ms: crawlDelays(),
     index_path: indexPath(),
