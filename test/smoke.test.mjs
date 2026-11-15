@@ -18,6 +18,8 @@ const CALLS = [
   ["check_source", { source_id: "nys-department-of-health" }],
   ["registry_info", {}],
   ["search_datasets", { query: "zoning" }],
+  ["search_datasets", { topic: "health" }],
+  ["list_topics", {}],
   ["get_dataset_columns", { dataset: "dea35a11cfbf4adeb083df6d63cf1f88" }],
   ["find_joinable", { dataset: "test-0001" }],
   ["whats_new", { since: "2000-01-01" }],
@@ -28,7 +30,7 @@ const SHARED_CALLS = [
   ["about_betanyc", {}],
 ];
 
-test("stdio server starts, lists 11 tools, and answers every one", async () => {
+test("stdio server starts, lists 12 tools, and answers every one", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: [server],
@@ -38,7 +40,7 @@ test("stdio server starts, lists 11 tools, and answers every one", async () => {
   await client.connect(transport);
   try {
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 11);
+    assert.equal(tools.length, 12);
     for (const [name, args] of CALLS) {
       const r = await client.callTool({ name, arguments: args });
       assert.notEqual(r.isError, true, `${name}: ${r.content?.[0]?.text}`);

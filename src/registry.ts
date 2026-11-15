@@ -231,6 +231,30 @@ export async function refreshRegistry(timeoutMs = 5000): Promise<LoadedRegistry>
   }
 }
 
+/**
+ * The newest registry on this machine, with no network call: the cached published copy if it
+ * is valid and not older than the bundled one, else the bundled copy. Used by offline reports
+ * (the `coverage` and `parcels` commands).
+ */
+export function loadLocal(): LoadedRegistry {
+  const bundled = loadBundled();
+  const f = cacheFiles();
+  try {
+    if (!existsSync(f.body)) return bundled;
+    const doc = JSON.parse(readFileSync(f.body, "utf8"));
+    if (!validDoc(doc)) return bundled;
+    let fetched: string | null = null;
+    try {
+      fetched = JSON.parse(readFileSync(f.meta, "utf8")).fetched_at ?? null;
+    } catch {
+      fetched = null;
+    }
+    return pick(bundled, doc, "pages-cache", fetched);
+  } catch {
+    return bundled;
+  }
+}
+
 /** Use the published copy unless it is older than the bundled one. */
 function pick(bundled: LoadedRegistry, doc: RegistryDoc, origin: LoadedRegistry["origin"], fetched_at: string | null): LoadedRegistry {
   if (doc.generated < bundled.generated) return { ...bundled, refresh_error: `published copy (${doc.generated}) is older than bundled; using bundled` };

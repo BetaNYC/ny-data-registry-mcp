@@ -7,6 +7,219 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+The index is rebuilt every night on GitHub Actions, and a quality gate keeps a worse index
+from being published. See [#14](https://github.com/BetaNYC/ny-data-registry-mcp/issues/14)
+(epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- `harvest.yml` runs every night at 07:17 UTC (`workflow_dispatch` inputs: `publish`,
+  `fresh`, `ignore_cadence`, `force_publish`, `force_reason`). It starts from the published
+  index and fails if that cannot be downloaded and verified, instead of starting from nothing.
+- Quality gate (`src/publish/gate.ts`, limits in `harvest-config.json` `publish_gate`): the
+  question set must pass; no more than a 10% drop in datasets, no more than 3 portals lost, no
+  portal of 20+ datasets losing over half, no schema change, no empty index. A failed gate
+  blocks the publish. `force_publish` with a `force_reason` overrides it, and the reason and
+  who gave it are recorded in `gate.json`, `index.json` and the release notes.
+- Each publish makes a dated snapshot `index-YYYY-MM-DD` titled "(current)" and relabels older
+  ones "(superseded)". Retention keeps the 14 newest snapshots plus the first of each month.
+- `index.json`, a manifest beside every index: schema version, harvest time, registry date,
+  both SHA-256 sums and sizes, dataset and portal counts, run link, commit, gate result.
+- A failed scheduled or publishing run opens a `harvest-failure` issue, or comments on the open
+  one; the next run that publishes closes it.
+- `cadence` in `harvest-config.json`: self-hosted county ArcGIS Enterprise portals are read
+  weekly, not nightly. New `not-due` portal outcome and `not_due` count in the harvest stats;
+  `harvest --ignore-cadence` reads everything.
+- The harvest drops portals whose ids are no longer in the registry, with their datasets,
+  columns and change history ([#21](https://github.com/BetaNYC/ny-data-registry-mcp/issues/21)).
+  Portal ids come from registry rows, so when a row changes its old id was left behind,
+  never read again: on the 224-row registry, DEC's old id kept 834 stale datasets next to the
+  842 under its new id. Each drop (portal id, dataset count) is listed in the harvest stats
+  (`dropped_portals`), the run summary, `index.json` and the snapshot's release notes. The
+  registry records no id changes, so nothing is re-keyed. Nothing is dropped when the loaded
+  registry is older than the index's (a failed refresh falling back to the bundled copy). The
+  gate subtracts these drops before its drop checks, up to 5 portals
+  (`max_registry_removed_portals`); any other drop is judged as before.
+- `eval --result-out file.json`: the question-set result as JSON.
+- `certs/sectigo-public-server-authentication-ca-ov-r36.pem`: the intermediate certificate
+  Orange County's server leaves out, added for the harvest step with `NODE_EXTRA_CA_CERTS`.
+  Certificate checks stay on. Provenance and removal steps in `certs/README.md`.
+
+### Changed
+
+- The published index uses SQLite's rollback journal instead of WAL, so readers no longer
+  create `-wal` and `-shm` files beside it.
+- Socrata hosts get at least 2 s between requests (was 1 s). 429 and 503 are retried up to
+  twice, honoring `Retry-After` in seconds or as a date (otherwise 5 s, then 10 s; capped at
+  60 s), and a 429 doubles that host's gap for the rest of the run. Before, only one retry on
+  429.
+- Code releases (`vX.Y.Z`) are now created as the repository's "Latest" release; index
+  releases never are.
+
+Each install now picks up the new index by itself, and an `update` command gets it on
+demand. See [#15](https://github.com/BetaNYC/ny-data-registry-mcp/issues/15) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- Automatic index updates, on by default. A running server checks 5 minutes after it starts
+  and then every 24 hours, on timers that never block startup or a tool call. When the
+  installed index is at least 5 days old, it reads the release's `index.json` and downloads
+  the index only if the published one is newer and this package can read its schema. The
+  download is checked against both SHA-256 sums (and the size) in `index.json` before the
+  installed index is touched, then renamed into place. Any failure keeps the installed index.
+  The server's open database handle reopens after a swap (it also notices a file replaced by
+  another process, checking at most once a minute), so no restart is needed.
+- On Windows, where a file another process has open cannot be renamed over (`EBUSY` or
+  `EPERM`), the checked file waits as `<index>.next` and is installed the next time the index
+  is opened with nothing holding it.
+- `<index>.source.json` beside the index: the URL, SHA-256 and harvest time of what was
+  installed. An index installed by an older version is hashed once to make one.
+- `ny-data-registry update` (download if a newer index is published, regardless of age or
+  the automatic-update setting) and `update --check` (report only). Exit codes: 0 current or
+  updated, 1 failed, 2 usage, 3 needs a newer package, 4 a newer index is published
+  (`--check`), 5 downloaded but waiting for the index to be free.
+- Settings: `NY_DATA_INDEX_AUTO_UPDATE` (`0` = off), `NY_DATA_INDEX_REFRESH_DAYS` (5),
+  `NY_DATA_INDEX_STALE_DAYS` (14), `NY_DATA_INDEX_CHECK_HOURS` (24),
+  `NY_DATA_INDEX_CHECK_DELAY_SECONDS` (300). A setting that cannot be read falls back to its
+  default and is reported. Automatic updates are also off when `NY_DATA_INDEX` is set (a file
+  you manage), when `NY_DATA_INDEX_URL` names a dated snapshot, when
+  `NY_DATA_INDEX_AUTO_DOWNLOAD=0`, and in offline mode.
+- `registry_info.index_status`: the index's age, whether it is stale, whether automatic
+  updates are on and what turned them off, the last check's result and time, and the
+  published harvest time.
+- `search_datasets` replies carry `index_note` when the index is more than 14 days old,
+  with the `update` command. Other tools do not.
+- CI runs the whole test suite on `windows-latest` (Node 22.x) as well.
+- Rollback. `harvest.yml` takes `rollback_to` (a kept `index-YYYY-MM-DD` snapshot) with a
+  required `rollback_reason`. That run does no harvest: it checks the snapshot's files and
+  copies them over `index-latest`, adds `rolled_back` (`from`, `to`, `reason`, `at`, `by`) to
+  `index.json`, and relabels the bad snapshot "(rolled back)". It refuses a missing snapshot,
+  one retention is about to delete, one without `index.json`, one this package cannot read,
+  and one not older than `index-latest`. It deletes nothing. A server whose index is newer than
+  the target replaces it with the target at its next check, even inside the 5 days, so an
+  automatic check now reads `index.json` every time (under 1 KB). `update --check` reports a
+  rollback (exit 4), `update` makes the swap (new outcome `rolled-back`, exit 0), and
+  `index_note` and `registry_info.index_status.rolled_back` say why. The next nightly publish
+  clears it. Each publish now records its tag in `index.json` (`snapshot_tag`).
+
+### Changed
+
+- `download --force` refuses to start while another process holds the download lock,
+  instead of going ahead without it.
+- A release without `index.json` (from before the nightly harvest) is still read: the
+  sqlite sum in `SHA256SUMS` decides whether the installed index is current. An automatic
+  check then leaves alone a file it did not install itself.
+
+Search by topic. See [#18](https://github.com/BetaNYC/ny-data-registry-mcp/issues/18) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- 24 shared topics, built from the categories, tags and departments New York's portals already
+  use. Each dataset gets its topics from its own labels; a dataset can have several.
+  `search_datasets` takes `topic` (with a query, or alone: then `query` is optional, and the
+  topic is listed most-viewed first), and its rows carry their topic ids. New `list_topics` tool:
+  the 24 topics with dataset and portal counts, and the share of datasets with a topic (8,910 of
+  9,569, 93.1%, on the 2026-11-05 index). The rules are data: `data/topics.json` and
+  `data/topic-hand-assigned.json` (broad and ambiguous words, each with a reason). The harvest
+  rebuilds every dataset's topics at the end of each run, and each published index carries
+  `topic-crosswalk.csv` (every portal label and its topics). `ny-data-registry topics` rebuilds
+  them on a local index. New `topics` and `dataset_topics` tables; the schema version is
+  unchanged, so older servers still read new indexes. Method: `docs/topics.md`.
+
+Standard metadata. See [#17](https://github.com/BetaNYC/ny-data-registry-mcp/issues/17) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- `get_dataset_columns` takes `standard: "croissant" | "dcat-us"` and returns that dataset as
+  Croissant 1.1 or DCAT-US 3.0, with its license kind and the required fields its portal does
+  not give (`missing`). Each published index carries `ny-data-dcat-us.json.gz` (one DCAT-US
+  Catalog) and `ny-data-croissant.jsonl.gz` (one Croissant document per line), about 3 MB
+  each on the 2026-11-05 index; `ny-data-registry standards [--out-dir dir]` builds them
+  locally. They are optional side files: a rollback treats them like `topic-crosswalk.csv`.
+  Licenses are never inferred: a known license name is a license; otherwise a terms-of-use
+  link is labeled "terms page, not a license" (from the dataset's own text or
+  `data/terms-pages.json`, checked by hand on 2026-11-14: 10 of 35 portals have a terms page,
+  25 have none or were blocked), and other portal text is kept as a rights statement. On the
+  2026-11-05 index: 791 licenses, 5,312 terms pages, 1,360 statements only, 2,106 nothing.
+  DCAT-US's required contact email is always left out (portals do not give one). Tests check
+  DCAT-US output against GSA's JSON Schema (vendored in `test/fixtures/dcat-us-3.0/`). Plan
+  and field mapping: `docs/standard-metadata-plan.md`.
+
+Cover every portal in the registry. See [#16](https://github.com/BetaNYC/ny-data-registry-mcp/issues/16)
+(epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- `ny-data-registry coverage [--json] [--out file] [--index path] [--refresh]`: for every
+  registry row, whether the harvest reads it, and if not, why, as a fixed code (`no-portal`,
+  `policy`, `adapter-off`, `no-adapter`, `no-api` and others). Offline: registry, harvest
+  config and index only; it never calls a portal.
+- `adapters` in `harvest-config.json`: one on/off switch per adapter. An adapter switched off
+  stops alone; its portals report `adapter-off` and keep their datasets.
+- `allow_no_portal` in `harvest-config.json` (D4): the City of Utica, Wyoming County and the
+  City of Mount Vernon are marked "no portal" but document a data endpoint, and are now read
+  (ArcGIS Online org, ArcGIS Online org, ArcGIS Enterprise). Each was checked to be New York,
+  not Utica, Minnesota or Wyoming County, Pennsylvania. A changed registry endpoint stops the
+  row until it is checked again.
+- Five more `allow_no_portal` rows, read by the `arcgis-server` adapter: Greene, Washington,
+  Cayuga, Essex and Chautauqua counties. Each is New York, not the same-named county in Ohio,
+  Wisconsin (and four other states), Ontario or Kansas. Each server answered one read of its
+  services directory root on 2026-11-14 and lists the service or folder the registry says holds
+  parcels; the entry records the URL, time, status and result (`checked_live`). St. Lawrence
+  County was left out: its server is the Development Authority of the North Country's, shared
+  with five other counties, so reading it would file their layers under St. Lawrence. The parcel
+  table does not change until a harvest reads the five servers.
+- ArcGIS Server REST directory adapter (`arcgis-server`, milestone 4): the State's GIS servers
+  (`nysgeohub`, `gisservices`, `orthos`, `elevation`), DOT, DEC's server, Broome and Ulster.
+  One dataset per map, feature or image service; layer fields for up to 5 layers each. Read
+  weekly per host (D5), at most 400 requests and 30 minutes per host, 2 s apart (or the
+  robots.txt Crawl-delay), `Utilities` and `System` folders skipped, robots.txt honored.
+  Settings in `arcgis_server` in `harvest-config.json`. Switched on.
+- GeoBlacklight adapter (`geoblacklight`, milestone 6): Cornell's CUGIR, read from its
+  OpenGeoMetadata repository as one GitHub archive per week, never from the GeoBlacklight site.
+  GeoBlacklight 1.0 and Aardvark records; public, unsuppressed, not withdrawn, Cornell's own,
+  not wholly outside New York. Switched on. The harvest step now gets the run's `GITHUB_TOKEN`
+  for this one read.
+- InvenioRDM adapter (`invenio-rdm`, milestone 6): NYU UltraViolet's Spatial Data Repository
+  community, weekly, oldest first. Keeps public records whose location touches New York, or
+  that name New York when they have no location. **Switched off** until a supervised run
+  checks that filter: locations are optional in InvenioRDM and the repository is worldwide.
+- `docs/ckan-comparison.md` (milestone 7, D7): data.gov's copies of the State and NYC
+  catalogs against the index, from counts already on record; no CKAN site called, no adapter.
+- `politeFetch` can read a binary body (`binary: true`), never cached.
+- Hand-kept list (`data/hand-kept.json`, milestone 5, D6): for rows with no data link, what the
+  place does offer (pages, viewers, search pages, request forms). The `hand-kept` adapter adds
+  each link to the index as type `hand-kept <kind>`, with no endpoint or columns, and makes no
+  network call. Seeded with 82 parcel links the State's parcel page lists for 30 counties.
+  Switched on.
+- Each hand-kept link was checked once on 2026-11-14 (`link_check`: date, final URL, HTTP status,
+  result): 48 ok, 3 redirected, 2 broken, 29 blocked (bot challenges, mostly Beacon's; logins;
+  robots.txt; and one TLS error on our side). HEAD first, GET only if HEAD was refused; 2 s
+  apart per host; robots.txt honored; no login or CAPTCHA bypassed. A broken link stays in the
+  file but is left out of the index; other results are noted in the entry's description.
+- The publish gate needs nothing new for the first run with the new adapters: its drop checks
+  compare only what the published index had, so growth passes. The question set must still
+  pass.
+- `ny-data-registry parcels`: a tax parcel table for all 62 counties. 38 share their parcels
+  with the State's public layer; 23 have their own parcel layer in the index and 11 more in
+  the registry only; 18 have neither (2026-11-14). The State's list comes from one read of the
+  State's service description on 2026-11-14 (D3), kept in `docs/parcels/` and recorded in
+  `data/parcel-sources.json` with the State page's per-county links and the hand-reviewed
+  registry layers. The table: `docs/parcels/2026-11-14-parcel-coverage.md`.
+
+### Changed
+
+- The bundled registry is the 2026-11-13 copy (224 rows, was 140). `platform-families.json`
+  maps its 156 platform strings; 3 strings no longer in the registry are gone. Newly mapped:
+  two ArcGIS Hub sites on custom domains (NYC's `nycmaps.nyc.gov`, DEC's Bond Act site), two
+  self-hosted ArcGIS Enterprise portals (DOT, Watertown), and research repositories
+  (`custom-api`, described only). Source ids follow the registry rows, so two changed:
+  `nys-department-of-environmental-conservation--services6-arcgis-com` and
+  `columbia-university-libraries--geodata-library-columbia-edu`.
+
 See [#10](https://github.com/BetaNYC/ny-data-registry-mcp/issues/10) (part of
 [BetaNYC/ny-gov-web-registry#58](https://github.com/BetaNYC/ny-gov-web-registry/issues/58)).
 

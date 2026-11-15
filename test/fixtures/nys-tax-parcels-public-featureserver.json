@@ -1,0 +1,30 @@
+{
+  "_source": "docs/parcels/2026-11-14-nys-tax-parcels-public-featureserver.json (trimmed to the fields the parser reads)",
+  "currentVersion": 11.5,
+  "serviceDescription": "<div style='text-align:Left;'><div><div><p><span>Publication Date: May 2026. Updated annually. This map service has two layers: 1) NYS_Tax_Parcels_Public, and 2) NYS_Tax_Parcels_Public_Footprint which contains polygons representing counties for which tax parcel polygons are available in the NYS_Tax_Parcels_Public layer. County footprint polygons display when zoomed out beyond 1:37,050-scale. Tax parcel polygons display when zoomed in below 1:37,051-scale. The NYS_Tax_Parcels_Public layer contains 2025 parcel data only for NY State counties which gave NYS ITS Geospatial Services permission to share this data with the public. Work to obtain parcel data from additional counties, as well as permission to share the data, is ongoing. To date, 38 counties have provided Geospatial Services permission to share their parcel data with the public. Parcel data for counties which do not allow Geospatial Services to redistribute their data must be obtained directly from those counties. Geospatial Services' goal is to eventually include parcel data for all counties in New York State. Parcel geometry was incorporated as received from County Real Property Departments. No attempt was made to edge-match parcels along adjacent counties. County attribute values were populated using 2025 Assessment Roll tabular data Geospatial Services obtained from the NYS Department of Tax and Finance’s Office of Real Property Tax Services (ORPTS).Tabular assessment data was joined to the county provided parcel geometry using the SWIS &amp; SBL or SWIS &amp; PRINT KEY unique identifier for each parcel. Detailed information about assessment attributes can be found in the ORPTS Assessor’s Manuals available here: https://www.tax.ny.gov/research/property/assess/manuals/assersmanual.htm. New York City data comes from NYC MapPluto which can be found here: https://www.nyc.gov/content/planning/pages/resources/datasets/mappluto-pluto-change. Thanks to the following counties that specifically authorized Geospatial Services to share their GIS tax parcel data with the public: Albany, Broome, Cayuga, Chautauqua, Cortland, Erie, Genesee, Greene, Hamilton, Lewis, Livingston, Montgomery, NYC- Bronx, NYC- Kings (Brooklyn), NYC- New York (Manhattan), NYC- Queens, NYC- Richmond (Staten Island),Onondaga, Oneida, Ontario, Orange, Oswego, Otsego, Putnam, Rensselaer, Rockland, Schuyler, St Lawrence, Steuben, Suffolk, Sullivan, Tioga, Tompkins, Ulster, Warren, Wayne, Westchester. and Wyoming. Geometry accuracy varies by contributing county. This map service is available to the public. The State of New York, acting through the New York State Office of Information Technology Services, makes no representations or warranties, express or implied, with respect to the use of or reliance on the Data provided. The User accepts the Data provided “as is” with no guarantees that it is error free, complete, accurate, current or fit for any particular purpose and assumes all risks associated with its use. The State disclaims any responsibility or legal liability to Users for damages of any kind, relating to the providing of the Data or the use of it. Users should be aware that temporal changes may have occurred since this Data was created.</span></p><p><span /></p></div></div></div>",
+  "layers": [
+    {
+      "id": 0,
+      "name": "NYS Tax Parcels Public Footprint",
+      "parentLayerId": -1,
+      "defaultVisibility": true,
+      "subLayerIds": null,
+      "minScale": 0,
+      "maxScale": 37051,
+      "type": "Feature Layer",
+      "geometryType": "esriGeometryPolygon"
+    },
+    {
+      "id": 1,
+      "name": "NYS Tax Parcels Public",
+      "parentLayerId": -1,
+      "defaultVisibility": true,
+      "subLayerIds": null,
+      "minScale": 37050,
+      "maxScale": 0,
+      "type": "Feature Layer",
+      "geometryType": "esriGeometryPolygon"
+    }
+  ],
+  "tables": []
+}

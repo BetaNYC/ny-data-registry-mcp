@@ -3,11 +3,14 @@ import { basename } from "node:path";
 import { FAMILIES } from "./families.js";
 import { findSources, howToQuery, listSourcesForPlace, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
+import { datasetStandard, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
+import { indexStatus } from "./refresh.js";
 import { createBetanycTools } from "./betanyc-tools.js";
 import { VERSION } from "./paths.js";
+import { topicRules } from "./topics.js";
+import { STANDARDS } from "./standards/build.js";
 
 /**
  * whats_changed and about_betanyc, the two tools BetaNYC is adding to each of its MCP servers
@@ -24,7 +27,7 @@ const betanyc = createBetanycTools({
   whatsChangedPath: new URL("../WHATS-CHANGED.md", import.meta.url),
 });
 
-const INDEX_TOOLS = new Set(["search_datasets", "get_dataset_columns", "find_joinable", "whats_new"]);
+const INDEX_TOOLS = new Set(["search_datasets", "list_topics", "get_dataset_columns", "find_joinable", "whats_new"]);
 /** How long a dataset tool waits for a first-run download before answering "still downloading". */
 const INDEX_WAIT_MS = 45_000;
 
@@ -40,6 +43,7 @@ async function requireIndex(): Promise<void> {
 }
 
 const FAMILY_ENUM = [...FAMILIES];
+const TOPIC_IDS = topicRules().topics.map((t) => t.id) as [string, ...string[]];
 /** One sentence, shared by every tool whose reply names a data site. */
 const REGISTRY_ID_NOTE = "registry_id, when a row has one, is the id of the row's government body in BetaNYC/ny-gov-web-registry, for joining the two.";
 /** For the tools whose source rows carry runs_it. */
@@ -111,23 +115,26 @@ export const TOOLS = [
   },
   {
     name: "registry_info",
-    description: "Registry row counts by status, tier and platform family, and how many rows carry a registry_id; which copy of the master list of government bodies (BetaNYC/ny-gov-web-registry) is loaded and which row ids it lacks; when the registry was generated and where this copy came from (bundled or refreshed from GitHub Pages); unmapped platform strings; and the harvested index's size and last harvest date.",
+    description: "Registry row counts by status, tier and platform family, and how many rows carry a registry_id; which copy of the master list of government bodies (BetaNYC/ny-gov-web-registry) is loaded and which row ids it lacks; when the registry was generated and where this copy came from (bundled or refreshed from GitHub Pages); unmapped platform strings; and the harvested index's size and last harvest date. index_status says how old the index is, whether automatic updates are on (and if not, which setting turned them off), and what the last update check found.",
     inputSchema: { type: "object", additionalProperties: false, properties: {} },
   },
   {
     name: "search_datasets",
     description:
-      "Search dataset titles, descriptions, tags and column names across the harvested Socrata and ArcGIS portals in New York (needs the harvested index). Filter by place, portal, platform family, download format (csv, geojson, shapefile, kml, api, xlsx) or last-updated date. " +
+      "Search dataset titles, descriptions, tags and column names across the harvested Socrata and ArcGIS portals in New York (needs the harvested index). Filter by topic, place, portal, platform family, download format (csv, geojson, shapefile, kml, api, xlsx) or last-updated date. " +
+      "topic is one of 24 shared topics (list_topics), assigned from each dataset's own categories, tags and department; a dataset can have several. Give a query, a topic, or both; a topic alone lists that topic, most-viewed first. Rows carry their topic ids. " +
       "One call gives the whole answer. total_matches is the true number of matching datasets. When they all fit, the reply lists them. When they do not, the reply summarizes every match by portal (count and top titles per portal, auto_grouped: true), lists the best-ranked rows that fit, and writes every match to a CSV file on this machine (export.path, export.rows; also a resource_link). " +
       "Use group_by to summarize by entity, county or platform_family instead. " +
       "Rows are compact (id, name, portal, type, update date, link, formats); detail: 'full' adds description, API endpoint, views, column count and, for Socrata, the domain + 4x4 to hand to the `socrata` MCP. " +
       `Replies stay under about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
+      "When the index is more than 14 days old (NY_DATA_INDEX_STALE_DAYS), the reply carries index_note saying so and how to update it. " +
       REGISTRY_ID_NOTE,
     inputSchema: {
       type: "object",
       additionalProperties: false,
       properties: {
-        query: { type: "string", description: "e.g. 'rodent', 'tax parcels', 'lead service lines'" },
+        query: { type: "string", description: "e.g. 'rodent', 'tax parcels', 'lead service lines'. Optional when topic is given" },
+        topic: { type: "string", enum: TOPIC_IDS, description: "One of the 24 shared topics (list_topics has names and counts), e.g. 'housing', 'transportation', 'elections'" },
         place: { type: "string", description: "County, city, borough or region. Statewide portals are always included" },
         portal: { type: "string", description: "source_id, registry_id (every site of that government) or part of a portal name" },
         platform_family: { type: "string", enum: FAMILY_ENUM },
@@ -140,16 +147,31 @@ export const TOOLS = [
         top_per_group: { type: "integer", minimum: 0, maximum: MAX_TOP_PER_GROUP, description: "Titles listed per group with group_by. Default 3" },
         export: { type: "string", enum: [...EXPORT_MODE], description: "'auto' (default): write the CSV of every match when the reply cannot list them all. 'always' or 'never'" },
       },
-      required: ["query"],
+    },
+  },
+  {
+    name: "list_topics",
+    description:
+      "The 24 shared topics for New York open data, with how many datasets and portals each has in the harvested index, and the share of datasets with at least one topic. Topics are built from the categories, tags and departments the portals already use; a dataset can have several. Use a topic id with search_datasets. Also links the crosswalk (each portal label and its topics), published with every index.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: { portal: { type: "string", description: "Count one portal only: source_id or part of a portal name" } },
     },
   },
   {
     name: "get_dataset_columns",
-    description: "Column names, field names, types and descriptions for one dataset from the index, plus every distribution (format + URL), license, publisher, extent and per-field provenance (from the portal vs derived here).",
+    description:
+      "Column names, field names, types and descriptions for one dataset from the index, plus every distribution (format + URL), license, publisher, extent and per-field provenance (from the portal vs derived here). " +
+      "With standard 'croissant' (read by AI and ML tools) or 'dcat-us' (DCAT-US 3.0, read by government catalogs and data.gov), returns the dataset's description in that standard instead, with which required fields the portal did not give. " +
+      "A license is never inferred: where the portal gives none, a terms page may be linked, labeled 'terms page, not a license'.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
-      properties: { dataset: { type: "string", description: "dataset_id from search_datasets, a Socrata 4x4, an ArcGIS item id, or the dataset URL" } },
+      properties: {
+        dataset: { type: "string", description: "dataset_id from search_datasets, a Socrata 4x4, an ArcGIS item id, or the dataset URL" },
+        standard: { type: "string", enum: [...STANDARDS], description: "Return the description as Croissant 1.1 ('croissant') or DCAT-US 3.0 ('dcat-us') instead of the column list" },
+      },
       required: ["dataset"],
     },
   },
@@ -205,7 +227,8 @@ const ARG_SHAPES = {
   check_source: { source_id: z.string().optional(), registry_id: z.string().optional(), url: z.string().optional() },
   registry_info: {},
   search_datasets: {
-    query: z.string().min(1),
+    query: z.string().min(1).optional(),
+    topic: z.string().min(1).optional(),
     place: z.string().optional(),
     portal: z.string().optional(),
     platform_family: family.optional(),
@@ -218,7 +241,8 @@ const ARG_SHAPES = {
     top_per_group: z.number().int().min(0).max(MAX_TOP_PER_GROUP).optional(),
     export: z.enum(EXPORT_MODE).optional(),
   },
-  get_dataset_columns: { dataset: z.string().min(1) },
+  list_topics: { portal: z.string().optional() },
+  get_dataset_columns: { dataset: z.string().min(1), standard: z.enum(STANDARDS).optional() },
   find_joinable: { dataset: z.string().min(1), column: z.string().optional(), limit_per_key: z.number().int().min(1).max(50).optional() },
   whats_new: { since: z.string(), portal: z.string().optional(), limit: z.number().int().min(1).max(200).optional() },
 };
@@ -265,7 +289,7 @@ export async function callTool(name: string, args: unknown) {
       }
       case "registry_info":
         parseToolArgs("registry_info", args);
-        return text({ ...registryInfo(indexInfo()), index_download: downloadState() });
+        return text({ ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() });
       case "search_datasets": {
         const r = searchDatasets(parseToolArgs("search_datasets", args)) as Record<string, any>;
         const out = text(r);
@@ -276,16 +300,20 @@ export async function callTool(name: string, args: unknown) {
             type: "resource_link",
             uri: r.export.uri,
             name: basename(r.export.path),
-            title: `All ${r.export.rows} matches for '${r.query}' (CSV)`,
-            description: `Every dataset matching '${r.query}', best-ranked first, one row each.`,
+            title: `All ${r.export.rows} matches for '${r.query ?? r.topic?.name}' (CSV)`,
+            description: `Every dataset matching '${r.query ?? r.topic?.name}', best-ranked first, one row each.`,
             mimeType: "text/csv",
             size: r.export.bytes,
           });
         }
         return out;
       }
-      case "get_dataset_columns":
-        return text(getDatasetColumns(parseToolArgs("get_dataset_columns", args).dataset));
+      case "list_topics":
+        return text(listTopics(parseToolArgs("list_topics", args)));
+      case "get_dataset_columns": {
+        const a = parseToolArgs("get_dataset_columns", args);
+        return text(a.standard ? datasetStandard(a.dataset, a.standard) : getDatasetColumns(a.dataset));
+      }
       case "find_joinable": {
         const a = parseToolArgs("find_joinable", args);
         return text(findJoinable(a.dataset, a.column, a.limit_per_key));

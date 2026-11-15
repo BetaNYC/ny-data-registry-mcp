@@ -13,9 +13,10 @@
 # provenance attestation; contents: write lets the workflow create the
 # GitHub Release.
 #
-# The code release is created with --latest=false. The dataset index lives in
-# its own fixed release, index-latest, which the server downloads on first run;
-# code releases must never hold or shadow it.
+# The code release is marked Latest (--latest), so the repo's "Latest" badge always
+# points at the tool. The dataset index lives in its own fixed release, index-latest,
+# which the server downloads; index releases are always created with --latest=false
+# (harvest.yml, src/publish/releases.ts).
 #
 # Before tagging: one commit dates the WHATS-CHANGED.md "## Unreleased:" entry and the
 # CHANGELOG.md heading with the same New York date, and adds the dated anchor to the entry's
@@ -82,6 +83,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
-        run: gh release create "${GITHUB_REF_NAME}" --generate-notes --latest=false
+        run: gh release create "${GITHUB_REF_NAME}" --generate-notes --latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

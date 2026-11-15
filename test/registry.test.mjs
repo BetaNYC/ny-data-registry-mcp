@@ -26,8 +26,8 @@ test("an unknown platform string is flagged unmapped, never guessed", () => {
 });
 
 test("UNCONFIRMED strings stay family null with status unconfirmed", () => {
-  assert.equal(familyFor("Unknown", "UNCONFIRMED").status, "unconfirmed");
-  assert.equal(familyFor("Unknown", "UNCONFIRMED").family, null);
+  assert.equal(familyFor("Confluence", "UNCONFIRMED").status, "unconfirmed");
+  assert.equal(familyFor("Confluence", "UNCONFIRMED").family, null);
 });
 
 test("family table has no unused rows and only allowed families", () => {
@@ -37,8 +37,8 @@ test("family table has no unused rows and only allowed families", () => {
 
 test("source ids are unique and stable", () => {
   const ids = registry().sources.map((s) => s.source_id);
-  assert.equal(ids.length, 140);
-  assert.equal(new Set(ids).size, 140);
+  assert.equal(ids.length, 224);
+  assert.equal(new Set(ids).size, 224);
   assert.ok(ids.includes("erie-county"));
   assert.ok(ids.includes("nyc-department-of-city-planning--services5-arcgis-com"));
   assert.deepEqual(loadBundled().sources.map((s) => s.source_id), ids);
@@ -97,14 +97,14 @@ test("how_to_query points to the matching @betanyc MCP and its env var", () => {
   const r = howToQuery({ entity: "NYC311" });
   assert.equal(r.use.mcp, "nyc-311-mcp");
   assert.equal(r.key_env_var, "NYC_311_API_KEY");
-  assert.ok(r.warnings.some((w) => w.startsWith("UNCONFIRMED")));
   assert.equal(howToQuery({ entity: "New York State Senate" }).use.mcp, "nys-openlegislation-mcp");
 });
 
 test("how_to_query flags UNCONFIRMED, undocumented, gated and dead rows and never invents an endpoint", () => {
   const pa = howToQuery({ entity: "Port Authority of New York and New Jersey" });
-  assert.ok(pa.warnings.some((w) => w.startsWith("UNCONFIRMED")));
   assert.ok(pa.warnings.some((w) => w.startsWith("UNDOCUMENTED")));
+  const baruch = howToQuery({ entity: "Baruch College (CUNY) Newman Library" });
+  assert.ok(baruch.warnings.some((w) => w.startsWith("UNCONFIRMED")));
   const anhd = howToQuery({ entity: "Association for Neighborhood and Housing Development (ANHD)" });
   assert.equal(anhd.endpoint, null);
   assert.ok(anhd.warnings.some((w) => w.startsWith("GATED")));
@@ -130,8 +130,8 @@ test("check_source refuses keyed, gated and bot-blocking sources, and is offline
 
 test("registry_info reports counts and nothing unmapped", () => {
   const i = registryInfo(null);
-  assert.equal(i.rows, 140);
-  assert.deepEqual(i.by_status, { live: 89, "no-portal": 36, UNCONFIRMED: 11, dead: 4 });
+  assert.equal(i.rows, 224);
+  assert.deepEqual(i.by_status, { live: 135, dead: 4, "no-portal": 84, UNCONFIRMED: 1 });
   assert.deepEqual(i.unmapped_platform_strings, []);
   assert.equal(i.origin, "bundled");
 });

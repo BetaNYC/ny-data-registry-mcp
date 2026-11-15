@@ -1,0 +1,105 @@
+{
+  "about": "Labels whose topics are decided by hand, not by the match rules in topics.json (issue #18). Two kinds: broad words that fit many topics, and words that mean different things on different portals. A label here is a normalized label (see topics.json normalize). An entry with label_type applies only to that kind of label (category, tag or department); without it, to every kind. An empty topics list means no topic, on purpose. Hand entries win over the match rules. Every entry says why. Method: docs/topics.md.",
+  "labels": [
+    {
+      "label": "infrastructure",
+      "topics": [
+        "utilities"
+      ],
+      "why": "Broad word, on 14 portals. Most uses sit on utility, energy and telecommunications layers. Roads and bridges get Transportation from their own words."
+    },
+    {
+      "label": "safety",
+      "topics": [
+        "safety"
+      ],
+      "why": "Broad word: public, traffic, school or food safety. On its own it is filed under Public safety, as nine portals use it."
+    },
+    {
+      "label": "quality safety cost",
+      "topics": [
+        "health",
+        "finance"
+      ],
+      "why": "Health Data NY's hospital quality category. Patient safety, not public safety; 'cost' keeps Budget and finance."
+    },
+    {
+      "label": "quality safety and cost",
+      "topics": [
+        "health",
+        "finance"
+      ],
+      "why": "Same as 'quality safety cost'."
+    },
+    {
+      "label": "patient safety indicator",
+      "topics": [
+        "health"
+      ],
+      "why": "Hospital quality measures. Patient safety, not public safety."
+    },
+    {
+      "label": "green infrastructure",
+      "topics": [
+        "water"
+      ],
+      "why": "Stormwater management (bioswales, rain gardens), not utilities."
+    },
+    {
+      "label": "development",
+      "topics": [
+        "landuse"
+      ],
+      "why": "Broad word: economic, land or youth development. On its own it sits on planning and zoning layers, so Land use."
+    },
+    {
+      "label": "acs",
+      "label_type": "tag",
+      "topics": [
+        "demographics"
+      ],
+      "why": "As a tag on six portals, ACS is the American Community Survey. NYC's Administration for Children's Services is a department name, not a tag, and gets Social services from its full name."
+    },
+    {
+      "label": "acs",
+      "label_type": "category",
+      "topics": [
+        "demographics"
+      ],
+      "why": "Same as the tag: the American Community Survey."
+    },
+    {
+      "label": "lot",
+      "topics": [],
+      "why": "A tax lot in assessment rolls, a parking lot in snow-emergency data (both in Buffalo). No topic. 'tax lot' still gets Property from the match rules."
+    },
+    {
+      "label": "station",
+      "topics": [
+        "transportation"
+      ],
+      "why": "Police, fire or subway station. Most uses are transit stations; police and fire layers get Public safety from their own words."
+    },
+    {
+      "label": "ticket",
+      "topics": [
+        "transportation",
+        "safety"
+      ],
+      "why": "A parking, traffic or court summons ticket. Both topics, since it is about enforcement on the street."
+    },
+    {
+      "label": "discharge",
+      "topics": [
+        "environment",
+        "water"
+      ],
+      "why": "A water-pollution discharge (SPDES) or a hospital discharge. Hospital data carries health words of its own, so this is filed under Environment and Water."
+    }
+  ],
+  "acronym_tags_never_inherit": [
+    "acs",
+    "gis",
+    "ems"
+  ]
+}

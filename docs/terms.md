@@ -40,6 +40,10 @@ legal advice. Where something was not found, it says so.
   (found by search; the agreement text itself was **not read in full**).
 - Per-portal terms (NYC, data.ny.gov, Health Data NY, Buffalo, Nassau, Lehman): the URLs tried
   (`nyc.gov/html/data/terms.html`, `data.ny.gov/page/terms-of-use`) returned 404. **Not verified.**
+  Update 2026-11-14: each portal's own terms page was found from its home page and recorded in
+  `data/terms-pages.json` (for example, NYC's footer links `https://www.nyc.gov/main/terms-of-use`,
+  and data.ny.gov's links its "OPEN- NY Terms Of Use" page). Nassau's robots.txt disallows every
+  page, so its terms were not read. This was for labeling datasets, not a re-reading of the terms.
   NYC's Open Data Law (Local Law 11 of 2012) makes public datasets available without
   registration or use restrictions; that is from a search result about the bill text, not
   re-read here.
