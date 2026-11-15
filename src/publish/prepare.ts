@@ -1,6 +1,6 @@
 /**
- * Make the files a harvest publishes: a clean copy of the index, its .gz, SHA256SUMS and
- * index.json (the manifest).
+ * Make the files a harvest publishes: a clean copy of the index, its .gz, SHA256SUMS,
+ * index.json (the manifest) and topic-crosswalk.csv (each portal label and its topics, #18).
  *
  * The published copy uses the rollback journal, not WAL. WAL mode is persistent in the
  * file header (https://www.sqlite.org/wal.html, "Persistence of WAL mode"; header bytes
@@ -18,12 +18,23 @@ import { createGzip } from "node:zlib";
 import { DatabaseSync } from "node:sqlite";
 import { indexSummary, type IndexSummary } from "./summary.js";
 import type { GateResult } from "./gate.js";
+import { computeTopics, crosswalkCsv, CROSSWALK_NAME } from "../topics.js";
+import type { RollbackRecord } from "./rollback.js";
 
 export const SQLITE_NAME = "ny-data-index.sqlite";
 export const GZ_NAME = "ny-data-index.sqlite.gz";
 export const SUMS_NAME = "SHA256SUMS";
 export const MANIFEST_NAME = "index.json";
 export const MANIFEST_VERSION = 1;
+
+/** Files beside the index in every snapshot and in index-latest. A publish needs them all. */
+export const REQUIRED_SIDE_FILES = ["harvest-stats.json", "eval.md", "gate.json"];
+/**
+ * Side files added later: every new publish has them, but older snapshots do not, so a
+ * rollback to one of those still goes ahead (src/publish/rollback.ts rollbackSideFiles).
+ * topic-crosswalk.csv since 0.4.0 (#18).
+ */
+export const OPTIONAL_SIDE_FILES = [CROSSWALK_NAME];
 
 export interface Manifest {
   manifest_version: number;
@@ -42,6 +53,10 @@ export interface Manifest {
   gate: { passed: boolean; overridden: boolean; override_reason: string | null; override_by: string | null; reasons: string[] } | null;
   /** Portals this harvest dropped because their ids left the registry (issue #21). */
   dropped_portals: { portal_id: string; datasets: number; reason: string }[];
+  /** The dated snapshot these files were published as. Added by `publish`, so `prepare` output lacks it. */
+  snapshot_tag?: string;
+  /** Only in `index-latest`'s copy, and only after a rollback (src/publish/rollback.ts). A normal publish never sets it. */
+  rolled_back?: RollbackRecord;
 }
 
 export function buildManifest(
@@ -64,6 +79,15 @@ export function buildManifest(
     gate: g ? { passed: g.passed, overridden: g.overridden, override_reason: g.override_reason, override_by: g.override_by, reasons: g.reasons } : null,
     dropped_portals: meta.dropped_portals ?? [],
   };
+}
+
+/**
+ * The index.json `publish` uploads: prepare's, with the snapshot's tag, and never `rolled_back`.
+ * A normal publish therefore clears a rollback (src/publish/rollback.ts).
+ */
+export function publishedManifest(m: Manifest, tag: string): Manifest {
+  const { rolled_back: _cleared, ...rest } = m;
+  return { ...rest, snapshot_tag: tag };
 }
 
 /** Lines in the format `sha256sum` writes and the server's downloader reads. */
@@ -110,6 +134,18 @@ export function writePublishCopy(src: string, dest: string): void {
   if (hdr[0] !== 1 || hdr[1] !== 1) throw new Error(`${dest} header bytes 18-19 are ${hdr.join(",")}, expected 1,1 (rollback journal)`);
 }
 
+/** The topic crosswalk for this index, from the same labels and rules that set its topics. */
+export function writeCrosswalk(index: string, dest: string): number {
+  const db = new DatabaseSync(index, { readOnly: true });
+  try {
+    const rows = computeTopics(db).crosswalk;
+    writeFileSync(dest, crosswalkCsv(rows));
+    return rows.length;
+  } finally {
+    db.close();
+  }
+}
+
 export async function preparePublish(opts: {
   index: string;
   dir: string;
@@ -125,6 +161,7 @@ export async function preparePublish(opts: {
   await pipeline(createReadStream(sqlite), createGzip({ level: 9 }), createWriteStream(gz));
   const [sqliteSha, gzSha] = [await sha256(sqlite), await sha256(gz)];
   writeFileSync(join(opts.dir, SUMS_NAME), sumsFile(gzSha, sqliteSha));
+  writeCrosswalk(sqlite, join(opts.dir, CROSSWALK_NAME));
   const manifest = buildManifest(
     indexSummary(sqlite),
     { sqlite_sha256: sqliteSha, gz_sha256: gzSha, sqlite_bytes: statSync(sqlite).size, gz_bytes: statSync(gz).size },

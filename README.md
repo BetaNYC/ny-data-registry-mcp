@@ -28,7 +28,8 @@ Eleven tools, in three groups.
 
 | Tool | What it answers |
 |---|---|
-| `search_datasets` | Dataset titles, descriptions, tags and **column names** across Socrata and ArcGIS portals. Filters: place, portal, platform family, format (csv, geojson, shapefile, kml, api, xlsx …), updated since. One call gives the whole answer: the true number of matches, a count per portal when they don't all fit, the best rows, and a CSV file with every match. `group_by` summarizes by entity, county or platform family instead |
+| `search_datasets` | Dataset titles, descriptions, tags and **column names** across Socrata and ArcGIS portals. Filters: topic, place, portal, platform family, format (csv, geojson, shapefile, kml, api, xlsx …), updated since. One call gives the whole answer: the true number of matches, a count per portal when they don't all fit, the best rows, and a CSV file with every match. `group_by` summarizes by entity, county or platform family instead |
+| `list_topics` | The 24 shared topics, with how many datasets and portals each has, and the share of datasets with a topic. Filter: portal |
 | `get_dataset_columns` | Fields and types, every distribution (format + URL), license, publisher, extent, and per-field provenance |
 | `find_joinable` | Datasets sharing a join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), from a curated key-column map, not raw name equality |
 | `whats_new` | Datasets added, changed or removed since a date |
@@ -48,6 +49,8 @@ All tool inputs are strict: an unknown parameter is rejected by name, never sile
 
 **The CSV files.** One row per matching dataset, best-ranked first: id, name, portal, type, update date, link, formats, API endpoint, Socrata domain and 4x4, platform, counties, geometry type and column count. Standard CSV (RFC 4180), UTF-8, values as the portal published them, with one safety exception: a text value that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so a spreadsheet shows it as text instead of running it as a formula. Numbers are never changed. They go in `${HOME}/.cache/betanyc/ny-data-registry/exports/` (change with `NY_DATA_EXPORT_DIR`). The newest 50 are kept, none older than 7 days; nothing else in that folder is touched. `export: "never"` turns the file off and `export: "always"` writes one even for a short answer. `offset` still pages by hand for clients that need it, but nothing depends on it.
 
+**Topics.** Every dataset gets topics from one shared list of 24, such as Housing and homelessness, Transportation or Elections and civic participation. A dataset can have several. They come from the dataset's own categories, tags and department, so the same topic finds the same kind of data on every portal, whatever each portal calls it. Pass `topic` to `search_datasets`, alone or with a query; a topic alone lists that topic, most-viewed first. Rows carry their topic ids. `list_topics` gives the list with counts. On the 2026-11-05 index, 8,910 of 9,569 datasets (93.1%) get at least one topic; the rest carry no label that fits the list, and text search still finds them. Each published index comes with `topic-crosswalk.csv`: every label on every portal, and the topics it gives. How it works and how to change it: [docs/topics.md](docs/topics.md).
+
 ---
 
 ## Questions to try
@@ -65,6 +68,7 @@ Ask your AI assistant these once the server is connected. Where we ran a questio
 - "Housing code violations in Syracuse." / "Bike lanes in Buffalo." / "Street trees in Buffalo." Narrow a search to one place.
 - "Where are the polling places?" Finds Suffolk and Tompkins counties.
 - "Crash data updated since 2026-10-01." Use a date to see only datasets that changed recently.
+- "List election data in Tompkins County." / "Which housing datasets does Buffalo have?" A topic finds data whatever words a portal uses for it. (`list_topics` shows all 24.)
 
 **Who has data, and for where?** (`find_sources`, `list_sources_for_place`)
 
@@ -125,31 +129,55 @@ and point your client at `node /path/to/ny-data-registry-mcp/dist/index.js`.
 
 ### The dataset index
 
-The four index tools (`search_datasets`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. It holds **metadata only**: titles, descriptions, column names and types, formats and links. No dataset contents.
+The five index tools (`search_datasets`, `list_topics`, `get_dataset_columns`, `find_joinable`, `whats_new`) read a prebuilt SQLite index. It holds **metadata only**: titles, descriptions, column names and types, formats and links. No dataset contents.
 
 - **Where it comes from:** the `index-latest` release, at a fixed URL: `https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/ny-data-index.sqlite.gz`. It is rebuilt every night (see "The nightly harvest"). Dated snapshots are kept as `index-YYYY-MM-DD` releases: the last 14, plus the first of each month for good. Each release also carries `index.json`, which describes the files (schema version, harvest time, sizes, both SHA-256 sums, dataset and portal counts, and the quality-gate result).
 - **Checked before use:** the server checks both SHA-256 sums in the release's `SHA256SUMS` file (the `.gz` and the unzipped `.sqlite`) and the schema version. A file that fails any check is never installed.
 - **Where it goes:** `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` (change with `NY_DATA_INDEX`).
-- **When:** only when the file is missing. An existing index is never replaced on its own.
+- **When:** on first run when the file is missing, then whenever it is more than **5 days** old and a newer one is published, and at once if the published index was rolled back past yours (see "Keeping the index current").
 - **Get or refresh it by hand:**
 
   ```bash
-  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download          # if missing
-  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download --force  # replace with the newest
+  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry update            # install, or update if a newer one is published
+  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry update --check    # only say whether a newer one is published
+  npx -y -p @betanyc/ny-data-registry-mcp ny-data-registry download --force  # replace it with the published one, no questions
   ```
 
 - **Turn the download off:** set `NY_DATA_INDEX_AUTO_DOWNLOAD=0`. Then the dataset tools reply with these steps instead. Or build your own index with `ny-data-registry harvest` (see "Refresh").
+
+### Keeping the index current
+
+A running server checks for a newer index 5 minutes after it starts and then once a day. It never makes you wait: the check runs in the background, and a question asked during a download is answered from the index you have.
+
+1. **Is it due?** If your index is less than 5 days old (`NY_DATA_INDEX_REFRESH_DAYS`), the server reads only `index.json`, to see whether the index was rolled back (below). Nothing else is fetched.
+2. **Is there a newer one?** The server reads `index.json`, the small file published beside each index (under 1 KB). It does nothing when that is the file you have, when yours is as new or newer (an index you built yourself, say), or when the published index needs a newer version of this package. In that last case it says so and keeps your index.
+3. **Download and check.** The new index is saved beside the old one as `ny-data-index.sqlite.part`, and both SHA-256 sums in `index.json` (the `.gz` and the unzipped file) and the schema version are checked. A file that fails any check is deleted. Your index is not touched until the new one passes.
+4. **Swap.** The checked file is renamed over the old one, and the server reopens it. `ny-data-index.sqlite.source.json` records what was installed, from where, and its SHA-256. If the old index was in WAL mode, its empty `-wal` and `-shm` files are removed; a `-wal` with data in it is kept and reported.
+5. **On Windows**, a file that another program has open cannot be replaced. Then the checked file waits as `ny-data-index.sqlite.next`, and it is installed the next time the index is opened with nothing holding it (usually the next start). `registry_info` says `ready-on-restart`.
+
+**If the index was rolled back.** When a published index turns out bad, BetaNYC can point `index-latest` back at an older snapshot (see "Roll back a bad index"). Its `index.json` then says `rolled_back`, with the snapshot it went back to and why. At its next check, a server whose index is newer than that snapshot replaces it with the snapshot, even if its index is less than 5 days old. A server already on that snapshot, or on an older one, does nothing special. `update --check` reports a rollback (exit 4) and `update` makes the swap (exit 0). On Windows the swap can wait as `.next`, like any update. `registry_info.index_status.rolled_back` shows the rollback, and an `index_note` about an old index also says the index was rolled back, and why.
+
+If anything fails, the server keeps the index it has and tries again at the next check. `registry_info` shows `index_status`: the index's age, whether automatic updates are on (and if not, which setting turned them off), and what the last check found. When your index is more than **14 days** old, every `search_datasets` reply carries an `index_note` saying so, with the `update` command.
+
+**Turn automatic updates off** with `NY_DATA_INDEX_AUTO_UPDATE=0`. They are also off when you set `NY_DATA_INDEX` (the index is then a file you manage), when `NY_DATA_INDEX_URL` names a dated snapshot (`.../download/index-YYYY-MM-DD/...`, a pin), when `NY_DATA_INDEX_AUTO_DOWNLOAD=0`, and in offline mode. The `update` command still works in all of these but offline mode.
+
+**`update` exit codes:** 0 already current, updated, rolled back, or yours was left alone because it is as new as the published one; 1 failed (nothing changed), or another process is downloading; 2 usage error; 3 the published index needs a newer version of this package; 4 (`--check`) a newer index is published, or the index was rolled back; 5 downloaded and checked, but the index is in use (Windows), so it is installed when nothing holds it.
 
 ### Environment variables (all optional)
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `NY_DATA_INDEX` | `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` | Where the index lives |
+| `NY_DATA_INDEX` | `${HOME}/.cache/betanyc/ny-data-registry/ny-data-index.sqlite` | Where the index lives. Setting it turns automatic updates off |
 | `NY_DATA_INDEX_AUTO_DOWNLOAD` | on | `0` = never download the index on first run |
-| `NY_DATA_INDEX_URL` | the `index-latest` release | Download the index from somewhere else (it must have a `SHA256SUMS` beside it) |
+| `NY_DATA_INDEX_URL` | the `index-latest` release | Download the index from somewhere else (it must have `index.json` or `SHA256SUMS` beside it). A dated snapshot URL pins the index and turns automatic updates off |
+| `NY_DATA_INDEX_AUTO_UPDATE` | on | `0` = never replace an installed index on its own (`update` still can) |
+| `NY_DATA_INDEX_REFRESH_DAYS` | 5 | Automatic updates download only when the installed index is at least this many days old |
+| `NY_DATA_INDEX_STALE_DAYS` | 14 | Past this age, `search_datasets` replies carry an `index_note` |
+| `NY_DATA_INDEX_CHECK_HOURS` | 24 | How often a running server checks (at least 1) |
+| `NY_DATA_INDEX_CHECK_DELAY_SECONDS` | 300 | When a server makes its first check after starting |
 | `NY_DATA_CACHE_DIR` | `${HOME}/.cache/betanyc/ny-data-registry` | Registry refresh cache and HTTP cache |
 | `NY_DATA_REGISTRY_REFRESH` | on | `0` = never fetch the published registry; use the bundled copy |
-| `NY_DATA_OFFLINE` | off | `1` = refuse every network call, including the first-run download (tests use this) |
+| `NY_DATA_OFFLINE` | off | `1` = refuse every network call, including the first-run download and update checks (tests use this) |
 | `NY_DATA_MAX_LAYERS` | 250 | Per-portal cap on ArcGIS field requests per harvest |
 | `NY_DATA_MIN_INTERVAL_MS` | 1000 | Minimum gap between requests to one host (cannot be set below 1000; Socrata hosts always get at least 2000) |
 | `SOCRATA_APP_TOKEN` | none | Sent as `X-App-Token` to the Socrata Discovery API |
@@ -200,7 +228,7 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 ## Refresh
 
 - **Registry**: picked up on next server start (conditional GET of the Pages copy).
-- **Index**: rebuilt every night by `.github/workflows/harvest.yml` (next section). To build your own, run `node dist/cli.js harvest`.
+- **Index**: rebuilt every night by `.github/workflows/harvest.yml` (next section). Each server picks up the new one within about 6 days, or at once with `ny-data-registry update` (see "Keeping the index current"). To build your own, run `node dist/cli.js harvest`.
 
 ### The nightly harvest
 
@@ -208,7 +236,7 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
 
 1. **Preflight.** It stops at once if the `SOCRATA_APP_TOKEN` secret is missing, if the certificate file below is missing, or if a publishing run was started on a branch other than `main`.
 2. **Start from the published index.** It downloads `index-latest` with the same checksum and schema checks every server uses. If that fails, the run fails. It never quietly starts from nothing, which would reset every dataset's `first_seen`. Only the `fresh` input starts empty.
-3. **Harvest**, as described above. First, portals whose ids are no longer in the registry are dropped with their datasets, since nothing would ever read them again (portal ids come from registry rows, so a changed row leaves its old id behind). Each drop is listed in the run summary and `index.json`. Nothing is dropped when the registry the run loaded is older than the one the index was built from.
+3. **Harvest**, as described above. First, portals whose ids are no longer in the registry are dropped with their datasets, since nothing would ever read them again (portal ids come from registry rows, so a changed row leaves its old id behind). Each drop is listed in the run summary and `index.json`. Nothing is dropped when the registry the run loaded is older than the one the index was built from. Last, every live dataset's topics are rebuilt from its labels, including portals not read that night, so a change to the topic rules reaches the whole index.
 4. **Quality gate.** The new index is compared with the published one. Datasets dropped with registry removals are subtracted first (up to 5 portals; more blocks the publish). Publishing is blocked when:
    - the question set (`eval/questions.json`) scores under 90% or finds any invariant violation;
    - the index loses more than 10% of its datasets;
@@ -218,22 +246,24 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
    - the index is empty.
 
    The limits are `publish_gate` in `data/harvest-config.json`. The result goes to `gate.json`, published with every index. When the gate fails, nothing is published and the current index stays. To publish anyway, run the workflow by hand with `force_publish` on and a `force_reason`. The reason, the person who gave it and the failed checks are recorded in `gate.json`, in `index.json` and in the release notes.
-5. **Publish.** The published copy uses SQLite's rollback journal, not WAL, so readers do not create `-wal` and `-shm` files beside it. The run creates a dated snapshot `index-YYYY-MM-DD` titled "(current)" with all files, then updates `index-latest` (the `.gz`, `SHA256SUMS`, the side files, `index.json` last), then relabels older snapshots "(superseded)". Index releases are never marked "Latest"; the code release is.
+5. **Publish.** The published copy uses SQLite's rollback journal, not WAL, so readers do not create `-wal` and `-shm` files beside it. The files are the index, its `SHA256SUMS`, `index.json`, `harvest-stats.json`, `eval.md`, `gate.json` and `topic-crosswalk.csv`. The run creates a dated snapshot `index-YYYY-MM-DD` titled "(current)" with all files, then updates `index-latest` (the `.gz`, `SHA256SUMS`, the side files, `index.json` last), then relabels older snapshots "(superseded)". Index releases are never marked "Latest"; the code release is.
 6. **Retention.** The 14 newest snapshots and the first snapshot of each month are kept. Older dated snapshots and their tags are deleted. `index-latest` and code releases are never touched.
 7. **Failures.** A scheduled or publishing run that fails, or whose gate blocks the publish, opens an issue labeled `harvest-failure` (or comments on the open one), with the run link, what failed and the portals that did not come back complete. The next run that publishes closes it. GitHub also emails whoever last changed the schedule line. Every run's summary page shows the portal outcomes and the gate, and its `harvest-run` artifact (kept 14 days) holds the stats, question-set results, gate result, the files built and the log.
 
-Inputs for a run by hand: `publish` (off = dry run; files in the artifact only), `fresh`, `ignore_cadence`, `force_publish` with `force_reason`.
+Inputs for a run by hand: `publish` (off = dry run; files in the artifact only), `fresh`, `ignore_cadence`, `force_publish` with `force_reason`, `rollback_to` with `rollback_reason`.
 
-**Roll back a bad index** by copying a snapshot's files over `index-latest`:
+**Roll back a bad index.** If a published index turns out bad, run the workflow with `rollback_to`:
 
 ```sh
-gh release download index-YYYY-MM-DD --dir rollback
-gh release upload index-latest rollback/* --clobber
+gh workflow run harvest.yml -f rollback_to=index-YYYY-MM-DD -f rollback_reason="why"
 ```
 
-`index-2026-11-05` predates `index.json`; after rolling back to it, also run `gh release delete-asset index-latest index.json --yes`, `gate.json` likewise.
+That run does no harvest. It checks the snapshot, copies its files over `index-latest` (`index.json` last), and adds `rolled_back` to `index.json`: `from` (the bad snapshot), `to`, `reason`, `at`, `by`, and the bad index's harvest time and SHA-256. The bad snapshot is relabeled "(rolled back)" and the target "(current)". No release is deleted. A snapshot made before `topic-crosswalk.csv` existed can still be a target; the newer crosswalk is then removed from `index-latest`, last, so it never sits beside an index it does not describe. Add `-f publish=false` to only check.
 
-Or pin one machine to a snapshot with `NY_DATA_INDEX_URL`. **Stop the nightly run** with `gh workflow disable harvest.yml`; servers keep the index they have.
+- **It refuses** a snapshot that does not exist, one that retention is about to delete, one without `index.json` and the other files a nightly publish makes (so not `index-2026-11-05`), one whose schema this package cannot read, one that is not older than `index-latest`, and a missing reason. Nothing changes when it refuses.
+- **Servers go back by themselves.** At their next check (within a day for a running server), servers whose index is newer than the target replace it with the target. See "Keeping the index current".
+- **The next nightly publish clears it.** That run starts from the rolled-back index, and its `index.json` has no `rolled_back`, so servers move forward as usual. To keep the bad night from coming back, fix the cause first, or **stop the nightly run** with `gh workflow disable harvest.yml`; servers keep the index they have.
+- **One machine only?** Pin it to a snapshot with `NY_DATA_INDEX_URL`, or run `ny-data-registry download --force` there.
 
 GitHub turns off scheduled workflows in a public repository after 60 days with no repository activity. A stale `index.json` (`last_harvest` more than a few days old) is the sign.
 
@@ -243,7 +273,7 @@ GitHub turns off scheduled workflows in a public repository after 60 days with n
 
 ## How it was checked
 
-- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all eleven tools.
+- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all twelve tools.
 - `node dist/cli.js eval`: a fixed set of real questions (`eval/questions.json`) scored against the real index. Results: `eval/runs/`.
 
 Latest results (2026-11-05, office-mac), all in `eval/runs/`:

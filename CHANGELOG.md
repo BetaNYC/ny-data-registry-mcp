@@ -56,6 +56,78 @@ from being published. See [#14](https://github.com/BetaNYC/ny-data-registry-mcp/
 - Code releases (`vX.Y.Z`) are now created as the repository's "Latest" release; index
   releases never are.
 
+Each install now picks up the new index by itself, and an `update` command gets it on
+demand. See [#15](https://github.com/BetaNYC/ny-data-registry-mcp/issues/15) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- Automatic index updates, on by default. A running server checks 5 minutes after it starts
+  and then every 24 hours, on timers that never block startup or a tool call. When the
+  installed index is at least 5 days old, it reads the release's `index.json` and downloads
+  the index only if the published one is newer and this package can read its schema. The
+  download is checked against both SHA-256 sums (and the size) in `index.json` before the
+  installed index is touched, then renamed into place. Any failure keeps the installed index.
+  The server's open database handle reopens after a swap (it also notices a file replaced by
+  another process, checking at most once a minute), so no restart is needed.
+- On Windows, where a file another process has open cannot be renamed over (`EBUSY` or
+  `EPERM`), the checked file waits as `<index>.next` and is installed the next time the index
+  is opened with nothing holding it.
+- `<index>.source.json` beside the index: the URL, SHA-256 and harvest time of what was
+  installed. An index installed by an older version is hashed once to make one.
+- `ny-data-registry update` (download if a newer index is published, regardless of age or
+  the automatic-update setting) and `update --check` (report only). Exit codes: 0 current or
+  updated, 1 failed, 2 usage, 3 needs a newer package, 4 a newer index is published
+  (`--check`), 5 downloaded but waiting for the index to be free.
+- Settings: `NY_DATA_INDEX_AUTO_UPDATE` (`0` = off), `NY_DATA_INDEX_REFRESH_DAYS` (5),
+  `NY_DATA_INDEX_STALE_DAYS` (14), `NY_DATA_INDEX_CHECK_HOURS` (24),
+  `NY_DATA_INDEX_CHECK_DELAY_SECONDS` (300). A setting that cannot be read falls back to its
+  default and is reported. Automatic updates are also off when `NY_DATA_INDEX` is set (a file
+  you manage), when `NY_DATA_INDEX_URL` names a dated snapshot, when
+  `NY_DATA_INDEX_AUTO_DOWNLOAD=0`, and in offline mode.
+- `registry_info.index_status`: the index's age, whether it is stale, whether automatic
+  updates are on and what turned them off, the last check's result and time, and the
+  published harvest time.
+- `search_datasets` replies carry `index_note` when the index is more than 14 days old,
+  with the `update` command. Other tools do not.
+- CI runs the whole test suite on `windows-latest` (Node 22.x) as well.
+- Rollback. `harvest.yml` takes `rollback_to` (a kept `index-YYYY-MM-DD` snapshot) with a
+  required `rollback_reason`. That run does no harvest: it checks the snapshot's files and
+  copies them over `index-latest`, adds `rolled_back` (`from`, `to`, `reason`, `at`, `by`) to
+  `index.json`, and relabels the bad snapshot "(rolled back)". It refuses a missing snapshot,
+  one retention is about to delete, one without `index.json`, one this package cannot read,
+  and one not older than `index-latest`. It deletes nothing. A server whose index is newer than
+  the target replaces it with the target at its next check, even inside the 5 days, so an
+  automatic check now reads `index.json` every time (under 1 KB). `update --check` reports a
+  rollback (exit 4), `update` makes the swap (new outcome `rolled-back`, exit 0), and
+  `index_note` and `registry_info.index_status.rolled_back` say why. The next nightly publish
+  clears it. Each publish now records its tag in `index.json` (`snapshot_tag`).
+
+### Changed
+
+- `download --force` refuses to start while another process holds the download lock,
+  instead of going ahead without it.
+- A release without `index.json` (from before the nightly harvest) is still read: the
+  sqlite sum in `SHA256SUMS` decides whether the installed index is current. An automatic
+  check then leaves alone a file it did not install itself.
+
+Search by topic. See [#18](https://github.com/BetaNYC/ny-data-registry-mcp/issues/18) (epic
+[#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
+
+### Added
+
+- 24 shared topics, built from the categories, tags and departments New York's portals already
+  use. Each dataset gets its topics from its own labels; a dataset can have several.
+  `search_datasets` takes `topic` (with a query, or alone: then `query` is optional, and the
+  topic is listed most-viewed first), and its rows carry their topic ids. New `list_topics` tool:
+  the 24 topics with dataset and portal counts, and the share of datasets with a topic (8,910 of
+  9,569, 93.1%, on the 2026-11-05 index). The rules are data: `data/topics.json` and
+  `data/topic-hand-assigned.json` (broad and ambiguous words, each with a reason). The harvest
+  rebuilds every dataset's topics at the end of each run, and each published index carries
+  `topic-crosswalk.csv` (every portal label and its topics). `ny-data-registry topics` rebuilds
+  them on a local index. New `topics` and `dataset_topics` tables; the schema version is
+  unchanged, so older servers still read new indexes. Method: `docs/topics.md`.
+
 ## [0.3.0] — 2026-11-13
 
 `search_datasets` gives the whole answer in one call. Its reply has a new shape, which is

@@ -1,15 +1,22 @@
 # Offline tests at both ends of the declared Node range (engines: >=22.16; older official builds lack SQLite FTS5).
-# No network is used by the tests.
+# No network is used by the tests. Windows runs the whole suite too: replacing an index that is
+# open behaves differently there (renaming over an open file fails), and the update code has a
+# fallback for it that only a Windows run can check (issue #15).
 name: ci
 on:
   push:
   pull_request:
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         node: ["22.16.0", "26.x"]
+        include:
+          - os: windows-latest
+            node: "22.x"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

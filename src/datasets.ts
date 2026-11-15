@@ -7,9 +7,12 @@ import { pathToFileURL } from "node:url";
 import { slugFor, writeExport } from "./exportcsv.js";
 import { openDb, indexExists, stripHtml } from "./db.js";
 import { indexPath } from "./paths.js";
+import { installPendingIndex } from "./fetchindex.js";
+import { staleNote } from "./indexage.js";
 import { expandTerms, placeMatches, tokenize } from "./sources.js";
 import { resolvePlace, places, type ResolvedPlace } from "./places.js";
 import { registry, type Source } from "./registry.js";
+import { hasTopics, resolveTopic, topicRules, coveragePercent, CROSSWALK_NAME, type TopicDef } from "./topics.js";
 
 export class NoIndexError extends Error {
   constructor(detail?: string) {
@@ -27,18 +30,55 @@ export class NoIndexError extends Error {
 
 let cached: DatabaseSync | null = null;
 let cachedPath: string | null = null;
+let cachedId: string | null = null;
+let checkedAt = 0;
+/**
+ * How often an open handle checks that the file at its path is still the one it opened. An
+ * update renames a new file over the index; on macOS and Linux a handle keeps reading the old
+ * file until it reopens. Calls run one at a time and prepare their statements per call, so no
+ * query is mid-flight when the handle is swapped.
+ */
+let identityCheckMs = 60_000;
+/** For tests. */
+export function setIdentityCheckMs(ms: number): void {
+  identityCheckMs = ms;
+}
+
+function fileId(p: string): string | null {
+  try {
+    const st = statSync(p);
+    return `${st.ino}:${st.size}:${st.mtimeMs}`;
+  } catch {
+    return null;
+  }
+}
+
 export function db(): DatabaseSync {
   const p = indexPath();
-  if (cached && cachedPath === p) return cached;
+  if (cached && cachedPath === p) {
+    if (Date.now() - checkedAt < identityCheckMs) return cached;
+    checkedAt = Date.now();
+    if (fileId(p) === cachedId) return cached;
+    closeDb(); // replaced (or removed): open the file that is there now
+  } else if (cached) closeDb();
+  // A verified update that could not be swapped in while the file was open (Windows).
+  try {
+    installPendingIndex(p);
+  } catch {
+    /* keep the current index; the next update check reports the problem */
+  }
   if (!indexExists(p)) throw new NoIndexError();
   cached = openDb(p, { readOnly: true });
   cachedPath = p;
+  cachedId = fileId(p);
+  checkedAt = Date.now();
   return cached;
 }
 export function closeDb(): void {
   cached?.close();
   cached = null;
   cachedPath = null;
+  cachedId = null;
 }
 
 export function indexInfo(): Record<string, unknown> | null {
@@ -156,7 +196,10 @@ export const MAX_LIMIT = 50;
 export const MAX_TOP_PER_GROUP = 10;
 
 export interface SearchArgs {
-  query: string;
+  /** Optional when a topic is given. */
+  query?: string;
+  /** A topic id or name (list_topics). */
+  topic?: string;
   place?: string;
   portal?: string;
   platform_family?: string;
@@ -191,6 +234,27 @@ function compact(r: DatasetRow) {
     url: r.permalink,
     formats: [...new Set(formats.map((f) => f.format))].slice(0, 6),
   };
+}
+
+/** Topic ids for these datasets, in the shared list's order. Empty when the index has no topics. */
+function topicsFor(d: DatabaseSync, ids: string[]): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  if (!ids.length || !hasTopics(d)) return out;
+  const rows = d
+    .prepare(`SELECT dt.dataset_id AS id, dt.topic_id AS t FROM dataset_topics dt JOIN topics tp ON tp.id = dt.topic_id WHERE dt.dataset_id IN (${ids.map(() => "?").join(",")}) ORDER BY tp.position`)
+    .all(...ids) as { id: string; t: string }[];
+  for (const r of rows) out.set(r.id, [...(out.get(r.id) ?? []), r.t]);
+  return out;
+}
+
+/** An index built before 0.4.0 has no topics. */
+export const NO_TOPICS_NOTE =
+  "This index was built before topics were added (0.4.0), so it has no topics yet. Run `ny-data-registry update` (or wait for the automatic update) to get a newer index, or `ny-data-registry topics` to add them to this one.";
+
+function topicArg(v: string): TopicDef {
+  const t = resolveTopic(v);
+  if (!t) throw new Error(`'${v}' is not one of the 24 topics. Use a topic id or name from list_topics: ${topicRules().topics.map((x) => x.id).join(", ")}.`);
+  return t;
 }
 
 interface PoolRow {
@@ -275,15 +339,23 @@ export function searchDatasets(a: SearchArgs) {
     throw new Error("group_by returns every group with counts and top titles; offset, limit and detail apply only without group_by. Use top_per_group to change how many titles each group shows.");
   }
   if (!a.group_by && a.top_per_group !== undefined) throw new Error("top_per_group applies only with group_by");
-  const fq = ftsQuery(a.query);
-  if (!fq) return { query: a.query, total_matches: 0, results: [], note: "the query has no searchable words" };
+  const query = a.query?.trim() ? a.query : undefined;
+  if (!query && !a.topic) throw new Error("give a query, a topic, or both");
+  const topic = a.topic ? topicArg(a.topic) : null;
+  if (topic && !hasTopics(d)) throw new Error(NO_TOPICS_NOTE);
+  const fq = query ? ftsQuery(query) : null;
+  if (query && !fq) return { query, total_matches: 0, results: [], note: "the query has no searchable words" };
   const where: string[] = ["d.removed_at IS NULL"];
   const params: (string | number)[] = [];
+  if (topic) {
+    where.push("EXISTS (SELECT 1 FROM dataset_topics dt WHERE dt.dataset_id = d.id AND dt.topic_id = ?)");
+    params.push(topic.id);
+  }
   let resolved: ResolvedPlace | null = null;
   if (a.place) {
     const p = resolvePlace(a.place);
     resolved = p;
-    if (!p) return { query: a.query, place_error: `'${a.place}' is not a New York place this server knows`, total_matches: 0, results: [] };
+    if (!p) return { query: query ?? null, place_error: `'${a.place}' is not a New York place this server knows`, total_matches: 0, results: [] };
     if (p.kind === "state") where.push("p.place_scope = 'statewide'");
     else if (p.kind === "region") {
       where.push("(p.region = ? OR p.place_scope = 'statewide')");
@@ -311,26 +383,33 @@ export function searchDatasets(a: SearchArgs) {
     where.push(`EXISTS (SELECT 1 FROM json_each(d.formats) f WHERE lower(json_extract(f.value, '$.format')) IN (${al.map(() => "?").join(",")}))`);
     params.push(...al);
   }
-  const from = `FROM datasets_fts JOIN datasets d ON d.id = datasets_fts.dataset_id JOIN portals p ON p.id = d.portal_id
-    WHERE datasets_fts MATCH ? AND ${where.join(" AND ")}`;
-  const total = (d.prepare(`SELECT COUNT(*) AS n ${from}`).get(fq, ...params) as { n: number }).n;
-
+  // With a query, text search drives the match; a topic alone lists the topic, most-viewed first.
+  const joins = fq
+    ? "datasets_fts JOIN datasets d ON d.id = datasets_fts.dataset_id JOIN portals p ON p.id = d.portal_id"
+    : "datasets d JOIN portals p ON p.id = d.portal_id";
+  const whereSql = `${fq ? "datasets_fts MATCH ? AND " : ""}${where.join(" AND ")}`;
+  const from = `FROM ${joins} WHERE ${whereSql}`;
+  const bind = (match: string | null) => (fq ? [match ?? fq, ...params] : [...params]);
   // bm25 column weights: dataset_id, name, description, tags, columns, portal, place.
+  const rankExpr = fq ? "bm25(datasets_fts, 0, 10.0, 1.5, 3.0, 1.0, 0.5, 0.5)" : "0";
+  const order = fq ? "rank, d.id" : "COALESCE(d.views, 0) DESC, d.id";
+  const total = (d.prepare(`SELECT COUNT(*) AS n ${from}`).get(...bind(null)) as { n: number }).n;
+
   // The pool is the best RANK_POOL_MAX by text relevance; d.id breaks ties so pages are stable.
   const poolSql = `SELECT d.id, d.name, d.type, d.views, d.portal_id, p.name AS portal_name, p.entity AS portal_entity, d.platform_family, d.place_counties,
-        bm25(datasets_fts, 0, 10.0, 1.5, 3.0, 1.0, 0.5, 0.5) AS rank ${from} ORDER BY rank, d.id LIMIT ?`;
-  const qs = ftsQueries(a.query)!;
+        ${rankExpr} AS rank ${from} ORDER BY ${order} LIMIT ?`;
+  const qs = query ? ftsQueries(query) : null;
   let pool: PoolRow[];
-  if (!qs.hasSynonyms) {
-    pool = d.prepare(poolSql).all(fq, ...params, RANK_POOL_MAX) as unknown as PoolRow[];
+  if (!qs || !qs.hasSynonyms) {
+    pool = d.prepare(poolSql).all(...bind(null), RANK_POOL_MAX) as unknown as PoolRow[];
   } else {
     // Typed words first, scored on their own; then synonym-only matches at SYNONYM_WEIGHT.
-    const typed = d.prepare(poolSql).all(qs.typed, ...params, RANK_POOL_MAX) as unknown as PoolRow[];
+    const typed = d.prepare(poolSql).all(...bind(qs.typed), RANK_POOL_MAX) as unknown as PoolRow[];
     const room = RANK_POOL_MAX - typed.length;
-    const syn = room > 0 ? (d.prepare(poolSql).all(`(${qs.all}) NOT (${qs.typed})`, ...params, room) as unknown as PoolRow[]) : [];
+    const syn = room > 0 ? (d.prepare(poolSql).all(...bind(`(${qs.all}) NOT (${qs.typed})`), room) as unknown as PoolRow[]) : [];
     pool = [...typed, ...syn.map((r) => ({ ...r, rank: r.rank * SYNONYM_WEIGHT }))];
   }
-  const qTokens = tokenize(a.query);
+  const qTokens = query ? tokenize(query) : [];
   // The exact words typed, in order, beat a synonym: "tax lot" ranks "Tax Lot" titles above
   // "Tax Parcel" ones, even though both match.
   const phrase = qTokens.length > 1 ? qTokens.join(" ") : null;
@@ -349,7 +428,8 @@ export function searchDatasets(a: SearchArgs) {
   scored.sort((x, y) => y.s - x.s || (x.r.id < y.r.id ? -1 : x.r.id > y.r.id ? 1 : 0));
   const capped = total > pool.length;
   const head = {
-    query: a.query,
+    query: query ?? null,
+    ...(topic ? { topic: { id: topic.id, name: topic.name } } : {}),
     place: resolved?.name ?? null,
     total_matches: total,
     ranked_pool: capped
@@ -357,11 +437,16 @@ export function searchDatasets(a: SearchArgs) {
       : { size: pool.length, capped: false },
   };
   const lastHarvest = (d.prepare("SELECT value FROM meta WHERE key = 'last_harvest'").get() as { value: string } | undefined)?.value ?? null;
+  // Only dataset searches carry the age warning (issue #15), and only when the index is old.
+  const note = staleNote(lastHarvest);
+  const staleField = note ? { index_note: note } : {};
   const coverage = coverageNote(resolved);
 
   const exportMode: ExportMode = a.export ?? "auto";
   const pagingByHand = a.offset !== undefined;
-  const ctx: SearchCtx = { d, from, fq, params, scored, a, total };
+  // A bare 0 in ORDER BY would name a column, so a topic-only export orders by views.
+  const orderExpr = fq ? rankExpr : "-COALESCE(d.views, 0)";
+  const ctx: SearchCtx = { d, joins, whereSql, from, bindAll: bind(null), orderExpr, scored, a, total };
 
   if (a.group_by) {
     const topN = a.top_per_group ?? 3;
@@ -376,6 +461,7 @@ export function searchDatasets(a: SearchArgs) {
       note: groupNote(a.group_by),
       coverage,
       index_last_harvest: lastHarvest,
+      ...staleField,
     };
     // No rows are listed in group mode, so the CSV is the full list.
     if (exportMode === "always" || (exportMode === "auto" && total > 0)) attachExport(ctx, resp);
@@ -389,9 +475,11 @@ export function searchDatasets(a: SearchArgs) {
     const rows = d.prepare(`${SELECT_DS} WHERE d.id IN (${pageIds.map(() => "?").join(",")})`).all(...pageIds.map((x) => x.r.id)) as unknown as DatasetRow[];
     for (const r of rows) full.set(r.id, r);
   }
+  const topicMap = topicsFor(d, pageIds.map((x) => x.r.id));
+  const withTopics = <T extends object>(id: string, row: T) => (topicMap.size ? { ...row, topics: topicMap.get(id) ?? [] } : row);
   const results: Record<string, unknown>[] = pageIds.map((x) => {
     const r = full.get(x.r.id)!;
-    return detail === "full" ? { ...summary(r), score: Math.round(x.s * 10) / 10 } : compact(r);
+    return detail === "full" ? { ...withTopics(r.id, summary(r)), score: Math.round(x.s * 10) / 10 } : withTopics(r.id, compact(r));
   });
   const resp: Record<string, unknown> = { ...head };
   Object.assign(resp, {
@@ -402,6 +490,7 @@ export function searchDatasets(a: SearchArgs) {
     results,
     coverage,
     index_last_harvest: lastHarvest,
+    ...staleField,
   });
   if (offset >= scored.length && scored.length > 0) resp.note = `offset ${offset} is past the last ranked match (${scored.length}).`;
   // One call should carry the whole answer. When the matches do not all fit in the reply
@@ -443,9 +532,11 @@ export function searchDatasets(a: SearchArgs) {
 
 interface SearchCtx {
   d: DatabaseSync;
+  joins: string;
+  whereSql: string;
   from: string;
-  fq: string;
-  params: (string | number)[];
+  bindAll: (string | number)[];
+  orderExpr: string;
   scored: { r: PoolRow; s: number }[];
   a: SearchArgs;
   total: number;
@@ -459,7 +550,7 @@ interface GroupRow {
 }
 
 function computeGroups(ctx: SearchCtx, by: GroupBy, topN: number): GroupRow[] {
-  const { d, from, fq, params, scored } = ctx;
+  const { d, from, joins, whereSql, bindAll, scored } = ctx;
   // Exact counts over every match, not just the ranked pool.
   const sql =
     by === "portal"
@@ -469,10 +560,10 @@ function computeGroups(ctx: SearchCtx, by: GroupBy, topN: number): GroupRow[] {
       : by === "platform_family"
       ? `SELECT COALESCE(d.platform_family, 'unknown') AS k, COUNT(*) AS n ${from} GROUP BY 1`
       : `SELECT COALESCE(j.value, '${NO_COUNTY}') AS k, COUNT(*) AS n
-         FROM datasets_fts JOIN datasets d ON d.id = datasets_fts.dataset_id JOIN portals p ON p.id = d.portal_id
+         FROM ${joins}
          LEFT JOIN json_each(COALESCE(d.place_counties, '[]')) j
-         ${from.slice(from.indexOf("WHERE"))} GROUP BY 1`;
-  const counts = d.prepare(sql).all(fq, ...params) as { k: string; n: number }[];
+         WHERE ${whereSql} GROUP BY 1`;
+  const counts = d.prepare(sql).all(...bindAll) as { k: string; n: number }[];
   const top = new Map<string, { dataset_id: string; name: string | null }[]>();
   const label = new Map<string, Record<string, string>>();
   for (const { r } of scored) {
@@ -557,14 +648,14 @@ const CSV_HEADER = [
 
 /** Write every match (not just the pool) to a CSV, best-ranked first, and describe it in resp.export. */
 function attachExport(ctx: SearchCtx, resp: Record<string, unknown>): void {
-  const { d, from, fq, params, scored, a } = ctx;
+  const { d, from, bindAll, orderExpr, scored, a } = ctx;
   const rows = d
     .prepare(
       `SELECT d.id, d.native_id, d.name, p.name AS portal_name, d.portal_id, d.type, d.updated_at, d.permalink, d.formats, d.api_endpoint,
         p.socrata_domain, d.platform_family, d.place_counties, d.geometry_type, d.column_count ${from}
-        ORDER BY bm25(datasets_fts, 0, 10.0, 1.5, 3.0, 1.0, 0.5, 0.5), d.id`
+        ORDER BY ${orderExpr}, d.id`
     )
-    .all(fq, ...params) as unknown as (DatasetRow & { native_id: string })[];
+    .all(...bindAll) as unknown as (DatasetRow & { native_id: string })[];
   const order = new Map(scored.map((x, i) => [x.r.id, i]));
   const ranked = rows
     .map((r, i) => ({ r, o: order.get(r.id) ?? scored.length + i }))
@@ -589,7 +680,7 @@ function attachExport(ctx: SearchCtx, resp: Record<string, unknown>): void {
     r.geometry_type,
     r.column_count,
   ]);
-  const w = writeExport(slugFor([a.query, a.place, a.portal, a.platform_family, a.format, a.updated_since, a.group_by]), CSV_HEADER, out);
+  const w = writeExport(slugFor([a.query, a.topic, a.place, a.portal, a.platform_family, a.format, a.updated_since, a.group_by]), CSV_HEADER, out);
   resp.export = {
     path: w.path,
     uri: pathToFileURL(w.path).href,
@@ -729,4 +820,55 @@ export function placePenalty(title: string, p: ResolvedPlace): number {
     ...Object.keys(P.cities).map((c) => `city of ${c.toLowerCase()}`),
   ].filter((n) => ![...want].some((w) => n.startsWith(w + " ") || n.endsWith(" " + w)));
   return others.some((n) => t.includes(n)) ? -15 : 0;
+}
+
+/** The 24 shared topics with how many live datasets (and portals) each has, plus the share with any topic. */
+export function listTopics(a: { portal?: string } = {}) {
+  const d = db();
+  const rules = topicRules();
+  const base = {
+    topic_count: rules.topics.length,
+    crosswalk: {
+      file: CROSSWALK_NAME,
+      url: `https://github.com/BetaNYC/ny-data-registry-mcp/releases/download/index-latest/${CROSSWALK_NAME}`,
+      note: "Each portal label (category, tag, department) and the topics it gives. Rebuilt with every published index.",
+    },
+    method:
+      "Topics come from each dataset's own categories, tags and department, matched to the shared list by rules in data/topics.json. Broad words and words that mean different things on different portals are assigned by hand (data/topic-hand-assigned.json). A dataset can have several topics, so the counts add up to more than the number of datasets.",
+  };
+  if (!hasTopics(d)) {
+    return { ...base, topics: rules.topics.map((t) => ({ id: t.id, name: t.name, iso_19115: t.iso_19115, datasets: null, portals: null })), note: NO_TOPICS_NOTE };
+  }
+  const where = ["d.removed_at IS NULL"];
+  const params: string[] = [];
+  if (a.portal) {
+    where.push("(d.portal_id = ? OR p.name LIKE ? OR p.entity LIKE ?)");
+    params.push(a.portal, `%${a.portal}%`, `%${a.portal}%`);
+  }
+  const w = where.join(" AND ");
+  const counts = new Map(
+    (
+      d
+        .prepare(`SELECT dt.topic_id AS id, COUNT(*) AS n, COUNT(DISTINCT d.portal_id) AS portals FROM dataset_topics dt JOIN datasets d ON d.id = dt.dataset_id JOIN portals p ON p.id = d.portal_id WHERE ${w} GROUP BY dt.topic_id`)
+        .all(...params) as { id: string; n: number; portals: number }[]
+    ).map((r) => [r.id, r])
+  );
+  const datasets = Number((d.prepare(`SELECT COUNT(*) AS n FROM datasets d JOIN portals p ON p.id = d.portal_id WHERE ${w}`).get(...params) as { n: number }).n);
+  const withTopic = Number(
+    (d.prepare(`SELECT COUNT(*) AS n FROM datasets d JOIN portals p ON p.id = d.portal_id WHERE ${w} AND EXISTS (SELECT 1 FROM dataset_topics dt WHERE dt.dataset_id = d.id)`).get(...params) as { n: number }).n
+  );
+  const meta = (k: string) => (d.prepare("SELECT value FROM meta WHERE key = ?").get(k) as { value: string } | undefined)?.value ?? null;
+  return {
+    ...base,
+    portal: a.portal ?? null,
+    datasets,
+    datasets_with_topic: withTopic,
+    coverage_percent: coveragePercent(withTopic, datasets),
+    topics: rules.topics
+      .map((t) => ({ id: t.id, name: t.name, iso_19115: t.iso_19115, datasets: Number(counts.get(t.id)?.n ?? 0), portals: Number(counts.get(t.id)?.portals ?? 0) }))
+      .sort((x, y) => y.datasets - x.datasets || x.id.localeCompare(y.id)),
+    topics_built: meta("topics_built"),
+    index_last_harvest: meta("last_harvest"),
+    note: "Use a topic id with search_datasets (topic), alone or with a query. Datasets with no topic carry no category, tag or department that fits the list; they are still found by text search.",
+  };
 }
