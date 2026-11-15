@@ -1,0 +1,133 @@
+{
+  "_source": "Esri ArcGIS REST API reference, Map Service, example response (https://developers.arcgis.com/rest/services-reference/enterprise/map-service/), read 2026-11-14. tileInfo omitted.",
+  "currentVersion": 11.1,
+  "cimVersion": "3.1.0",
+  "serviceDescription": "Test Map Service Description",
+  "mapName": "Street Map Pro Data",
+  "description": "Street Map USA",
+  "copyrightText": "ESRI",
+  "supportsDynamicLayers": false,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Cities",
+      "parentLayerId": -1,
+      "defaultVisibility": true,
+      "subLayerIds": null,
+      "minScale": 0,
+      "maxScale": 0,
+      "type": "Feature Layer",
+      "geometryType": "esriGeometryPoint",
+      "supportsDynamicLegends": true
+    },
+    {
+      "id": 1,
+      "name": "States",
+      "parentLayerId": -1,
+      "defaultVisibility": true,
+      "subLayerIds": null,
+      "minScale": 0,
+      "maxScale": 0,
+      "type": "Feature Layer",
+      "geometryType": "esriGeometryPolygon",
+      "supportsDynamicLegends": true
+    },
+    {
+      "id": 2,
+      "name": "Counties",
+      "parentLayerId": -1,
+      "defaultVisibility": false,
+      "subLayerIds": [
+        3,
+        4
+      ],
+      "minScale": 0,
+      "maxScale": 0,
+      "type": "Feature Layer",
+      "geometryType": "esriGeometryPolygon",
+      "supportsDynamicLegends": true
+    },
+    {
+      "id": 3,
+      "name": "Large Counties",
+      "parentLayerId": 2,
+      "defaultVisibility": false,
+      "subLayerIds": null,
+      "minScale": 0,
+      "maxScale": 0,
+      "type": "Feature Layer",
+      "geometryType": "esriGeometryPolygon",
+      "supportsDynamicLegends": true
+    },
+    {
+      "id": 4,
+      "name": "Small Counties",
+      "parentLayerId": 2,
+      "defaultVisibility": false,
+      "subLayerIds": null,
+      "minScale": 0,
+      "maxScale": 0,
+      "type": "Feature Layer",
+      "geometryType": "esriGeometryPolygon",
+      "supportsDynamicLegends": true
+    }
+  ],
+  "tables": [],
+  "spatialReference": {
+    "wkid": 4326
+  },
+  "singleFusedMapCache": true,
+  "storageInfo": {
+    "storageFormat": "esriMapCacheStorageModeCompact",
+    "packetSize": 128
+  },
+  "initialExtent": {
+    "xmin": -109.55,
+    "ymin": 25.76,
+    "xmax": -86.39,
+    "ymax": 49.94,
+    "spatialReference": {
+      "wkid": 4326
+    }
+  },
+  "fullExtent": {
+    "xmin": -130,
+    "ymin": 24,
+    "xmax": -65,
+    "ymax": 50,
+    "spatialReference": {
+      "wkid": 4326
+    }
+  },
+  "datesInUnknownTimezone": false,
+  "minScale": 0,
+  "maxScale": 0,
+  "units": "esriDecimalDegrees",
+  "supportedImageFormatTypes": "PNG32,PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ",
+  "documentInfo": {
+    "Title": "StreetMap USA.mxd",
+    "Author": "ESRI Data Team",
+    "Comments": "ESRI Data and Maps 2004",
+    "Subject": "Street level data for the US",
+    "Category": "vector",
+    "Version": "3.0.0",
+    "AntialiasingMode": "Fast",
+    "TextAntialiasingMode": "Force",
+    "Keywords": "StreetMap USA"
+  },
+  "capabilities": "Map,Query,Data",
+  "supportedQueryFormats": "JSON, geoJSON, PBF",
+  "exportTilesAllowed": true,
+  "tileServers": [
+    "https://myserver/arcgis/rest/services/basemap/MapServer",
+    "https://myserver2/arcgis/rest/services/basemap/MapServer"
+  ],
+  "maxExportTilesCount": 100000,
+  "mapUnits": {
+    "uwkid": 9102
+  },
+  "maxRecordCount": 1000,
+  "maxImageHeight": 2048,
+  "maxImageWidth": 2048,
+  "supportedExtensions": "FeatureServer,KmlServer,MobileServer,WCSServer,WFSServer,WMSServer,NAServer,SchematicsServer"
+}

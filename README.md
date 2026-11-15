@@ -2,7 +2,7 @@
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that finds open data across every New York data portal in BetaNYC's [NY data portal registry](https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html): which portal covers a place or topic, how to query it, and, with the harvested index, which datasets and columns exist and in what formats.
 
-It complements the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP rather than replacing it. This server knows *where* data is (140 sources across state, county, city, agency, library and nonprofit portals) and hands the agent the right Socrata domain or ArcGIS service. Querying the data stays with `socrata` and the other BetaNYC MCPs.
+It complements the [`socrata`](https://www.npmjs.com/package/socrata-mcp-server) MCP rather than replacing it. This server knows *where* data is (224 sources across state, county, city, agency, library and nonprofit portals) and hands the agent the right Socrata domain or ArcGIS service. Querying the data stays with `socrata` and the other BetaNYC MCPs.
 
 Built by [BetaNYC](https://beta.nyc). **Status: 0.3.0.** Package: `@betanyc/ny-data-registry-mcp`.
 
@@ -188,13 +188,15 @@ If anything fails, the server keeps the index it has and tries again at the next
 
 ## Data sources
 
-- **The registry.** `BetaNYC/grounding-ai-with-ny-open-data` `resources/ny-data-portal-registry.json` (140 rows). A copy is bundled in `data/`. On startup the server makes a conditional request (ETag) for the published copy on GitHub Pages, caches it under `${HOME}/.cache/betanyc/`, and falls back to the bundled copy on any failure. This server never edits the registry.
+- **The registry.** `BetaNYC/grounding-ai-with-ny-open-data` `resources/ny-data-portal-registry.json` (224 rows, 2026-11-13). A copy is bundled in `data/`. On startup the server makes a conditional request (ETag) for the published copy on GitHub Pages, caches it under `${HOME}/.cache/betanyc/`, and falls back to the bundled copy on any failure. This server never edits the registry.
 - **Human-editable tables** in `data/`:
-  - `platform-families.json`: maps each of the registry's **101** free-text `platform` strings to one family (`socrata`, `arcgis-hub`, `arcgis-enterprise`, `arcgis-server`, `ckan`, `geoblacklight`, `custom-api`, `none`). A string not in the table is reported as *unmapped*, never guessed; 7 strings are deliberately `null` because the registry marks them UNCONFIRMED.
+  - `platform-families.json`: maps each of the registry's **156** free-text `platform` strings to one family (`socrata`, `arcgis-hub`, `arcgis-enterprise`, `arcgis-server`, `ckan`, `geoblacklight`, `custom-api`, `none`). A string not in the table is reported as *unmapped*, never guessed; 4 strings are deliberately `null` because the registry cannot say how the data is reached.
   - `ny-places.json`: 62 counties, 62 cities, 5 boroughs, 8 regions.
   - `key-columns.json`: the curated join keys.
   - `handoffs.json`: which BetaNYC MCP serves which registry row.
-  - `harvest-config.json`: skips (ANHD, Rockland, Columbia GeoBlacklight) and caps.
+  - `harvest-config.json`: skips (ANHD, Rockland, Columbia GeoBlacklight), caps, one on/off switch per adapter, the "no portal" rows let through (`allow_no_portal`), and the settings for the ArcGIS Server, GeoBlacklight and InvenioRDM adapters.
+  - `hand-kept.json`: what rows with no data link offer (see "Hand-kept list").
+  - `parcel-sources.json`: the State's parcel layer, read once, its per-county links, and the hand-reviewed registry parcel layers (see "Tax parcel coverage").
   - `synonyms.json`: a short civic synonym list ("property" → parcels, tax lots, BBL).
 - **The harvested index**, built from the portals themselves (next section).
 
@@ -210,21 +212,66 @@ If anything fails, the server keeps the index it has and tries again at the next
 | ArcGIS Hub | OGC API - Records (`/api/search/v1/collections/dataset/items`), plus the DCAT-US 1.1 feed for formats; falls back to the `all` collection, then DCAT only, on older sites | `FeatureServer?f=json`, then each layer `?f=json` |
 | ArcGIS Enterprise | `<portal>/sharing/rest/search`, filtered to the portal's own org (`portals/self`), or to its own service host when the org id is hidden | same second hop |
 | ArcGIS Online org (agency REST directories such as DEC, Parks, DCP) | `www.arcgis.com/sharing/rest/search?q=orgid:<id>` | same second hop |
+| ArcGIS Server REST directory (the State's GIS servers, DOT, DEC, Broome, Ulster) | `<root>/rest/services?f=json`, then each folder and each `MapServer`, `FeatureServer` or `ImageServer` `?f=json`; one dataset per service | each layer `?f=json` (up to 5 per service) |
 
-Everything else (custom APIs, CKAN, GeoBlacklight, standalone ArcGIS Server directories, pages with no API) is described by the registry tools but not harvested in this version.
+| GeoBlacklight (Cornell's CUGIR) | the institution's [OpenGeoMetadata](https://opengeometadata.org/) repository, downloaded as one archive through the GitHub API (`/repos/{owner}/{repo}/tarball/{ref}`); GeoBlacklight 1.0 and Aardvark records; the GeoBlacklight site itself is never called | none (links to downloads, WMS and WFS are kept as formats) |
+| InvenioRDM (NYU's UltraViolet, Spatial Data Repository community) | `/api/communities/{id}/records`, oldest first, 25 per page. **Switched off** until a supervised run checks the New York filter | none |
+| Hand-kept list (rows with no data link) | `data/hand-kept.json`, edited by hand; no network call | none |
+
+Everything else (custom APIs, CKAN, pages with no API and no hand-kept entry) is described by the registry tools but not harvested. `coverage` lists each row and why. CKAN has no adapter by decision: the registry's CKAN rows are data.gov's copies of catalogs read here at the source, plus one Stony Brook site whose robots.txt disallows its API ([`docs/ckan-comparison.md`](docs/ckan-comparison.md)).
 
 **Guards**
 - **Esri's own content is excluded** (owner `esri…`, org `P3ePLMYs2RVChkJx`). For Enterprise portals and ArcGIS Online orgs, items from another org are not counted under that portal; this is what turns Monroe's 108 search hits into its own content. Hub sites are *not* filtered by org, because a Hub's catalog is curated by its owner and aggregators like the State GIS Clearinghouse deliberately list other agencies' layers.
 - **Out-of-state guard**: an item whose extent lies wholly outside New York is dropped; a portal whose items are mostly outside New York is refused and purged. Placeholder extents (`[0,0,0,0]`) and projected coordinates (State Plane) count as *unknown*, never as outside.
 - **Stable paging**: Hub pages are requested sorted by `id`. A listing that comes back with fewer unique items than the portal's own total is treated as incomplete, so nothing is marked removed from a shaky listing.
 - **Politeness**: one descriptive User-Agent with no email address; at least 1 s between requests to a host, and at least 2 s to Socrata (`api.us.socrata.com`), with `X-App-Token` sent when `SOCRATA_APP_TOKEN` is set; robots.txt Disallow **and Crawl-delay** honored (every Hub site asks for 60 s, so Hub listing is slow on purpose); conditional requests by ETag; up to two retries on 429 or 503, honoring `Retry-After` (otherwise 5 s, then 10 s; never more than 60 s), and a 429 doubles that host's gap for the rest of the run; a per-portal cap on layer requests. A bot block is reported, never worked around.
-- **Weekly for county servers**: self-hosted county ArcGIS Enterprise portals (Livingston, Monroe, Orange, Wayne, Yates) are read once a week, not every night; their datasets stay in the index in between. `cadence` in `data/harvest-config.json` sets this; `harvest --ignore-cadence` reads everything.
+- **Weekly for county servers**: self-hosted county ArcGIS Enterprise portals (Livingston, Monroe, Orange, Wayne, Yates, Mount Vernon) and ArcGIS Server REST directories are read once a week, not every night; their datasets stay in the index in between. `cadence` in `data/harvest-config.json` sets this; `harvest --ignore-cadence` reads everything.
+- **Gentle on REST directories** (`arcgis_server` in `data/harvest-config.json`): at most 400 requests per host per read, listing and layers included; 2 s between them, or the robots.txt Crawl-delay if longer; no new request after 30 minutes; ArcGIS Server's own `Utilities` and `System` folders skipped; a folder or service robots.txt disallows is skipped. A host that hits a cap is marked partial, so nothing is marked removed. A service that answers with an error (secured) is not stored. Titles come from the service's own `documentInfo.Title`, else its name; extents in Web Mercator are converted, other projections are left unknown.
 - **Never called**: rows needing a key, ANHD, Rockland County, undocumented endpoints.
 
 The index stores metadata only (titles, descriptions, field names, links). It never downloads data.
 
 **Incremental**: datasets carry `first_seen`, `last_seen` and a content hash. A layer whose `modified` date has not changed keeps its stored columns and is not re-requested. A dataset is marked removed only after a *complete* harvest of its portal.
 
+
+### Coverage
+
+`node dist/cli.js coverage` reports, for every registry row, whether the harvest reads it and why not. It is offline: it reads the newest registry on the machine (the cached published copy, else the bundled one; `--refresh` fetches it first), `data/harvest-config.json` and the index (`--index path`, default the installed one). It never calls a portal. `--json` gives the full report; `--out file` saves it.
+
+Each row gets one state: `harvested`, `read-empty` (read, nothing kept), `failing` (failed, blocked or refused last time), `not-yet-read` (an adapter would read it, the index has no read yet), or `not-harvested`. A not-harvested row carries a fixed code:
+
+| code | meaning |
+|---|---|
+| `not-live` | the registry says dead or UNCONFIRMED |
+| `no-portal` | the registry says no portal |
+| `policy` | never called: a key is required, account-gated, blocks automated clients, or excluded in `harvest-config.json` |
+| `adapter-off` | its adapter is switched off in `harvest-config.json` |
+| `no-adapter` | it has an API, but this build has no adapter for it |
+| `described-only` | a custom API the registry describes |
+| `no-api` | web pages, viewers or downloads only |
+| `unmapped`, `unconfirmed` | the platform string is not in `platform-families.json`, or its family is deliberately null |
+| `incomplete-row` | the row lacks the URL or domain an adapter needs |
+
+For a not-harvested row, `documented_endpoint` is the registry's `api_endpoint`, verbatim.
+
+**Adapter switches.** `adapters` in `data/harvest-config.json` holds one `enabled` switch per adapter. Turning one off stops that adapter alone; its portals show as `adapter-off`, and their datasets stay in the index as last read, so the publish gate does not count them as lost.
+
+**"No portal" rows with a data endpoint.** Eight rows the registry marks "no portal" still document a public data endpoint, and are read: the City of Utica and Wyoming County (their ArcGIS Online orgs), the City of Mount Vernon (its ArcGIS Enterprise portal), and the ArcGIS Server REST directories of Greene, Washington, Cayuga, Essex and Chautauqua counties. Each was checked to be New York: Utica's org is "The City of Utica, NY", not the Utica, Minnesota Hub; Wyoming County's org centers on Warsaw, NY, not Wyoming County, Pennsylvania; the five county servers are not the same-named counties in Ohio, Wisconsin, Ontario or Kansas. The five county servers were each read once on 2026-11-14 (`checked_live`). St. Lawrence County is left out: its server is shared by six counties. The list is `allow_no_portal` in `data/harvest-config.json`. Each entry names its adapter and endpoint; if the registry row's endpoint changes, the row is skipped until someone checks it again. Other "no portal" rows with an endpoint show in `coverage` under `no-portal`, with the endpoint.
+
+**GeoBlacklight and InvenioRDM.** Both are read weekly. GeoBlacklight records are kept when public, not suppressed, not listed in the repository's `withdrawn.json`, from the right institution (`provider`), and not wholly outside New York; a repository whose records are mostly outside New York is refused, as with ArcGIS. The repository for each row is set in `geoblacklight.repos_by_source` in `data/harvest-config.json`; in GitHub Actions the run's own token is sent, so the shared runners do not hit GitHub's unauthenticated rate limit. Cornell's OpenGeoMetadata repository was last updated in March 2022, so it may lag CUGIR itself. InvenioRDM records are kept when public and when a location geometry touches New York or, with no geometry, when the title, places or subjects name New York. Locations are optional in InvenioRDM and NYU's repository holds places worldwide, so the `invenio-rdm` adapter starts off. To try it: turn it on in a branch and run `node dist/cli.js harvest --only new-york-university-libraries--ultraviolet-library-nyu-edu --ignore-cadence --stats-out stats.json`, then look at `excluded` and the kept titles.
+
+**Hand-kept list.** Some places have no data link at all: no portal, or only pages, viewers and downloads. `data/hand-kept.json` records what they do offer, one entry per registry row, with each link's kind (`page`, `viewer`, `search`, `download-page`, `dashboard`, `pdf`, `request-form`), where it came from, when it was added, and whether a person has opened it. The harvest adds each link to the index as type `hand-kept <kind>`, with no endpoint and no columns, so search can point to it. An entry is used only while its `source_id` and `entity` both match a registry row, and only while no adapter reads that row. It was seeded on 2026-11-14 with the parcel pages and viewers the State's parcel page lists for 30 counties whose own row has no data link (82 links). Each link was checked once that day (`link_check`: final URL, HTTP status, and ok, redirected, broken or blocked). A broken link stays in the file but is left out of the index; a redirected or blocked one is noted in its description. `checked` stays false until a person opens the link. Edit it in a pull request.
+
+### Tax parcel coverage
+
+`node dist/cli.js parcels` builds a table of all 62 counties. For each it says whether the county shares its tax parcels with the State's public layer, and whether the county (for the five boroughs, New York City) publishes its own parcel layer that the index or the registry knows about. It is offline, like `coverage`, and takes the same options.
+
+- **The State's list** comes from one read of the State's statewide layer, [NYS Tax Parcels Public](https://nysgeohub.ny.gov/arcgis/rest/services/Parcels/NYS_Tax_Parcels_Public/FeatureServer), the endpoint the [NYS GIS Clearinghouse parcels page](https://gis.ny.gov/parcels) documents. It was read once, on 2026-11-14, for its service description only. The response is kept in `docs/parcels/`, and the 38 county names are parsed from it, not typed by hand. `data/parcel-sources.json` records the URL, time, status and ETag.
+- **Own layer in the index**: a dataset from the county's own portal whose name says parcel, tax lot, tax map or PLUTO.
+- **Own layer in the registry**: a REST layer or download that the county's registry row documents, reviewed by hand, with an exact quote (`registry_parcel_layers`). A viewer, search page or request form does not count.
+- **The State page's links** for each county (its parcel page, viewer and extras) are listed too, unchecked.
+
+On 2026-11-14 (registry 2026-11-13, index of 2026-11-05): 38 counties share with the State; 23 have their own parcel layer in the index and 11 more in the registry only; 18 have neither. The table is [`docs/parcels/2026-11-14-parcel-coverage.md`](docs/parcels/2026-11-14-parcel-coverage.md).
 ---
 
 ## Refresh
@@ -246,6 +293,8 @@ The index stores metadata only (titles, descriptions, field names, links). It ne
    - one portal with at least 20 datasets loses more than half of them;
    - the schema version differs from the published index's or the package's;
    - the index is empty.
+
+   **New portals and adapters do not trip the gate.** Every drop check compares only what the published index already had, so growth passes. The first publish after this release adds the REST directories and the three "no portal" rows with no `force_publish` needed. What can still block it: the question set (new datasets can change rankings; it must still score 90%), or a portal that was healthy failing the same night.
 
    The limits are `publish_gate` in `data/harvest-config.json`. The result goes to `gate.json`, published with every index. When the gate fails, nothing is published and the current index stays. To publish anyway, run the workflow by hand with `force_publish` on and a `force_reason`. The reason, the person who gave it and the failed checks are recorded in `gate.json`, in `index.json` and in the release notes.
 5. **Publish.** The published copy uses SQLite's rollback journal, not WAL, so readers do not create `-wal` and `-shm` files beside it. The files are the index, its `SHA256SUMS`, `index.json`, `harvest-stats.json`, `eval.md`, `gate.json`, `topic-crosswalk.csv` and the two statewide standard-metadata files. The run creates a dated snapshot `index-YYYY-MM-DD` titled "(current)" with all files, then updates `index-latest` (the `.gz`, `SHA256SUMS`, the side files, `index.json` last), then relabels older snapshots "(superseded)". Index releases are never marked "Latest"; the code release is.

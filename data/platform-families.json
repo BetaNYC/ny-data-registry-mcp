@@ -135,14 +135,6 @@
       ]
     },
     {
-      "platform": "Custom site",
-      "family": null,
-      "note": "API status UNCONFIRMED in the registry",
-      "api_types_seen": [
-        "UNCONFIRMED"
-      ]
-    },
-    {
       "platform": "ArcGIS Hub (ArcGIS Online org NYSDOS)",
       "family": "arcgis-hub",
       "note": null,
@@ -770,14 +762,6 @@
       ]
     },
     {
-      "platform": "Unknown",
-      "family": null,
-      "note": "platform not identified in the registry",
-      "api_types_seen": [
-        "UNCONFIRMED"
-      ]
-    },
-    {
       "platform": "GeoBlacklight",
       "family": "geoblacklight",
       "note": null,
@@ -792,14 +776,6 @@
       "note": null,
       "api_types_seen": [
         "REST/JSON"
-      ]
-    },
-    {
-      "platform": "Vue app",
-      "family": null,
-      "note": "API status UNCONFIRMED in the registry",
-      "api_types_seen": [
-        "UNCONFIRMED"
       ]
     },
     {
@@ -840,6 +816,471 @@
       "note": "no API; web pages, viewers, or bulk downloads only",
       "api_types_seen": [
         "Per-indicator download buttons; no API found"
+      ]
+    },
+    {
+      "platform": "Esri ArcGIS Server 10.91",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "ArcGIS Hub (custom domain)",
+      "family": "arcgis-hub",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS Hub (OGC API Records search) + ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "Drupal (dol.ny.gov) + embedded Tableau dashboards + file downloads",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Bulk download (ZIP/XLS) + Tableau dashboards; no API found"
+      ]
+    },
+    {
+      "platform": "ArcGIS Enterprise (self-hosted Portal)",
+      "family": "arcgis-enterprise",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS Portal REST search + ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "Esri ArcGIS Server 10.81",
+      "family": "arcgis-server",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS REST (image/elevation services)"
+      ]
+    },
+    {
+      "platform": "PROS assessment search (vendor) + CivicPlus city site",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ImageMate (SDG) property locator; ArcGIS Online user in Warren County org (Fg3XpDIUTR3JZZES)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "City website",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "SDG property search, Laserfiche WebLink",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online org 'auburnny' (FkeHS98Kus6Rs7rG) + CivicPlus static PDF maps",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services, no catalog)"
+      ]
+    },
+    {
+      "platform": "CivicPlus city site, PDF maps",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "WordPress city site + ClearGov budget book",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "WordPress city site",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "City web page; Madison County ArcGIS Online viewer; Schneider Beacon (county)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Documents On-Demand (PDF library)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online feature services; Schneider Beacon; Image Mate Online",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services)"
+      ]
+    },
+    {
+      "platform": "City site (QScend-built CMS); ArcGIS Online org 'City Of Kingston' (lURKWeSyTPF2wvVs)",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services, no catalog)"
+      ]
+    },
+    {
+      "platform": "City web page (CivicPlus); PROS property search (prosgar.com)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online; ClearGov budget book; Flock transparency page",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online org 'cityofamsterdam' (noD0cpEjsFkxcXuR) + CivicPlus city site",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services, no catalog)"
+      ]
+    },
+    {
+      "platform": "Weebly city site, PDF/JPG maps",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Catalis (vertical) city site + ClearGov",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "CitySquared map viewer; ArcGIS Online feature services; Granicus city site",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services)"
+      ]
+    },
+    {
+      "platform": "City web page (CivicPlus), PDF maps",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online (Clinton County viewer; city org services secured); ClearGov",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Enterprise (self-hosted Portal, no Sites catalog seen)",
+      "family": "arcgis-enterprise",
+      "note": null,
+      "api_types_seen": [
+        "ArcGIS Portal REST search + ArcGIS REST"
+      ]
+    },
+    {
+      "platform": "City site (Granicus) links county tools; city planning layers live in Broome County's ArcGIS org",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Catalis (vertical) city site; Schneider Beacon (county)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "CivicPlus city site; Scribble Maps parks map",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Duda (multiscreensite) city site",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "ArcGIS Online feature services; Revize city site",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services)"
+      ]
+    },
+    {
+      "platform": "Revize city site",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "WordPress city site; ArcGIS Online org 'City of Jamestown, New York' (CQ6l69A0aVx5okSo)",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services, no catalog)"
+      ]
+    },
+    {
+      "platform": "City web page (WordPress) with XLSX downloads",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "bulk download (XLSX)"
+      ]
+    },
+    {
+      "platform": "ArcGIS Experience Builder viewer + ArcGIS Online feature services; PROS property search",
+      "family": "arcgis-server",
+      "note": "ArcGIS Online org feature services, no catalog site",
+      "api_types_seen": [
+        "ArcGIS REST (org feature services)"
+      ]
+    },
+    {
+      "platform": "OpenGov Stories (budget), county Image Mate",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none"
+      ]
+    },
+    {
+      "platform": "Conduent HCI (Healthy Communities Institute) indicator platform",
+      "family": "none",
+      "note": "no API verified by the registry",
+      "api_types_seen": [
+        "none verified"
+      ]
+    },
+    {
+      "platform": "Datawheel (D3plus front end; Tesseract OLAP API)",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "REST/JSON (Tesseract `data.jsonrecords`; undocumented on the site) + per-chart \"Download data\""
+      ]
+    },
+    {
+      "platform": "Figshare for Institutions",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "Figshare API v2"
+      ]
+    },
+    {
+      "platform": "Conduent HCI indicator platform",
+      "family": "none",
+      "note": "no API verified by the registry",
+      "api_types_seen": [
+        "none verified"
+      ]
+    },
+    {
+      "platform": "Digital Commons (Elsevier bepress)",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "OAI-PMH (robots.txt disallows /do/ to crawlers)"
+      ]
+    },
+    {
+      "platform": "Samvera Hyrax (per Common Data registry)",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "REST search API + OAI-PMH (robots.txt disallows /*search*)"
+      ]
+    },
+    {
+      "platform": "custom API",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "REST (real-time transit archive)"
+      ]
+    },
+    {
+      "platform": "DSpace (JSPUI)",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "DSpace REST + OAI-PMH (robots.txt disallows /rest and /discover to crawlers)"
+      ]
+    },
+    {
+      "platform": "NYU Data Catalog (open-source, custom)",
+      "family": "none",
+      "note": "no API verified by the registry",
+      "api_types_seen": [
+        "none verified"
+      ]
+    },
+    {
+      "platform": "CKAN 2.11",
+      "family": "ckan",
+      "note": "CKAN Action API; robots.txt disallows the API path to crawlers",
+      "api_types_seen": [
+        "CKAN Action API (path is disallowed by robots.txt for crawlers)"
+      ]
+    },
+    {
+      "platform": "Ex Libris Esploro",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "Esploro portal (JS); Ex Libris Esploro APIs need an API key (not used)"
+      ]
+    },
+    {
+      "platform": "Drupal site behind Cloudflare; Datawrapper charts",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none (reports, Datawrapper-chart dashboards, an AI Q&A over its publications)"
+      ]
+    },
+    {
+      "platform": "PyDAP",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "OPeNDAP"
+      ]
+    },
+    {
+      "platform": "Redivis",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "Redivis REST API (key required for API use; not tested)"
+      ]
+    },
+    {
+      "platform": "Dataverse",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "Dataverse Search and Native APIs (not tested)"
+      ]
+    },
+    {
+      "platform": "Custom (iPoll is a JS app)",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "Web search; downloads by institutional membership"
+      ]
+    },
+    {
+      "platform": "DSpace 8.2",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "DSpace REST (HAL+JSON) + OAI-PMH"
+      ]
+    },
+    {
+      "platform": "Vue + Mapbox GL web app",
+      "family": "none",
+      "note": "no API; web pages, viewers, or bulk downloads only",
+      "api_types_seen": [
+        "none (interactive web map only)"
+      ]
+    },
+    {
+      "platform": "SparkMap / Engagement Network (CARES, University of Missouri)",
+      "family": "none",
+      "note": "no API verified by the registry",
+      "api_types_seen": [
+        "none verified"
+      ]
+    },
+    {
+      "platform": "DSpace 7+ (Angular UI)",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "DSpace REST (robots.txt crawl-delay 10; search and browse disallowed)",
+        "DSpace REST (robots.txt disallows /server/api except bitstreams)"
+      ]
+    },
+    {
+      "platform": "Dataverse 6.12.1 (QDR build)",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "Dataverse Search and Native APIs"
+      ]
+    },
+    {
+      "platform": "THREDDS Data Server (Unidata)",
+      "family": "custom-api",
+      "note": "repository or research platform with its own API; described by the registry, no adapter in this build",
+      "api_types_seen": [
+        "THREDDS catalog + OPeNDAP / HTTP file server"
       ]
     }
   ]

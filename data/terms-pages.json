@@ -81,7 +81,7 @@
     "nassau-county": "Blocked: robots.txt on opendata.nassaucountyny.gov disallows every page ('Disallow: /'), so no page was opened.",
     "dutchess-county": "Footer link 'Terms and Conditions' goes to http://mydci.dcny.gov/terms.htm, whose host does not resolve. Every Dutchess dataset already links its own terms page (www.dutchessny.gov/terms-and-conditions.htm).",
     "oswego-county": "Footer link 'Terms of Service' (/pages/terms-of-service) returned 404.",
-    "nys-department-of-environmental-conservation": "The portal is an ArcGIS REST directory with no web page or links. The ArcGIS organization profile has no terms.",
+    "nys-department-of-environmental-conservation--services6-arcgis-com": "The portal is an ArcGIS REST directory with no web page or links. The ArcGIS organization profile has no terms.",
     "nyc-department-of-city-planning--services5-arcgis-com": "The portal is an ArcGIS REST directory with no web page or links. The ArcGIS organization profile has no terms.",
     "nys-office-of-parks-recreation-and-historic-preservation": "The portal is an ArcGIS REST directory with no web page or links. The ArcGIS organization profile has no terms.",
     "nys-department-of-state": "No terms, policy or disclaimer link in the Hub site's header, footer or About page.",

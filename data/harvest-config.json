@@ -36,13 +36,153 @@
       "Columbia University Libraries": "GeoBlacklight with 104,570 records, mostly not New York. Excluded from the harvest."
     }
   },
+  "adapters": {
+    "_note": "One on/off switch per adapter (issue #16). Set enabled to false to stop one adapter without touching the rest; its portals are reported as 'adapter-off' by the harvest stats and the coverage command, and their datasets stay in the index as last read. An adapter not listed here is on.",
+    "socrata": {
+      "enabled": true
+    },
+    "hub": {
+      "enabled": true
+    },
+    "enterprise": {
+      "enabled": true
+    },
+    "agol-org": {
+      "enabled": true
+    },
+    "arcgis-server": {
+      "enabled": true,
+      "note": "ArcGIS Server REST directories with no catalog in front (issue #16, milestone 4). Read weekly per host, within arcgis_server.max_requests_per_host."
+    },
+    "hand-kept": {
+      "enabled": true,
+      "note": "data/hand-kept.json: what rows with no data link offer (issue #16, milestone 5, D6). No network calls."
+    },
+    "geoblacklight": {
+      "enabled": true,
+      "note": "GeoBlacklight records read from the institution's OpenGeoMetadata repository on GitHub (one archive per read), never from the GeoBlacklight site (issue #16, milestone 6)."
+    },
+    "invenio-rdm": {
+      "enabled": false,
+      "note": "Off until a supervised run (harvest --only new-york-university-libraries--ultraviolet-library-nyu-edu --ignore-cadence) shows the New York filter works: InvenioRDM locations are optional, and NYU's Spatial Data Repository holds places worldwide. Records without a location are kept only when they name New York."
+    }
+  },
+  "allow_no_portal": {
+    "_note": "Registry rows marked 'no-portal' that still document a data endpoint, let through to one adapter (epic #7, decision D4). `endpoint` must still appear in the row's api_endpoint, or the row is skipped until checked again. Each was checked to be New York, not a look-alike. The six counties added 2026-11-14 also record one live read of their services directory root (checked_live).",
+    "City of Utica": {
+      "adapter": "agol-org",
+      "endpoint": "https://services1.arcgis.com/MBcb1JDktb5ipmv9/arcgis/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): the city's own GIS Maps page links an Experience in org MBcb1JDktb5ipmv9, named 'The City of Utica, NY'. The 'Lead Safe Community - Utica' Hub (lead-service-line-inventory-uticamn) is Utica, Minnesota, and is not used."
+    },
+    "Wyoming County": {
+      "adapter": "agol-org",
+      "endpoint": "https://services3.arcgis.com/Sq7KUOgahdDkqoAp/arcgis/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): org wyco (Sq7KUOgahdDkqoAp) is named 'Wyoming County GIS'; its items' median center is -78.22, 42.69 (Warsaw, NY). The old Hub www-wyomingcounty-wycopa belonged to Wyoming County, Pennsylvania, and is not used."
+    },
+    "City of Mount Vernon": {
+      "adapter": "enterprise",
+      "endpoint": "https://gis.cmvny.com/portal/sharing/rest/search",
+      "checked_new_york": "Registry evidence (2026-11-05): the city's own Infrastructure Dashboard page (mountvernonny.gov/2052) links gis.cmvny.com/portal; its City_Boundary layer returns NAME 'Mount Vernon', 4.40 sq mi, in NAD83 / New York East."
+    },
+    "Greene County": {
+      "adapter": "arcgis-server",
+      "endpoint": "https://gis.gcgovny.com/arcgis/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): the viewer is linked as 'GIS Map' from greenecountyny.gov and reads 'Greene County, New York'; the server's County Boundary layer returns County_ID 36039, Greene County NY's FIPS code. The 'Greene County GIS Hub' (gishub-gimsoh29) is Greene County, Ohio, and is not used.",
+      "checked_live": {
+        "url": "https://gis.gcgovny.com/arcgis/rest/services?f=json",
+        "at": "2026-11-14T20:46:55Z",
+        "http_status": 200,
+        "result": "Responds: JSON, version 10.91, folders AGOL, Hosted, Utilities, WebMap_2026, and 10 root services. The 2025_WebMap MapServer, which the registry says holds parcels, is listed. Its layers were not opened (one read)."
+      }
+    },
+    "Washington County": {
+      "adapter": "arcgis-server",
+      "endpoint": "https://gis.washingtoncountyny.gov/arcgis/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): the viewer reads 'Washington County Parcel Viewer ... Washington County, NY ... Fort Edward'; the server's Towns layer returns 17 towns with SWIS codes 53xxxx (Argyle, Cambridge, Dresden). The Washington County Hubs in Wisconsin, Minnesota, Maryland, Pennsylvania and Ohio are not used.",
+      "checked_live": {
+        "url": "https://gis.washingtoncountyny.gov/arcgis/rest/services?f=json",
+        "at": "2026-11-14T20:46:57Z",
+        "http_status": 200,
+        "result": "Responds: JSON, version 10.9, folders Broadband, Hosted, Utilities, and 4 root services. The Layers MapServer, which the registry says holds parcels, is listed. Its layers were not opened (one read)."
+      }
+    },
+    "Cayuga County": {
+      "adapter": "arcgis-server",
+      "endpoint": "https://ccgis2.cayugacounty.us/arcgis/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): the county's 'Interactive GIS | Cayuga County, NY' page links the Tax Map Online Experience, whose services point at ccgis*.cayugacounty.us. The third-party 'Cayuga County NY Parcels' item (owner wharcgisdeveloper) is not the county's and is not used.",
+      "checked_live": {
+        "url": "https://ccgis2.cayugacounty.us/arcgis/rest/services?f=json",
+        "at": "2026-11-14T20:47:00Z",
+        "http_status": 200,
+        "result": "Responds: JSON, version 12.1, folders Basemap, DisLoc, ECO, Hosted, Print, TMO, Utilities; no root services. TMO matches the registry's Tax Map Online. The parcel layer itself sits inside a folder and was not opened (one read). The registry's own parcel record for Cayuga is a shapefile download."
+      }
+    },
+    "Essex County": {
+      "adapter": "arcgis-server",
+      "endpoint": "https://essex-gis.co.essex.ny.us/arcgis/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): the server is on the co.essex.ny.us domain, linked from essexcountyny.gov; NY_County_Essex/MapServer's extent is about lon -74.34 to -73.29 (Essex County, NY). Essex County, Ontario (data-essexcounty / opendata.countyofessex.ca) and the Essex County, Virginia Hub are not used.",
+      "checked_live": {
+        "url": "https://essex-gis.co.essex.ny.us/arcgis/rest/services?f=json",
+        "at": "2026-11-14T20:47:02Z",
+        "http_status": 200,
+        "result": "Responds: JSON, version 11.3, folders Hosted, Utilities, and root services NY_County_Essex and NY_County_Essex_MapServiceTest. NY_County_Essex, which the registry says has a Parcels layer, is listed. Its layers were not opened (one read)."
+      }
+    },
+    "Chautauqua County": {
+      "adapter": "arcgis-server",
+      "endpoint": "https://maps.chautauquacounty.com/server/rest/services",
+      "checked_new_york": "Registry evidence (2026-11-05): chautauquacounty.com redirects to chautauquacountyny.gov; the county's ArcGIS org (ChautauquaCounty, 5FL2JAlR9nTU3EyG) has 340 public items with a median center of -79.39, 42.28 (Chautauqua County, NY), far from the look-alike Chautauqua County, Kansas (about -96, 37).",
+      "checked_live": {
+        "url": "https://maps.chautauquacounty.com/server/rest/services?f=json",
+        "at": "2026-11-14T20:47:07Z",
+        "http_status": 200,
+        "result": "Responds: JSON, version 10.91, folders Imagery, Locators, ParcelViewer, Public, PV_Beta, Utilities. The Public folder (the registry says it holds parcels) and a ParcelViewer folder are listed. The parcel layers sit inside folders and were not opened (one read)."
+      }
+    },
+    "_left_out_2026-11-14": "St. Lawrence County was checked and not added. Its endpoint, https://maps.dancgis.org/server/rest/services, answered (2026-11-14T20:47:05Z, HTTP 200, JSON, version 11.1, 36 root services). It is New York (the Development Authority of the North Country's regional server, linked from stlawco.gov). But it is shared: its services cover Franklin, Hamilton, Jefferson, Lewis and Oswego too, so reading it as St. Lawrence County would file other counties' layers under St. Lawrence. No St. Lawrence parcel service is listed at the root; Parcel_Model names no county. Its hand-kept links stay in use."
+  },
+  "arcgis_server": {
+    "_note": "The ArcGIS Server REST directory adapter (issue #16, D5). Per host and per read: at most max_requests_per_host requests in all (listing, services and layer fields), min_interval_ms between them (robots.txt Crawl-delay still wins when longer), utility folders skipped, at most max_layers_per_service layer field requests per service, and no new request after max_seconds_per_host. A host that hits the cap is marked partial and nothing is marked removed.",
+    "max_requests_per_host": 400,
+    "min_interval_ms": 2000,
+    "skip_folders": [
+      "Utilities",
+      "System"
+    ],
+    "service_types": [
+      "MapServer",
+      "FeatureServer",
+      "ImageServer"
+    ],
+    "max_layers_per_service": 5,
+    "max_seconds_per_host": 1800
+  },
+  "geoblacklight": {
+    "_note": "OpenGeoMetadata repository for each GeoBlacklight registry row, by source id (issue #16, milestone 6). The adapter downloads the repository archive once per read through the GitHub REST API, keeps public, unsuppressed, not-withdrawn records from `provider`, and drops records wholly outside New York. Columbia's GeoBlacklight is excluded in skip.by_entity.",
+    "repos_by_source": {
+      "cornell-university-library--cugir-library-cornell-edu": {
+        "repo": "OpenGeoMetadata/edu.cornell",
+        "ref": "main",
+        "provider": "Cornell"
+      }
+    },
+    "max_archive_mb": 200
+  },
+  "invenio_rdm": {
+    "_note": "InvenioRDM community records (NYU UltraViolet). page_size 25 is the documented example; at most max_pages pages per read.",
+    "page_size": 25,
+    "max_pages": 200
+  },
   "cadence": {
-    "_note": "Days between reads. Self-hosted county ArcGIS servers (the `enterprise` adapter) are read weekly, to be gentle on small county servers (epic #7, decision D5). Everything else nightly. A portal is due `slack_hours` early so a late scheduled start does not slip a whole week. `harvest --ignore-cadence` reads everything.",
+    "_note": "Days between reads. Self-hosted county ArcGIS portals (the `enterprise` adapter) and ArcGIS Server REST directories (`arcgis-server`) are read weekly, to be gentle on small county servers (epic #7, decision D5). Everything else nightly. A portal is due `slack_hours` early so a late scheduled start does not slip a whole week. `harvest --ignore-cadence` reads everything.",
     "days_by_adapter": {
       "socrata": 1,
       "hub": 1,
       "agol-org": 1,
-      "enterprise": 7
+      "enterprise": 7,
+      "arcgis-server": 7,
+      "geoblacklight": 7,
+      "invenio-rdm": 7
     },
     "days_by_source": {},
     "slack_hours": 6

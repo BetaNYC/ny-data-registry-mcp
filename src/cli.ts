@@ -6,20 +6,24 @@
  * ny-data-registry download [--force]
  * ny-data-registry update [--check]
  * ny-data-registry topics [--crosswalk-out file.csv]
+ * ny-data-registry coverage [--json] [--out file] [--index path] [--refresh]
+ * ny-data-registry parcels [--json] [--out file] [--index path] [--refresh]
  * ny-data-registry standards [--out-dir dir]
  *
  * `update` exit codes: UPDATE_EXIT_CODES in refresh.ts (2 is a usage error).
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { runHarvest } from "./harvest/run.js";
-import { refreshRegistry } from "./registry.js";
+import { loadLocal, refreshRegistry, setRegistry } from "./registry.js";
+import { buildCoverage, coverageMarkdown } from "./coverage.js";
+import { buildParcelTable, parcelMarkdown, type ParcelSources } from "./parcels.js";
 import { indexInfo } from "./datasets.js";
 import { runEval } from "./eval.js";
 import { downloadIndex, indexUrl } from "./fetchindex.js";
 import { checkForUpdate, UPDATE_EXIT_CODES } from "./refresh.js";
 import { openDb, indexExists } from "./db.js";
-import { cacheDir, indexPath } from "./paths.js";
+import { cacheDir, DATA_DIR, indexPath, readDataJson } from "./paths.js";
 import { writeStatewide } from "./standards/statewide.js";
 import { buildTopics, computeTopics, crosswalkCsv } from "./topics.js";
 
@@ -30,7 +34,8 @@ function arg(name: string): string | undefined {
 
 
 const cmd = process.argv[2];
-if (cmd !== "download" && cmd !== "update" && cmd !== "topics" && cmd !== "standards") await refreshRegistry();
+const OFFLINE_CMDS = new Set(["download", "update", "topics", "coverage", "parcels", "standards"]);
+if (!OFFLINE_CMDS.has(cmd)) await refreshRegistry();
 if (cmd === "update") {
   const extra = process.argv.slice(3).filter((a) => a !== "--check");
   if (extra.length) {
@@ -92,6 +97,33 @@ if (cmd === "update") {
     db.close();
     console.log(JSON.stringify(t, null, 2));
   }
+} else if (cmd === "coverage") {
+  // Offline: the newest registry on this machine (or a fresh one with --refresh), the
+  // harvest config, and an index file. No portal is called.
+  const reg = process.argv.includes("--refresh") ? await refreshRegistry() : loadLocal();
+  setRegistry(reg);
+  const report = buildCoverage(reg, { indexPath: arg("index") ?? indexPath() });
+  const text = process.argv.includes("--json") ? JSON.stringify(report, null, 2) : coverageMarkdown(report);
+  const out = arg("out");
+  if (out) {
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, text + "\n");
+  }
+  console.log(text);
+} else if (cmd === "parcels") {
+  // Offline: data/parcel-sources.json, the recorded State service response, the registry and an index.
+  const reg = process.argv.includes("--refresh") ? await refreshRegistry() : loadLocal();
+  setRegistry(reg);
+  const src = readDataJson<ParcelSources>("parcel-sources.json");
+  const evidence = JSON.parse(readFileSync(join(DATA_DIR, "..", src.state_layer.read.evidence_file), "utf8")) as { serviceDescription: string };
+  const table = buildParcelTable(reg, { indexPath: arg("index") ?? indexPath(), sources: src, serviceDescription: evidence.serviceDescription });
+  const text = process.argv.includes("--json") ? JSON.stringify(table, null, 2) : parcelMarkdown(table);
+  const out = arg("out");
+  if (out) {
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, text + "\n");
+  }
+  console.log(text);
 } else if (cmd === "standards") {
   // The statewide Croissant and DCAT-US files, from the installed index (the nightly publish makes the same files).
   if (!indexExists()) {
@@ -105,6 +137,6 @@ if (cmd === "update") {
 } else if (cmd === "stats") {
   console.log(JSON.stringify(indexInfo(), null, 2));
 } else {
-  console.error("usage: ny-data-registry <update|download|harvest|eval|stats|topics|standards> [options]");
+  console.error("usage: ny-data-registry <update|download|harvest|eval|stats|topics|coverage|parcels|standards> [options]");
   process.exitCode = 2;
 }
