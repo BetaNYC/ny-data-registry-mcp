@@ -17,13 +17,20 @@ Dataset search matches every word of the query.
   falls back to any one word and the reply says so (`match: "any"`, `match_note`). A two-word
   synonym key ("tax lot", and the new "tax parcel" and "tax parcels") is one concept, so its
   words are not also searched alone. The question set scores 27 of 27 before and after.
+- `src/betanyc-tools.ts` and `scripts/whats_changed.py`: BetaNYC's shared module 1.4.0 (was
+  1.2.4), copied unchanged from betanyc-ai-workspace `main` at 4d72be6, with its validator kit
+  (`scripts/tests/catalog_validate.py`, `scripts/mcp_shared/`).
 
 ### Added
 
-- `DATA-SOURCES.json` (draft, not yet read by the server): where each kind of data comes from,
-  in BetaNYC's about-data format (`betanyc-data-sources/1`), for the coming `about_data` tool
-  (betanyc-ai-workspace #1672). Eleven sources, each with one of the three answers to "is this
-  official?". The tool, the shared module 1.4.0 and the catalog files come in a later change.
+- `about_data`, the third BetaNYC standard tool (betanyc-ai-workspace #1672): where each kind
+  of data comes from, from `DATA-SOURCES.json`. Eleven sources: the portal list, who runs each
+  site, places, the harvested catalogs by platform (Socrata, ArcGIS, Cornell's CUGIR), the
+  hand-kept list, topics, coverage, join keys, and the Croissant and DCAT-US descriptions. Each
+  gives one of the three answers to "is this official?". How current each source is comes from
+  the loaded portal list, the master list of government bodies and the installed index.
+- The server now sends MCP `instructions`, ending with BetaNYC's shared ones.
+- `data.json`: a DCAT-US 3.0 catalog built from `DATA-SOURCES.json`, shipped in the package.
 
 Bundled copies refreshed after the master list gained counties, cities, towns and villages
 (ny-gov-web-registry #59, #60) and the registry linked its rows to it (grounding #37).

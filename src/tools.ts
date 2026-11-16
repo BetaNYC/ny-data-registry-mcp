@@ -7,25 +7,64 @@ import { datasetStandard, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, 
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
-import { createBetanycTools } from "./betanyc-tools.js";
+import { BETANYC_INSTRUCTIONS, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
+import { registry } from "./registry.js";
+import { govBodies } from "./govbodies.js";
 import { VERSION } from "./paths.js";
 import { topicRules } from "./topics.js";
 import { STANDARDS } from "./standards/build.js";
 
 /**
- * whats_changed and about_betanyc, the two tools BetaNYC is adding to each of its MCP servers
- * (betanyc-ai-workspace platform/system/whats-changed-standard.md § 7). betanyc-tools.ts is
- * a copy of the workspace's canonical file: never edit it here. WHATS-CHANGED.md ships in
- * the npm package (package.json `files`), one level above dist/. There is no website, so
- * entry links go to the file on GitHub. whats_changed is about this server; whats_new
- * (below) is about datasets on the portals.
+ * whats_changed, about_betanyc and about_data, the three tools BetaNYC adds to each of its MCP
+ * servers (betanyc-ai-workspace platform/system/whats-changed-standard.md § 7 and
+ * about-data-standard.md). betanyc-tools.ts is a copy of the workspace's canonical file: never
+ * edit it here. WHATS-CHANGED.md and DATA-SOURCES.json ship in the npm package (package.json
+ * `files`), one level above dist/. There is no website, so links go to the files on GitHub.
+ * whats_changed is about this server; whats_new (below) is about datasets on the portals.
+ *
+ * How current each source is comes from real state, never typed into DATA-SOURCES.json:
+ * the loaded portal list's own `generated` date, when the master list of government bodies was
+ * read (or the bundled copy's snapshot date), and the installed index's last harvest. The
+ * index is downloaded on first run, so before that its sources say "not fetched yet". The
+ * hand-kept places and join-key files carry no date, so they report none.
  */
-const betanyc = createBetanycTools({
-  serverName: "ny-data-registry-mcp",
-  version: VERSION,
-  repoUrl: "https://github.com/BetaNYC/ny-data-registry-mcp",
-  whatsChangedPath: new URL("../WHATS-CHANGED.md", import.meta.url),
-});
+export const SERVER_INSTRUCTIONS =
+  "New York open data portals and their datasets, from BetaNYC's registry and a nightly index of the portals' catalogs. " +
+  "It describes datasets; it does not hold the data itself. " +
+  BETANYC_INSTRUCTIONS;
+
+/** The last harvest of the installed index, or "not fetched yet" before the first download. */
+function indexHarvestedAt(): string | typeof FRESHNESS_NOT_FETCHED | null {
+  if (!indexExists()) return FRESHNESS_NOT_FETCHED;
+  const v = indexInfo()?.last_harvest;
+  return typeof v === "string" ? v : null;
+}
+
+/** When the master list of government bodies was read from GitHub, or the bundled copy's date. */
+function govBodiesAsOf(): string | null {
+  const g = govBodies();
+  return g.origin === "bundled" ? g.snapshot_date : g.fetched_at;
+}
+
+/** `dataSourcesText` is for tests. Throws at startup if DATA-SOURCES.json does not describe this server. */
+export function betanycTools(opts: { dataSourcesText?: string } = {}) {
+  return createBetanycTools({
+    serverName: "ny-data-registry-mcp",
+    version: VERSION,
+    repoUrl: "https://github.com/BetaNYC/ny-data-registry-mcp",
+    whatsChangedPath: new URL("../WHATS-CHANGED.md", import.meta.url),
+    dataSourcesPath: new URL("../DATA-SOURCES.json", import.meta.url),
+    ...(opts.dataSourcesText !== undefined ? { dataSourcesText: opts.dataSourcesText } : {}),
+    freshness: {
+      registry_generated: () => registry().generated || null,
+      gov_bodies_snapshot: govBodiesAsOf,
+      index_harvested: indexHarvestedAt,
+      bundled_files: () => null,
+    },
+  });
+}
+
+const betanyc = betanycTools();
 
 const INDEX_TOOLS = new Set(["search_datasets", "list_topics", "get_dataset_columns", "find_joinable", "whats_new"]);
 /** How long a dataset tool waits for a first-run download before answering "still downloading". */

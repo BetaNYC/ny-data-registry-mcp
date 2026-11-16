@@ -40,6 +40,7 @@ Eleven tools, in three groups.
 |---|---|
 | `whats_changed` | What changed in **this server**, newest first, from [WHATS-CHANGED.md](WHATS-CHANGED.md): new tools, fixes and corrections. Filters: since, tag (Site, Data, MCP, Correction), limit. For datasets that are new on the portals, use `whats_new` |
 | `about_betanyc` | Who built the server, its version, where to report a bug in this server or ask for a new feature, and BetaNYC's links |
+| `about_data` | Where each kind of data comes from, from [DATA-SOURCES.json](DATA-SOURCES.json): the source, its publisher and a link, whether it is an official record, what BetaNYC changed, how current it is on this server, terms of use, and where to report an error. Ask for one topic or one tool's sources |
 
 These two come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
 
@@ -375,7 +376,7 @@ On release day, one commit, which the tag then goes on:
 3. The entry's MCP version link gains that heading's anchor. Compute it, never write it by hand: `python3 -c "import sys; sys.path.insert(0,'scripts'); import whats_changed as w; print(w.github_slug('[X.Y.Z] — YYYY-MM-DD'))"`.
 4. `python3 scripts/whats_changed.py check WHATS-CHANGED.md --release` passes.
 
-Never rewrite an older entry in `WHATS-CHANGED.md`; add a dated `- **Update YYYY-MM-DD:**` line to it. CI enforces this. `scripts/whats_changed.py` and `src/betanyc-tools.ts` are copies of files in the BetaNYC workspace; never edit them here. A release that changes only metadata gets no entry; its commit carries a `No-whats-changed: <reason>` trailer.
+Never rewrite an older entry in `WHATS-CHANGED.md`; add a dated `- **Update YYYY-MM-DD:**` line to it. CI enforces this. `scripts/whats_changed.py`, `src/betanyc-tools.ts`, `scripts/tests/catalog_validate.py` and `scripts/mcp_shared/` are copies of files in the BetaNYC workspace; never edit them here. `data.json` (DCAT-US 3.0) is built from `DATA-SOURCES.json` with `python3 scripts/whats_changed.py about-data catalog DATA-SOURCES.json`; CI fails when it is out of date. A release that changes only metadata gets no entry; its commit carries a `No-whats-changed: <reason>` trailer.
 
 ## Terms of use
 
