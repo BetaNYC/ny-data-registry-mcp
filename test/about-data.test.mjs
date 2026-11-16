@@ -11,6 +11,8 @@ import { betanycTools, SERVER_INSTRUCTIONS, TOOLS } from "../dist/tools.js";
 import { registry } from "../dist/registry.js";
 import { planFor } from "../dist/harvest/run.js";
 import { readDataJson } from "../dist/paths.js";
+import { closeDb, db } from "../dist/datasets.js";
+import { openDb } from "../dist/db.js";
 import { assertEveryToolExplained, BETANYC_INSTRUCTIONS, SHARED_MODULE_VERSION } from "../dist/betanyc-tools.js";
 
 const DS_TEXT = readFileSync(new URL("../DATA-SOURCES.json", import.meta.url), "utf8");
@@ -71,9 +73,32 @@ test("every portal the harvest reads has a source, so a new portal cannot ship u
     .filter(({ p }) => p.kind !== "skip" && p.kind !== "hand-kept");
   assert.equal(planned.length, CATALOGS.length, "one catalog source per harvested portal");
   for (const { s, p } of planned) {
-    const url = (p.kind === "arcgis-server" ? p.root : p.kind === "geoblacklight" ? "https://github.com/OpenGeoMetadata/edu.cornell" : s.url.trim().split(/\s/)[0]).replace(/\/+$/, "");
+    const url = (p.kind === "arcgis-server" ? p.root : p.kind === "geoblacklight" ? "https://cugir.library.cornell.edu/" : s.url.trim().split(/\s/)[0]).replace(/\/+$/, "");
     assert.ok(urls.has(url), `${s.source_id}: no DATA-SOURCES.json source links ${url}`);
   }
+});
+
+test("an error in a portal's catalog record goes to the portal's publisher, not only to BetaNYC", () => {
+  for (const s of CATALOGS) {
+    const got = one(s.id);
+    assert.equal(got.report_errors.in_the_data_handled_by, "publisher", s.id);
+    assert.doesNotMatch(got.report_errors.in_the_data, /github\.com\/BetaNYC|beta\.nyc/, s.id);
+    assert.ok(got.caveats.some((c) => /contact on that dataset's own portal page/.test(c)), `${s.id}: says to use the dataset page's contact`);
+  }
+  const nyc = ask({ topic: "catalog-nyc-open-data" });
+  assert.match(nyc.structuredContent.sources[0].report_errors.in_the_data, /support\.socrata\.com\/.*Contact-a-Dataset-Owner/);
+  assert.match(nyc.content[0].text, /an error in the original records to New York City Office of Technology and Innovation: https:\/\/support\.socrata\.com/);
+});
+
+test("each catalog is checked at the portal itself, under the portal's own terms or a stated none", () => {
+  for (const s of CATALOGS) {
+    assert.equal(s.verify_at, s.source_url, `${s.id}: check a figure at the portal`);
+    assert.equal(s.terms.license_name, "None stated by the publisher", s.id);
+    assert.ok(s.terms.terms_url, `${s.id}: links the terms page, or where we looked`);
+    assert.doesNotMatch(s.terms.terms_url, /github\.com\/BetaNYC/, `${s.id}: the portal's terms, not BetaNYC's`);
+  }
+  const pages = readDataJson("terms-pages.json").portals;
+  assert.equal(DS.sources.find((s) => s.id === "catalog-nyc-open-data").terms.terms_url, pages["new-york-city"].url);
 });
 
 test("a tool name as topic gives the sources behind that tool", () => {
@@ -98,10 +123,32 @@ test("index sources say 'not fetched yet' before the first download, then the in
     process.env.NY_DATA_INDEX = join(tempIndexPath(), "..", "missing.sqlite");
     assert.equal(one("catalog-nyc-open-data").as_of_status, "not-fetched");
     process.env.NY_DATA_INDEX = await buildFixtureIndex(tempIndexPath(), { lastHarvest: "2026-11-05T00:00:00Z" });
+    closeDb();
     const s = one("topics");
     assert.equal(s.as_of_status, "read");
     assert.equal(s.as_of, "2026-11-05T00:00:00Z");
+
+    // Each portal gives its own last good read, not the index-wide date.
+    const d = db();
+    const read = (id) => d.prepare("SELECT last_harvested FROM portals WHERE id = ?").get(id).last_harvested;
+    const health = one("catalog-health-data-ny");
+    assert.equal(health.as_of_status, "read");
+    assert.equal(health.as_of, read("nys-department-of-health"));
+    assert.notEqual(health.as_of, "2026-11-05T00:00:00Z");
+    assert.equal(one("catalog-cortland-county").as_of, read("cortland-county"));
+    // A portal this index never read has no date.
+    assert.equal(one("catalog-open-ny").as_of_status, "unavailable");
+
+    // A failed read keeps the earlier datasets, so the date is when they were last seen, not the failed attempt.
+    closeDb();
+    const w = openDb(process.env.NY_DATA_INDEX);
+    w.prepare("UPDATE datasets SET last_seen = '2026-10-01T00:00:00.000Z' WHERE portal_id = 'nys-department-of-health'").run();
+    w.prepare("UPDATE portals SET harvest_status = 'failed', last_harvested = '2026-11-09T00:00:00.000Z' WHERE id = 'nys-department-of-health'").run();
+    w.close();
+    closeDb();
+    assert.equal(one("catalog-health-data-ny").as_of, "2026-10-01T00:00:00.000Z");
   } finally {
+    closeDb();
     if (saved === undefined) delete process.env.NY_DATA_INDEX;
     else process.env.NY_DATA_INDEX = saved;
   }

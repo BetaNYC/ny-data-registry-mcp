@@ -29,8 +29,15 @@ Dataset search matches every word of the query.
   Socrata or ArcGIS, is named but is not the publisher), plus the portal list, who runs each
   site, places, the hand-kept list, topics, coverage, join keys, and the Croissant and DCAT-US
   descriptions. Each gives one of the three answers to "is this official?". A test fails when
-  the harvest reads a portal with no source. How current each source is comes from the loaded
-  portal list, the master list of government bodies and the installed index.
+  the harvest reads a portal with no source. Each portal source carries the portal's own name
+  (its site title; an unnamed ArcGIS services directory is named by its page title and
+  address), links the portal itself to check a figure, links its own terms page or says "None
+  stated by the publisher" with the page looked at, and sends errors in the original records to
+  the publisher (Tyler's Contact Dataset Owner guide for Socrata portals, or the publisher's own
+  contact page; a shared team address when one is shown, never a person's own). How current
+  each source is comes from the loaded portal list, the master list of government bodies and
+  the installed index; each portal reports its own last good read, so a weekly or failed portal
+  does not borrow the index's date.
 - The server now sends MCP `instructions`, ending with BetaNYC's shared ones.
 - `data.json`: a DCAT-US 3.0 catalog built from `DATA-SOURCES.json`, shipped in the package.
 

@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { basename } from "node:path";
+import { readFileSync } from "node:fs";
 import { FAMILIES } from "./families.js";
 import { findSources, howToQuery, listSourcesForPlace, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { datasetStandard, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
+import { datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
@@ -24,7 +25,9 @@ import { STANDARDS } from "./standards/build.js";
  *
  * How current each source is comes from real state, never typed into DATA-SOURCES.json:
  * the loaded portal list's own `generated` date, when the master list of government bodies was
- * read (or the bundled copy's snapshot date), and the installed index's last harvest. The
+ * read (or the bundled copy's snapshot date), and the installed index's last harvest. Each
+ * portal's catalog reports that portal's own last good read from the index, because portals are
+ * read on different schedules and a failed read keeps the datasets from an earlier one. The
  * index is downloaded on first run, so before that its sources say "not fetched yet". The
  * hand-kept places and join-key files carry no date, so they report none.
  */
@@ -40,6 +43,50 @@ function indexHarvestedAt(): string | typeof FRESHNESS_NOT_FETCHED | null {
   return typeof v === "string" ? v : null;
 }
 
+/** A portal catalog's freshness key in DATA-SOURCES.json: this prefix plus the portal's registry source_id. */
+export const PORTAL_HARVESTED = "portal_harvested:";
+
+/**
+ * When the installed index last read one portal's catalog successfully. After an ok or partial
+ * read, that read's time. After a failed, blocked or refused read the index keeps the datasets
+ * from earlier reads, so the answer is when those were last seen, never the failed attempt.
+ * null when the index has never read the portal; "not fetched yet" before the first download.
+ */
+export function portalHarvestedAt(portalId: string): string | typeof FRESHNESS_NOT_FETCHED | null {
+  if (!indexExists()) return FRESHNESS_NOT_FETCHED;
+  try {
+    const d = db();
+    const p = d.prepare("SELECT harvest_status, last_harvested FROM portals WHERE id = ?").get(portalId) as
+      | { harvest_status: string | null; last_harvested: string | null }
+      | undefined;
+    if (!p || !p.harvest_status) return null;
+    if (p.harvest_status === "ok" || p.harvest_status === "partial") return p.last_harvested ?? null;
+    const r = d.prepare("SELECT MAX(last_seen) AS t FROM datasets WHERE portal_id = ? AND removed_at IS NULL").get(portalId) as { t: string | null } | undefined;
+    return r?.t ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** One freshness hook per portal catalog named in DATA-SOURCES.json. */
+function portalHooks(dataSourcesText: string): Record<string, () => ReturnType<typeof portalHarvestedAt>> {
+  const hooks: Record<string, () => ReturnType<typeof portalHarvestedAt>> = {};
+  let sources: { freshness?: { key?: unknown } }[] = [];
+  try {
+    sources = (JSON.parse(dataSourcesText) as { sources?: typeof sources }).sources ?? [];
+  } catch {
+    return hooks; // the shared module reports the broken file itself
+  }
+  for (const s of sources) {
+    const key = s.freshness?.key;
+    if (typeof key === "string" && key.startsWith(PORTAL_HARVESTED)) {
+      const id = key.slice(PORTAL_HARVESTED.length);
+      hooks[key] = () => portalHarvestedAt(id);
+    }
+  }
+  return hooks;
+}
+
 /** When the master list of government bodies was read from GitHub, or the bundled copy's date. */
 function govBodiesAsOf(): string | null {
   const g = govBodies();
@@ -48,14 +95,17 @@ function govBodiesAsOf(): string | null {
 
 /** `dataSourcesText` is for tests. Throws at startup if DATA-SOURCES.json does not describe this server. */
 export function betanycTools(opts: { dataSourcesText?: string } = {}) {
+  const dataSourcesPath = new URL("../DATA-SOURCES.json", import.meta.url);
+  const text = opts.dataSourcesText ?? readFileSync(dataSourcesPath, "utf8");
   return createBetanycTools({
     serverName: "ny-data-registry-mcp",
     version: VERSION,
     repoUrl: "https://github.com/BetaNYC/ny-data-registry-mcp",
     whatsChangedPath: new URL("../WHATS-CHANGED.md", import.meta.url),
-    dataSourcesPath: new URL("../DATA-SOURCES.json", import.meta.url),
-    ...(opts.dataSourcesText !== undefined ? { dataSourcesText: opts.dataSourcesText } : {}),
+    dataSourcesPath,
+    dataSourcesText: text,
     freshness: {
+      ...portalHooks(text),
       registry_generated: () => registry().generated || null,
       gov_bodies_snapshot: govBodiesAsOf,
       index_harvested: indexHarvestedAt,
@@ -245,7 +295,7 @@ export const TOOLS = [
       required: ["since"],
     },
   },
-  // What's changed in this server, and who built it (BetaNYC standard tools).
+  // BetaNYC standard tools: what's changed in this server, who built it, and where its data comes from.
   ...betanyc.tools,
 ];
 
