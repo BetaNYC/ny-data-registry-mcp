@@ -24,11 +24,13 @@ Dataset search matches every word of the query.
 ### Added
 
 - `about_data`, the third BetaNYC standard tool (betanyc-ai-workspace #1672): where each kind
-  of data comes from, from `DATA-SOURCES.json`. Eleven sources: the portal list, who runs each
-  site, places, the harvested catalogs by platform (Socrata, ArcGIS, Cornell's CUGIR), the
-  hand-kept list, topics, coverage, join keys, and the Croissant and DCAT-US descriptions. Each
-  gives one of the three answers to "is this official?". How current each source is comes from
-  the loaded portal list, the master list of government bodies and the installed index.
+  of data comes from, from `DATA-SOURCES.json`. 68 sources: one for each of the 60 portals the
+  harvest reads, published by the government or institution that runs it (the platform, such as
+  Socrata or ArcGIS, is named but is not the publisher), plus the portal list, who runs each
+  site, places, the hand-kept list, topics, coverage, join keys, and the Croissant and DCAT-US
+  descriptions. Each gives one of the three answers to "is this official?". A test fails when
+  the harvest reads a portal with no source. How current each source is comes from the loaded
+  portal list, the master list of government bodies and the installed index.
 - The server now sends MCP `instructions`, ending with BetaNYC's shared ones.
 - `data.json`: a DCAT-US 3.0 catalog built from `DATA-SOURCES.json`, shipped in the package.
 

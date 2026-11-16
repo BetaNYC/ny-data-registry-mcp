@@ -181,17 +181,17 @@
       ]
     },
     {
-      "id": "catalog-socrata",
-      "title": "Dataset catalog: Socrata portals",
-      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets on the Socrata portals in the registry, such as Open NY (data.ny.gov), Health Data NY and NYC Open Data.",
-      "source_name": "Socrata Discovery API",
+      "id": "catalog-health-data-ny",
+      "title": "Dataset catalog: Health Data NY",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Health Data NY, run by New York State Department of Health. It is a Socrata portal (Socrata is a platform made by Tyler Technologies), read through the Socrata Discovery API.",
+      "source_name": "Health Data NY",
       "publisher": {
-        "name": "Tyler Technologies",
-        "url": "https://www.tylertech.com/"
+        "name": "New York State Department of Health",
+        "url": "https://health.ny.gov/"
       },
-      "source_url": "https://dev.socrata.com/docs/other/discovery",
+      "source_url": "https://health.data.ny.gov/",
       "official": true,
-      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads each Socrata portal through the Discovery API every night.",
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
       "changes": {
         "changed": true,
         "steps": [
@@ -206,68 +206,13 @@
         "kind": "hook",
         "key": "index_harvested"
       },
-      "update_frequency": "continual",
+      "update_frequency": "daily",
       "coverage": {
         "start": null,
         "end": null,
-        "geography": "New York State: the registry portals this platform runs",
-        "known_gaps": []
-      },
-      "terms": {
-        "license_name": "Set by each portal. Most datasets carry no license of their own",
-        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
-        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
-      },
-      "report_errors": {
-        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
-      },
-      "tools": [
-        "search_datasets",
-        "get_dataset_columns",
-        "find_joinable",
-        "whats_new",
-        "list_topics",
-        "registry_info"
-      ],
-      "caveats": [
-        "Each dataset's own publisher is the government or institution that runs its portal. Its page on that portal, the link in each row, is the official record of that dataset.",
-        "This is a catalog of dataset descriptions, not the data itself. A dataset missing from the index may still exist: replies list the registry portals the index does not search."
-      ]
-    },
-    {
-      "id": "catalog-arcgis",
-      "title": "Dataset catalog: ArcGIS portals",
-      "what": "Titles, descriptions, tags, layers, fields, formats and dates of the datasets on the ArcGIS Hub sites, ArcGIS Online organizations, ArcGIS Enterprise portals and ArcGIS Server directories in the registry.",
-      "source_name": "ArcGIS REST API",
-      "publisher": {
-        "name": "Esri",
-        "url": "https://www.esri.com/"
-      },
-      "source_url": "https://developers.arcgis.com/rest/",
-      "official": true,
-      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. Hub sites and ArcGIS Online organizations are read every night; county Enterprise portals and ArcGIS Server directories once a week.",
-      "changes": {
-        "changed": true,
-        "steps": [
-          "filtered",
-          "reshaped",
-          "merged"
-        ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
-      },
-      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
-      "freshness": {
-        "kind": "hook",
-        "key": "index_harvested"
-      },
-      "update_frequency": "continual",
-      "coverage": {
-        "start": null,
-        "end": null,
-        "geography": "New York State: the registry portals this platform runs",
+        "geography": "New York State",
         "known_gaps": [
-          "ArcGIS Server directories are read once a week and read at most a few layers per service.",
-          "Some portals are not read yet, or their last read failed. registry_info and each search reply say which."
+          "Records whose map extent is wholly outside New York are dropped."
         ]
       },
       "terms": {
@@ -287,22 +232,23 @@
         "registry_info"
       ],
       "caveats": [
-        "Each dataset's own publisher is the government or institution that runs its portal. Its page on that portal, the link in each row, is the official record of that dataset.",
-        "This is a catalog of dataset descriptions, not the data itself. A dataset missing from the index may still exist: replies list the registry portals the index does not search."
+        "The platform (Socrata) is the software the portal runs on. It is not the publisher: New York State Department of Health publishes these datasets.",
+        "Each dataset's own page on Health Data NY, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
       ]
     },
     {
-      "id": "catalog-geoblacklight",
-      "title": "Dataset catalog: Cornell's geospatial repository",
-      "what": "Titles, descriptions, subjects, formats and links of the public map data records in CUGIR, Cornell University Library's geospatial repository, limited to New York.",
-      "source_name": "CUGIR metadata in OpenGeoMetadata edu.cornell",
+      "id": "catalog-nys-gis-clearinghouse",
+      "title": "Dataset catalog: NYS GIS Clearinghouse",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYS GIS Clearinghouse, run by New York State Office of Information Technology Services. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "NYS GIS Clearinghouse",
       "publisher": {
-        "name": "Cornell University Library",
-        "url": "https://cugir.library.cornell.edu/"
+        "name": "New York State Office of Information Technology Services",
+        "url": "https://its.ny.gov/"
       },
-      "source_url": "https://github.com/OpenGeoMetadata/edu.cornell",
+      "source_url": "https://data.gis.ny.gov/",
       "official": true,
-      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The CUGIR site is not called. The harvest downloads Cornell's records from OpenGeoMetadata on GitHub once a week.",
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
       "changes": {
         "changed": true,
         "steps": [
@@ -317,13 +263,3269 @@
         "kind": "hook",
         "key": "index_harvested"
       },
-      "update_frequency": "irregular",
+      "update_frequency": "daily",
       "coverage": {
         "start": null,
         "end": null,
-        "geography": "New York State: the registry portals this platform runs",
+        "geography": "New York State",
         "known_gaps": [
-          "Only public, current records are kept. Records wholly outside New York are dropped."
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Office of Information Technology Services publishes these datasets.",
+        "Each dataset's own page on NYS GIS Clearinghouse, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-open-ny",
+      "title": "Dataset catalog: Open NY",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Open NY, run by New York State Office of Information Technology Services. It is a Socrata portal (Socrata is a platform made by Tyler Technologies), read through the Socrata Discovery API.",
+      "source_name": "Open NY",
+      "publisher": {
+        "name": "New York State Office of Information Technology Services",
+        "url": "https://its.ny.gov/"
+      },
+      "source_url": "https://data.ny.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (Socrata) is the software the portal runs on. It is not the publisher: New York State Office of Information Technology Services publishes these datasets.",
+        "Each dataset's own page on Open NY, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-adirondack-park-agency",
+      "title": "Dataset catalog: Adirondack Park Agency ArcGIS Hub",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Adirondack Park Agency ArcGIS Hub, run by Adirondack Park Agency. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Adirondack Park Agency ArcGIS Hub",
+      "publisher": {
+        "name": "Adirondack Park Agency",
+        "url": "https://apa.ny.gov/"
+      },
+      "source_url": "https://adirondack-park-agency-adirondack.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Adirondack Park Agency publishes these datasets.",
+        "Each dataset's own page on Adirondack Park Agency ArcGIS Hub, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-dec-gis-services",
+      "title": "Dataset catalog: DEC GIS Services ArcGIS Server",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in DEC GIS Services ArcGIS Server, run by New York State Department of Environmental Conservation. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "DEC GIS Services ArcGIS Server",
+      "publisher": {
+        "name": "New York State Department of Environmental Conservation",
+        "url": "https://dec.ny.gov/"
+      },
+      "source_url": "https://gisservices.dec.ny.gov/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Department of Environmental Conservation publishes these datasets.",
+        "Each dataset's own page on DEC GIS Services ArcGIS Server, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-environmental-bond-act",
+      "title": "Dataset catalog: NYS Environmental Bond Act Hub site",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYS Environmental Bond Act Hub site, run by New York State Department of Environmental Conservation. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "NYS Environmental Bond Act Hub site",
+      "publisher": {
+        "name": "New York State Department of Environmental Conservation",
+        "url": "https://dec.ny.gov/"
+      },
+      "source_url": "https://environmentalbondact.ny.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Department of Environmental Conservation publishes these datasets.",
+        "Each dataset's own page on NYS Environmental Bond Act Hub site, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nysdec-arcgis-online",
+      "title": "Dataset catalog: NYSDEC ArcGIS Online organization",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYSDEC ArcGIS Online organization, run by New York State Department of Environmental Conservation. It is an ArcGIS Online organization (ArcGIS is a platform made by Esri), read through ArcGIS Online's search API.",
+      "source_name": "NYSDEC ArcGIS Online organization",
+      "publisher": {
+        "name": "New York State Department of Environmental Conservation",
+        "url": "https://dec.ny.gov/"
+      },
+      "source_url": "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Department of Environmental Conservation publishes these datasets.",
+        "Each dataset's own page on NYSDEC ArcGIS Online organization, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-ny-geographic-information-gateway",
+      "title": "Dataset catalog: New York Geographic Information Gateway",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in New York Geographic Information Gateway, run by New York State Department of State. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "New York Geographic Information Gateway",
+      "publisher": {
+        "name": "New York State Department of State",
+        "url": "https://dos.ny.gov/"
+      },
+      "source_url": "https://opdgig.dos.ny.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Department of State publishes these datasets.",
+        "Each dataset's own page on New York Geographic Information Gateway, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nysdot-gis",
+      "title": "Dataset catalog: NYSDOT GIS ArcGIS Server",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYSDOT GIS ArcGIS Server, run by New York State Department of Transportation. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "NYSDOT GIS ArcGIS Server",
+      "publisher": {
+        "name": "New York State Department of Transportation",
+        "url": "https://dot.ny.gov/"
+      },
+      "source_url": "https://gis.dot.ny.gov/hostingny/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Department of Transportation publishes these datasets.",
+        "Each dataset's own page on NYSDOT GIS ArcGIS Server, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nys-elevation-data",
+      "title": "Dataset catalog: NYS Elevation Data ArcGIS Server",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYS Elevation Data ArcGIS Server, run by New York State Office of Information Technology Services. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "NYS Elevation Data ArcGIS Server",
+      "publisher": {
+        "name": "New York State Office of Information Technology Services",
+        "url": "https://its.ny.gov/"
+      },
+      "source_url": "https://elevation.its.ny.gov/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Office of Information Technology Services publishes these datasets.",
+        "Each dataset's own page on NYS Elevation Data ArcGIS Server, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nys-geohub",
+      "title": "Dataset catalog: NYS GeoHub ArcGIS Server",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYS GeoHub ArcGIS Server, run by New York State Office of Information Technology Services. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "NYS GeoHub ArcGIS Server",
+      "publisher": {
+        "name": "New York State Office of Information Technology Services",
+        "url": "https://its.ny.gov/"
+      },
+      "source_url": "https://nysgeohub.ny.gov/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Office of Information Technology Services publishes these datasets.",
+        "Each dataset's own page on NYS GeoHub ArcGIS Server, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nys-its-gis-services",
+      "title": "Dataset catalog: NYS ITS GIS ArcGIS Server",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYS ITS GIS ArcGIS Server, run by New York State Office of Information Technology Services. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "NYS ITS GIS ArcGIS Server",
+      "publisher": {
+        "name": "New York State Office of Information Technology Services",
+        "url": "https://its.ny.gov/"
+      },
+      "source_url": "https://gisservices.its.ny.gov/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Office of Information Technology Services publishes these datasets.",
+        "Each dataset's own page on NYS ITS GIS ArcGIS Server, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nys-orthoimagery",
+      "title": "Dataset catalog: NYS Orthoimagery services",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYS Orthoimagery services, run by New York State Office of Information Technology Services. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "NYS Orthoimagery services",
+      "publisher": {
+        "name": "New York State Office of Information Technology Services",
+        "url": "https://its.ny.gov/"
+      },
+      "source_url": "https://orthos.its.ny.gov/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Office of Information Technology Services publishes these datasets.",
+        "Each dataset's own page on NYS Orthoimagery services, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nys-parks-arcgis-online",
+      "title": "Dataset catalog: NYS OPRHP ArcGIS Online organization",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYS OPRHP ArcGIS Online organization, run by New York State Office of Parks, Recreation and Historic Preservation. It is an ArcGIS Online organization (ArcGIS is a platform made by Esri), read through ArcGIS Online's search API.",
+      "source_name": "NYS OPRHP ArcGIS Online organization",
+      "publisher": {
+        "name": "New York State Office of Parks, Recreation and Historic Preservation",
+        "url": "https://parks.ny.gov/"
+      },
+      "source_url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York State Office of Parks, Recreation and Historic Preservation publishes these datasets.",
+        "Each dataset's own page on NYS OPRHP ArcGIS Online organization, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-albany-county",
+      "title": "Dataset catalog: Albany County NY Open Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Albany County NY Open Data, run by Albany County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Albany County NY Open Data",
+      "publisher": {
+        "name": "Albany County",
+        "url": "https://www.albanycountyny.gov/"
+      },
+      "source_url": "https://albany-county-ny-open-data-albcountygis.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Albany County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Albany County publishes these datasets.",
+        "Each dataset's own page on Albany County NY Open Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-columbia-county",
+      "title": "Dataset catalog: Columbia County Geo-Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Columbia County Geo-Data, run by Columbia County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Columbia County Geo-Data",
+      "publisher": {
+        "name": "Columbia County",
+        "url": "https://www.columbiacountyny.gov/"
+      },
+      "source_url": "https://geodata-cc-ny.opendata.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Columbia County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Columbia County publishes these datasets.",
+        "Each dataset's own page on Columbia County Geo-Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-greene-county",
+      "title": "Dataset catalog: Greene County GIS services",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Greene County GIS services, run by Greene County. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "Greene County GIS services",
+      "publisher": {
+        "name": "Greene County",
+        "url": "https://greenecountyny.gov/"
+      },
+      "source_url": "https://gis.gcgovny.com/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Greene County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Greene County publishes these datasets.",
+        "Each dataset's own page on Greene County GIS services, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-warren-county",
+      "title": "Dataset catalog: Warren County NY GIS",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Warren County NY GIS, run by Warren County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Warren County NY GIS",
+      "publisher": {
+        "name": "Warren County",
+        "url": "https://warrencountyny.gov/"
+      },
+      "source_url": "https://warren-county-gis-warrencountyny.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Warren County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Warren County publishes these datasets.",
+        "Each dataset's own page on Warren County NY GIS, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-washington-county",
+      "title": "Dataset catalog: Washington County GIS services",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Washington County GIS services, run by Washington County. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "Washington County GIS services",
+      "publisher": {
+        "name": "Washington County",
+        "url": "https://www.washingtoncountyny.gov/"
+      },
+      "source_url": "https://gis.washingtoncountyny.gov/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Washington County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Washington County publishes these datasets.",
+        "Each dataset's own page on Washington County GIS services, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-cayuga-county",
+      "title": "Dataset catalog: Cayuga County GIS services",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Cayuga County GIS services, run by Cayuga County. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "Cayuga County GIS services",
+      "publisher": {
+        "name": "Cayuga County",
+        "url": "https://cayugacounty.gov/"
+      },
+      "source_url": "https://ccgis2.cayugacounty.us/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Cayuga County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Cayuga County publishes these datasets.",
+        "Each dataset's own page on Cayuga County GIS services, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-city-of-syracuse",
+      "title": "Dataset catalog: Open Data Syracuse",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Open Data Syracuse, run by City of Syracuse. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Open Data Syracuse",
+      "publisher": {
+        "name": "City of Syracuse",
+        "url": "https://syr.gov/"
+      },
+      "source_url": "https://data.syr.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "City of Syracuse",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: City of Syracuse publishes these datasets.",
+        "Each dataset's own page on Open Data Syracuse, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-city-of-utica",
+      "title": "Dataset catalog: City of Utica ArcGIS Online organization",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in City of Utica ArcGIS Online organization, run by City of Utica. It is an ArcGIS Online organization (ArcGIS is a platform made by Esri), read through ArcGIS Online's search API.",
+      "source_name": "City of Utica ArcGIS Online organization",
+      "publisher": {
+        "name": "City of Utica"
+      },
+      "source_url": "https://www.cityofutica.com/maps/gis-maps/index",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "City of Utica",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: City of Utica publishes these datasets.",
+        "Each dataset's own page on City of Utica ArcGIS Online organization, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-cortland-county",
+      "title": "Dataset catalog: Cortland County GIS Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Cortland County GIS Portal, run by Cortland County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Cortland County GIS Portal",
+      "publisher": {
+        "name": "Cortland County",
+        "url": "https://www.cortlandcountyny.gov/"
+      },
+      "source_url": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Cortland County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Cortland County publishes these datasets.",
+        "Each dataset's own page on Cortland County GIS Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-oswego-county",
+      "title": "Dataset catalog: Oswego County Data and GIS",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Oswego County Data and GIS, run by Oswego County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Oswego County Data and GIS",
+      "publisher": {
+        "name": "Oswego County",
+        "url": "https://oswegocountyny.gov/"
+      },
+      "source_url": "https://data-oswegogis.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Oswego County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Oswego County publishes these datasets.",
+        "Each dataset's own page on Oswego County Data and GIS, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-dutchess-county",
+      "title": "Dataset catalog: Dutchess County GIS Open Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Dutchess County GIS Open Data, run by Dutchess County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Dutchess County GIS Open Data",
+      "publisher": {
+        "name": "Dutchess County",
+        "url": "https://dutchessny.gov/"
+      },
+      "source_url": "https://opendata-dcny.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Dutchess County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Dutchess County publishes these datasets.",
+        "Each dataset's own page on Dutchess County GIS Open Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-orange-county",
+      "title": "Dataset catalog: Orange County GIS site",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Orange County GIS site, run by Orange County. It is an ArcGIS Enterprise portal (ArcGIS is a platform made by Esri), read through the portal's search API.",
+      "source_name": "Orange County GIS site",
+      "publisher": {
+        "name": "Orange County"
+      },
+      "source_url": "https://gis.orangecountygov.com/portal/apps/sites/#/ocgis",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Orange County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Orange County publishes these datasets.",
+        "Each dataset's own page on Orange County GIS site, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-sullivan-county",
+      "title": "Dataset catalog: Sullivan County GISOnline Geoportal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Sullivan County GISOnline Geoportal, run by Sullivan County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Sullivan County GISOnline Geoportal",
+      "publisher": {
+        "name": "Sullivan County",
+        "url": "https://www.sullivanny.gov/"
+      },
+      "source_url": "https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Sullivan County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Sullivan County publishes these datasets.",
+        "Each dataset's own page on Sullivan County GISOnline Geoportal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-ulster-county",
+      "title": "Dataset catalog: Ulster County GIS services",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Ulster County GIS services, run by Ulster County. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "Ulster County GIS services",
+      "publisher": {
+        "name": "Ulster County",
+        "url": "https://ulstercountyny.gov/"
+      },
+      "source_url": "https://gis.ulstercountyny.gov/server/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Ulster County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Ulster County publishes these datasets.",
+        "Each dataset's own page on Ulster County GIS services, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-city-of-mount-vernon",
+      "title": "Dataset catalog: City of Mount Vernon GIS services",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in City of Mount Vernon GIS services, run by City of Mount Vernon. It is an ArcGIS Enterprise portal (ArcGIS is a platform made by Esri), read through the portal's search API.",
+      "source_name": "City of Mount Vernon GIS services",
+      "publisher": {
+        "name": "City of Mount Vernon",
+        "url": "https://mountvernonny.gov/"
+      },
+      "source_url": "https://gis.cmvny.com/server/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "City of Mount Vernon",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: City of Mount Vernon publishes these datasets.",
+        "Each dataset's own page on City of Mount Vernon GIS services, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nassau-county",
+      "title": "Dataset catalog: Open Nassau",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Open Nassau, run by Nassau County. It is a Socrata portal (Socrata is a platform made by Tyler Technologies), read through the Socrata Discovery API.",
+      "source_name": "Open Nassau",
+      "publisher": {
+        "name": "Nassau County",
+        "url": "https://nassaucountyny.gov/"
+      },
+      "source_url": "https://opendata.nassaucountyny.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Nassau County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (Socrata) is the software the portal runs on. It is not the publisher: Nassau County publishes these datasets.",
+        "Each dataset's own page on Open Nassau, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nyc-open-data",
+      "title": "Dataset catalog: NYC Open Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYC Open Data, run by New York City Office of Technology and Innovation. It is a Socrata portal (Socrata is a platform made by Tyler Technologies), read through the Socrata Discovery API.",
+      "source_name": "NYC Open Data",
+      "publisher": {
+        "name": "New York City Office of Technology and Innovation",
+        "url": "https://www.nyc.gov/content/oti/pages/"
+      },
+      "source_url": "https://data.cityofnewyork.us/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York City",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (Socrata) is the software the portal runs on. It is not the publisher: New York City Office of Technology and Innovation publishes these datasets.",
+        "Each dataset's own page on NYC Open Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nyc-dcp-mapping",
+      "title": "Dataset catalog: NYC DCP Mapping Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYC DCP Mapping Portal, run by New York City Department of City Planning. It is an ArcGIS Online organization (ArcGIS is a platform made by Esri), read through ArcGIS Online's search API.",
+      "source_name": "NYC DCP Mapping Portal",
+      "publisher": {
+        "name": "New York City Department of City Planning",
+        "url": "https://www.nyc.gov/content/planning/pages/"
+      },
+      "source_url": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "NYC Metro / Long Island",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York City Department of City Planning publishes these datasets.",
+        "Each dataset's own page on NYC DCP Mapping Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-nycmaphub",
+      "title": "Dataset catalog: NYCMapHub",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in NYCMapHub, run by New York City Office of Technology and Innovation. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "NYCMapHub",
+      "publisher": {
+        "name": "New York City Office of Technology and Innovation",
+        "url": "https://www.nyc.gov/content/oti/pages/"
+      },
+      "source_url": "https://nycmaps.nyc.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "NYC Metro / Long Island",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York City Office of Technology and Innovation publishes these datasets.",
+        "Each dataset's own page on NYCMapHub, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-putnam-county",
+      "title": "Dataset catalog: Putnam County open data site",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Putnam County open data site, run by Putnam County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Putnam County open data site",
+      "publisher": {
+        "name": "Putnam County",
+        "url": "https://putnamcountyny.gov/"
+      },
+      "source_url": "https://data-pcny.opendata.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Putnam County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Putnam County publishes these datasets.",
+        "Each dataset's own page on Putnam County open data site, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-suffolk-county",
+      "title": "Dataset catalog: Suffolk County Open Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Suffolk County Open Data, run by Suffolk County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Suffolk County Open Data",
+      "publisher": {
+        "name": "Suffolk County",
+        "url": "https://suffolkcountyny.gov/"
+      },
+      "source_url": "https://opendata.suffolkcountyny.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Suffolk County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Suffolk County publishes these datasets.",
+        "Each dataset's own page on Suffolk County Open Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-westchester-county",
+      "title": "Dataset catalog: Westchester GeoHub",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Westchester GeoHub, run by Westchester County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Westchester GeoHub",
+      "publisher": {
+        "name": "Westchester County",
+        "url": "https://www.westchestercountyny.gov/"
+      },
+      "source_url": "https://gis.westchestercountyny.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Westchester County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Westchester County publishes these datasets.",
+        "Each dataset's own page on Westchester GeoHub, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-city-of-watertown",
+      "title": "Dataset catalog: City of Watertown GIS Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in City of Watertown GIS Portal, run by City of Watertown. It is an ArcGIS Enterprise portal (ArcGIS is a platform made by Esri), read through the portal's search API.",
+      "source_name": "City of Watertown GIS Portal",
+      "publisher": {
+        "name": "City of Watertown",
+        "url": "https://watertown-ny.gov/"
+      },
+      "source_url": "https://maps.watertown-ny.gov/portal/home/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "City of Watertown",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: City of Watertown publishes these datasets.",
+        "Each dataset's own page on City of Watertown GIS Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-essex-county",
+      "title": "Dataset catalog: Essex County GIS services",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Essex County GIS services, run by Essex County. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "Essex County GIS services",
+      "publisher": {
+        "name": "Essex County",
+        "url": "https://essexcountyny.gov/"
+      },
+      "source_url": "https://essex-gis.co.essex.ny.us/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Essex County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Essex County publishes these datasets.",
+        "Each dataset's own page on Essex County GIS services, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-broome-county",
+      "title": "Dataset catalog: Broome County GIS Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Broome County GIS Portal, run by Broome County. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "Broome County GIS Portal",
+      "publisher": {
+        "name": "Broome County"
+      },
+      "source_url": "https://gis.broomecountyny.gov/arcgis/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Broome County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Broome County publishes these datasets.",
+        "Each dataset's own page on Broome County GIS Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-city-of-ithaca",
+      "title": "Dataset catalog: City of Ithaca Open Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in City of Ithaca Open Data, run by City of Ithaca. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "City of Ithaca Open Data",
+      "publisher": {
+        "name": "City of Ithaca"
+      },
+      "source_url": "https://data-ithacany.opendata.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "City of Ithaca",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: City of Ithaca publishes these datasets.",
+        "Each dataset's own page on City of Ithaca Open Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-otsego-county",
+      "title": "Dataset catalog: Otsego County GIS",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Otsego County GIS, run by Otsego County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Otsego County GIS",
+      "publisher": {
+        "name": "Otsego County"
+      },
+      "source_url": "https://otsego-county-gis-otsegocountyny.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Otsego County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Otsego County publishes these datasets.",
+        "Each dataset's own page on Otsego County GIS, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-steuben-county",
+      "title": "Dataset catalog: Steuben County GIS",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Steuben County GIS, run by Steuben County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Steuben County GIS",
+      "publisher": {
+        "name": "Steuben County",
+        "url": "https://steubencountyny.gov/"
+      },
+      "source_url": "https://steubencounty-scnygis.opendata.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Steuben County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Steuben County publishes these datasets.",
+        "Each dataset's own page on Steuben County GIS, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-tioga-county",
+      "title": "Dataset catalog: Tioga County One Map",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Tioga County One Map, run by Tioga County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Tioga County One Map",
+      "publisher": {
+        "name": "Tioga County"
+      },
+      "source_url": "https://tioga-county-one-map-tiogacountyny.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Tioga County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Tioga County publishes these datasets.",
+        "Each dataset's own page on Tioga County One Map, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-tompkins-county",
+      "title": "Dataset catalog: Tompkins County Open Data Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Tompkins County Open Data Portal, run by Tompkins County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Tompkins County Open Data Portal",
+      "publisher": {
+        "name": "Tompkins County",
+        "url": "https://tompkinscountyny.gov/"
+      },
+      "source_url": "https://tcdata-tompkinscounty.opendata.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Tompkins County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Tompkins County publishes these datasets.",
+        "Each dataset's own page on Tompkins County Open Data Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-cattaraugus-county",
+      "title": "Dataset catalog: Cattaraugus County GIS Hub",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Cattaraugus County GIS Hub, run by Cattaraugus County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Cattaraugus County GIS Hub",
+      "publisher": {
+        "name": "Cattaraugus County",
+        "url": "https://www.cattco.gov/"
+      },
+      "source_url": "https://cattaraugus-county-gis-hub-cattco.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Cattaraugus County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Cattaraugus County publishes these datasets.",
+        "Each dataset's own page on Cattaraugus County GIS Hub, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-chautauqua-county",
+      "title": "Dataset catalog: Chautauqua County GIS services",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Chautauqua County GIS services, run by Chautauqua County. It is an ArcGIS Server REST services directory (ArcGIS is a platform made by Esri), with no catalog in front of it.",
+      "source_name": "Chautauqua County GIS services",
+      "publisher": {
+        "name": "Chautauqua County",
+        "url": "https://chautauquacountyny.gov/"
+      },
+      "source_url": "https://maps.chautauquacounty.com/server/rest/services",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Chautauqua County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped.",
+          "Read once a week, and at most a few layers per service."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Chautauqua County publishes these datasets.",
+        "Each dataset's own page on Chautauqua County GIS services, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-city-of-buffalo",
+      "title": "Dataset catalog: Open Data Buffalo",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Open Data Buffalo, run by City of Buffalo. It is a Socrata portal (Socrata is a platform made by Tyler Technologies), read through the Socrata Discovery API.",
+      "source_name": "Open Data Buffalo",
+      "publisher": {
+        "name": "City of Buffalo",
+        "url": "https://www.buffalony.gov/"
+      },
+      "source_url": "https://data.buffalony.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "City of Buffalo",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (Socrata) is the software the portal runs on. It is not the publisher: City of Buffalo publishes these datasets.",
+        "Each dataset's own page on Open Data Buffalo, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-city-of-rochester",
+      "title": "Dataset catalog: DataROC",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in DataROC, run by City of Rochester. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "DataROC",
+      "publisher": {
+        "name": "City of Rochester",
+        "url": "https://cityofrochester.gov/"
+      },
+      "source_url": "https://data.cityofrochester.gov/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "City of Rochester",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: City of Rochester publishes these datasets.",
+        "Each dataset's own page on DataROC, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-genesee-county",
+      "title": "Dataset catalog: Genesee County GIS Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Genesee County GIS Data, run by Genesee County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Genesee County GIS Data",
+      "publisher": {
+        "name": "Genesee County",
+        "url": "https://geneseeny.gov/"
+      },
+      "source_url": "https://gis-data-cogeneseeny.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Genesee County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Genesee County publishes these datasets.",
+        "Each dataset's own page on Genesee County GIS Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-livingston-county",
+      "title": "Dataset catalog: Livingston County GIS Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Livingston County GIS Portal, run by Livingston County. It is an ArcGIS Enterprise portal (ArcGIS is a platform made by Esri), read through the portal's search API.",
+      "source_name": "Livingston County GIS Portal",
+      "publisher": {
+        "name": "Livingston County",
+        "url": "https://livingstoncountyny.gov/"
+      },
+      "source_url": "https://gis.livingstoncountyny.gov/portal/home/index.html",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Livingston County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Livingston County publishes these datasets.",
+        "Each dataset's own page on Livingston County GIS Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-monroe-county",
+      "title": "Dataset catalog: MCGIS Hub",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in MCGIS Hub, run by Monroe County. It is an ArcGIS Enterprise portal (ArcGIS is a platform made by Esri), read through the portal's search API.",
+      "source_name": "MCGIS Hub",
+      "publisher": {
+        "name": "Monroe County",
+        "url": "https://monroecounty.gov/"
+      },
+      "source_url": "https://maps.monroecounty.gov/portal/apps/sites/#/mcgis",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Monroe County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Monroe County publishes these datasets.",
+        "Each dataset's own page on MCGIS Hub, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-ontario-county",
+      "title": "Dataset catalog: Ontario County GIS Mapping Center",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Ontario County GIS Mapping Center, run by Ontario County. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Ontario County GIS Mapping Center",
+      "publisher": {
+        "name": "Ontario County",
+        "url": "https://www.ontariocountyny.gov/"
+      },
+      "source_url": "https://ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Ontario County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Ontario County publishes these datasets.",
+        "Each dataset's own page on Ontario County GIS Mapping Center, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-wayne-county",
+      "title": "Dataset catalog: Wayne County GIS Open Data Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Wayne County GIS Open Data Portal, run by Wayne County. It is an ArcGIS Enterprise portal (ArcGIS is a platform made by Esri), read through the portal's search API.",
+      "source_name": "Wayne County GIS Open Data Portal",
+      "publisher": {
+        "name": "Wayne County",
+        "url": "https://waynecountyny.gov/"
+      },
+      "source_url": "https://gis.co.wayne.ny.us/portal/apps/sites/#/wcgis/search?collection=Dataset",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Wayne County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Wayne County publishes these datasets.",
+        "Each dataset's own page on Wayne County GIS Open Data Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-wyoming-county",
+      "title": "Dataset catalog: Wyoming County ArcGIS Online organization",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Wyoming County ArcGIS Online organization, run by Wyoming County. It is an ArcGIS Online organization (ArcGIS is a platform made by Esri), read through ArcGIS Online's search API.",
+      "source_name": "Wyoming County ArcGIS Online organization",
+      "publisher": {
+        "name": "Wyoming County",
+        "url": "https://www.wyomingcountyny.gov/"
+      },
+      "source_url": "https://www.wyomingcountyny.gov/645/Geographic-Information-Systems-GIS",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Wyoming County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Wyoming County publishes these datasets.",
+        "Each dataset's own page on Wyoming County ArcGIS Online organization, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-yates-county",
+      "title": "Dataset catalog: Yates County GIS Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Yates County GIS Portal, run by Yates County. It is an ArcGIS Enterprise portal (ArcGIS is a platform made by Esri), read through the portal's search API.",
+      "source_name": "Yates County GIS Portal",
+      "publisher": {
+        "name": "Yates County"
+      },
+      "source_url": "https://gisportal.yatescounty.org/portal/home/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Yates County",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Yates County publishes these datasets.",
+        "Each dataset's own page on Yates County GIS Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-suny-cortland",
+      "title": "Dataset catalog: SUNY Cortland Geo-Spatial Information Hub",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in SUNY Cortland Geo-Spatial Information Hub, run by State University of New York at Cortland. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "SUNY Cortland Geo-Spatial Information Hub",
+      "publisher": {
+        "name": "State University of New York at Cortland",
+        "url": "https://www2.cortland.edu/"
+      },
+      "source_url": "https://suny-cortland-geo-spatial-information-hub-suncortlandadmin.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Central NY",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: State University of New York at Cortland publishes these datasets.",
+        "Each dataset's own page on SUNY Cortland Geo-Spatial Information Hub, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-syracuse-university",
+      "title": "Dataset catalog: Syracuse University Open Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Syracuse University Open Data, run by Syracuse University. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Syracuse University Open Data",
+      "publisher": {
+        "name": "Syracuse University",
+        "url": "https://www.syracuse.edu/"
+      },
+      "source_url": "https://data-syruniv.opendata.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Central NY",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: Syracuse University publishes these datasets.",
+        "Each dataset's own page on Syracuse University Open Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-lehman-bronx-information-portal",
+      "title": "Dataset catalog: Bronx Information Portal",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Bronx Information Portal, run by Lehman College, City University of New York. It is a Socrata portal (Socrata is a platform made by Tyler Technologies), read through the Socrata Discovery API.",
+      "source_name": "Bronx Information Portal",
+      "publisher": {
+        "name": "Lehman College, City University of New York",
+        "url": "https://www.lehman.edu/"
+      },
+      "source_url": "https://bronx.lehman.cuny.edu/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "NYC Metro / Long Island",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (Socrata) is the software the portal runs on. It is not the publisher: Lehman College, City University of New York publishes these datasets.",
+        "Each dataset's own page on Bronx Information Portal, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-cornell-cugir",
+      "title": "Dataset catalog: CUGIR metadata in OpenGeoMetadata edu.cornell",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in CUGIR metadata in OpenGeoMetadata edu.cornell, run by Cornell University Library. It is Cornell's GeoBlacklight records, published as OpenGeoMetadata files on GitHub.",
+      "source_name": "CUGIR metadata in OpenGeoMetadata edu.cornell",
+      "publisher": {
+        "name": "Cornell University Library",
+        "url": "https://cugir.library.cornell.edu/"
+      },
+      "source_url": "https://github.com/OpenGeoMetadata/edu.cornell",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week. The CUGIR site is not called.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "weekly",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Only public, current records are kept.",
+          "Records whose map extent is wholly outside New York are dropped."
         ]
       },
       "terms": {
@@ -343,8 +3545,66 @@
         "registry_info"
       ],
       "caveats": [
-        "Each dataset's own publisher is the government or institution that runs its portal. Its page on that portal, the link in each row, is the official record of that dataset.",
-        "This is a catalog of dataset descriptions, not the data itself. A dataset missing from the index may still exist: replies list the registry portals the index does not search."
+        "The platform (GeoBlacklight) is the software the portal runs on. It is not the publisher: Cornell University Library publishes these datasets.",
+        "Each dataset's own page on CUGIR metadata in OpenGeoMetadata edu.cornell, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
+      "id": "catalog-university-of-rochester",
+      "title": "Dataset catalog: Rochester Area Data",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Rochester Area Data, run by University of Rochester. It is an ArcGIS Hub site (ArcGIS is a platform made by Esri), read through its ArcGIS Online organization's search API.",
+      "source_name": "Rochester Area Data",
+      "publisher": {
+        "name": "University of Rochester",
+        "url": "https://www.rochester.edu/"
+      },
+      "source_url": "https://rochester-area-data-urochester.hub.arcgis.com/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "Western NY (Finger Lakes + WNY)",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: University of Rochester publishes these datasets.",
+        "Each dataset's own page on Rochester Area Data, the link in each search result, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself."
       ]
     },
     {
