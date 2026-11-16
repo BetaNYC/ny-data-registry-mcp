@@ -12,7 +12,7 @@ What changed in this server, newest first, including corrections: [WHATS-CHANGED
 
 ## What it does
 
-Eleven tools, in three groups.
+Thirteen tools, in three groups.
 
 **Registry tools** (work out of the box, no index needed):
 
@@ -34,14 +34,15 @@ Eleven tools, in three groups.
 | `find_joinable` | Datasets sharing a join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), from a curated key-column map, not raw name equality |
 | `whats_new` | Datasets added, changed or removed since a date |
 
-**About this server** (the two tools BetaNYC is adding to each of its MCP servers; no index needed):
+**About this server** (the three tools BetaNYC is adding to each of its MCP servers; no index needed):
 
 | Tool | What it answers |
 |---|---|
 | `whats_changed` | What changed in **this server**, newest first, from [WHATS-CHANGED.md](WHATS-CHANGED.md): new tools, fixes and corrections. Filters: since, tag (Site, Data, MCP, Correction), limit. For datasets that are new on the portals, use `whats_new` |
 | `about_betanyc` | Who built the server, its version, where to report a bug in this server or ask for a new feature, and BetaNYC's links |
+| `about_data` | Where each kind of data comes from, from [DATA-SOURCES.json](DATA-SOURCES.json): the source, its publisher and a link, whether it is an official record, what BetaNYC changed, how current it is on this server, terms of use, and where to report an error. Ask for one topic or one tool's sources |
 
-These two come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
+These three come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
 
 All tool inputs are strict: an unknown parameter is rejected by name, never silently dropped (same rule as `nyc-311-mcp`).
 
@@ -338,7 +339,7 @@ GitHub turns off scheduled workflows in a public repository after 60 days with n
 
 ## How it was checked
 
-- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all twelve tools.
+- `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all thirteen tools.
 - `node dist/cli.js eval`: a fixed set of real questions (`eval/questions.json`) scored against the real index. Results: `eval/runs/`.
 
 Latest results (2026-11-05, office-mac), all in `eval/runs/`:
@@ -375,7 +376,7 @@ On release day, one commit, which the tag then goes on:
 3. The entry's MCP version link gains that heading's anchor. Compute it, never write it by hand: `python3 -c "import sys; sys.path.insert(0,'scripts'); import whats_changed as w; print(w.github_slug('[X.Y.Z] — YYYY-MM-DD'))"`.
 4. `python3 scripts/whats_changed.py check WHATS-CHANGED.md --release` passes.
 
-Never rewrite an older entry in `WHATS-CHANGED.md`; add a dated `- **Update YYYY-MM-DD:**` line to it. CI enforces this. `scripts/whats_changed.py` and `src/betanyc-tools.ts` are copies of files in the BetaNYC workspace; never edit them here. A release that changes only metadata gets no entry; its commit carries a `No-whats-changed: <reason>` trailer.
+Never rewrite an older entry in `WHATS-CHANGED.md`; add a dated `- **Update YYYY-MM-DD:**` line to it. CI enforces this. `scripts/whats_changed.py`, `src/betanyc-tools.ts`, `scripts/tests/catalog_validate.py` and `scripts/mcp_shared/` are copies of files in the BetaNYC workspace; never edit them here. `data.json` (DCAT-US 3.0) is built from `DATA-SOURCES.json` with `python3 scripts/whats_changed.py about-data catalog DATA-SOURCES.json`; CI fails when it is out of date. A release that changes only metadata gets no entry; its commit carries a `No-whats-changed: <reason>` trailer.
 
 ## Terms of use
 
@@ -392,3 +393,5 @@ Read before any adapter was written; details and quotes in [`docs/terms.md`](doc
 ## License
 
 MIT
+
+Data license: `data/ny-data-portal-registry.json` is CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/), adapted from BetaNYC's [grounding-ai-with-ny-open-data](https://github.com/BetaNYC/grounding-ai-with-ny-open-data) registry, and ships inside the MIT-licensed package. Credit: "Source: BetaNYC, New York Data Portal Registry."

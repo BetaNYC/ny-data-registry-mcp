@@ -17,6 +17,31 @@ Dataset search matches every word of the query.
   falls back to any one word and the reply says so (`match: "any"`, `match_note`). A two-word
   synonym key ("tax lot", and the new "tax parcel" and "tax parcels") is one concept, so its
   words are not also searched alone. The question set scores 27 of 27 before and after.
+- `src/betanyc-tools.ts` and `scripts/whats_changed.py`: BetaNYC's shared module 1.4.0 (was
+  1.2.4), copied unchanged from betanyc-ai-workspace `main` at 4d72be6, with its validator kit
+  (`scripts/tests/catalog_validate.py`, `scripts/mcp_shared/`).
+
+### Added
+
+- `about_data`, the third BetaNYC standard tool (betanyc-ai-workspace #1672): where each kind
+  of data comes from, from `DATA-SOURCES.json`. 68 sources: one for each of the 60 portals the
+  harvest reads, published by the government or institution that runs it (the platform, such as
+  Socrata or ArcGIS, is named but is not the publisher), plus the portal list, who runs each
+  site, places, the hand-kept list, topics, coverage, join keys, and the Croissant and DCAT-US
+  descriptions. Each gives one of the three answers to "is this official?". A test fails when
+  the harvest reads a portal with no source. Each portal source carries the portal's own name
+  (its site title; an unnamed ArcGIS services directory is named by its page title and
+  address), links the portal itself to check a figure, cites what sets its terms (NYC Open Data and
+  NYCMapHub: the Open Data Law, NYC Administrative Code § 23-502(d), with § 23-504's no-warranty
+  point as a caveat; other portals: their own terms, policy or disclaimer page) or says "None
+  stated by the publisher" with the page looked at, and sends errors in the original records to
+  the publisher (Tyler's Contact Dataset Owner guide for Socrata portals, or the publisher's own
+  contact page; a shared team address when one is shown, never a person's own). How current
+  each source is comes from the loaded portal list, the master list of government bodies and
+  the installed index; each portal reports its own last good read, so a weekly or failed portal
+  does not borrow the index's date.
+- The server now sends MCP `instructions`, ending with BetaNYC's shared ones.
+- `data.json`: a DCAT-US 3.0 catalog built from `DATA-SOURCES.json`, shipped in the package.
 
 Bundled copies refreshed after the master list gained counties, cities, towns and villages
 (ny-gov-web-registry #59, #60) and the registry linked its rows to it (grounding #37).

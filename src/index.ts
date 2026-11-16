@@ -2,14 +2,14 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { TOOLS, callTool } from "./tools.js";
+import { SERVER_INSTRUCTIONS, TOOLS, callTool } from "./tools.js";
 import { refreshRegistry } from "./registry.js";
 import { refreshGovBodies } from "./govbodies.js";
 import { VERSION } from "./paths.js";
 import { ensureIndex } from "./fetchindex.js";
 import { startAutoUpdate } from "./refresh.js";
 
-const server = new Server({ name: "ny-data-registry-mcp", version: VERSION }, { capabilities: { tools: {} } });
+const server = new Server({ name: "ny-data-registry-mcp", version: VERSION }, { capabilities: { tools: {} }, instructions: SERVER_INSTRUCTIONS });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
