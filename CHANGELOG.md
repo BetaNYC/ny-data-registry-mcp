@@ -18,6 +18,18 @@ Dataset search matches every word of the query.
   synonym key ("tax lot", and the new "tax parcel" and "tax parcels") is one concept, so its
   words are not also searched alone. The question set scores 27 of 27 before and after.
 
+Bundled copies refreshed after the master list gained counties, cities, towns and villages
+(ny-gov-web-registry #59, #60) and the registry linked its rows to it (grounding #37).
+
+### Changed
+
+- `data/ny-data-portal-registry.json`: grounding `main` at 2b5105d. 182 of 224 rows now carry a
+  `registry_id` (was 22).
+- `data/gov-bodies.json`: rebuilt from ny-gov-web-registry `main` at 4d4250d. It holds the 154
+  bodies those rows point to (was 19), out of 2,151 on the list.
+- `docs/topics-crosswalk-2026-11-05.csv` (1.5 MB) removed. The crosswalk for every index is
+  published with it as `topic-crosswalk.csv`.
+
 The index is rebuilt every night on GitHub Actions, and a quality gate keeps a worse index
 from being published. See [#14](https://github.com/BetaNYC/ny-data-registry-mcp/issues/14)
 (epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).
