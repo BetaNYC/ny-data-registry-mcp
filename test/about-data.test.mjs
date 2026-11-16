@@ -93,12 +93,27 @@ test("an error in a portal's catalog record goes to the portal's publisher, not 
 test("each catalog is checked at the portal itself, under the portal's own terms or a stated none", () => {
   for (const s of CATALOGS) {
     assert.equal(s.verify_at, s.source_url, `${s.id}: check a figure at the portal`);
-    assert.equal(s.terms.license_name, "None stated by the publisher", s.id);
+    assert.ok(s.terms.license_name, s.id);
     assert.ok(s.terms.terms_url, `${s.id}: links the terms page, or where we looked`);
     assert.doesNotMatch(s.terms.terms_url, /github\.com\/BetaNYC/, `${s.id}: the portal's terms, not BetaNYC's`);
   }
+  // A portal with its own terms page cites it; "None stated" is only for portals where we looked and found none.
   const pages = readDataJson("terms-pages.json").portals;
-  assert.equal(DS.sources.find((s) => s.id === "catalog-nyc-open-data").terms.terms_url, pages["new-york-city"].url);
+  assert.equal(DS.sources.find((s) => s.id === "catalog-open-ny").terms.terms_url, pages["nys-office-of-information-technology-services-open-ny-progra"].url);
+  assert.equal(DS.sources.find((s) => s.id === "catalog-open-ny").terms.license_name, "Set by the OPEN-NY Terms of Use");
+});
+
+test("NYC Open Data's terms are set by law: no restrictions on use, and no warranty", () => {
+  for (const topic of ["catalog-nyc-open-data", "catalog-nycmaphub"]) {
+    const s = DS.sources.find((x) => x.id === topic);
+    assert.equal(s.terms.license_name, "No restrictions on use: NYC Administrative Code \u00a7 23-502(d) (the Open Data Law, Local Law 11 of 2012)", topic);
+    assert.equal(s.terms.terms_url, "https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807", topic);
+    assert.ok(s.caveats.some((c) => /\u00a7 23-504/.test(c) && /no warranty/.test(c)), `${topic}: says there is no warranty`);
+  }
+  const text = ask({ topic: "catalog-nyc-open-data" }).content[0].text;
+  const line = text.split("\n").find((l) => l.startsWith("Terms of use:"));
+  assert.match(line, /^Terms of use: No restrictions on use: NYC Administrative Code \u00a7 23-502\(d\)/);
+  assert.doesNotMatch(line, /None stated/);
 });
 
 test("a tool name as topic gives the sources behind that tool", () => {

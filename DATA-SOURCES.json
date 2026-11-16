@@ -216,7 +216,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the OPEN-NY Terms of Use",
         "terms_url": "https://data.ny.gov/download/77gx-ii52/application/pdf",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -275,7 +275,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the NYS ITS Geospatial Services disclaimer",
         "terms_url": "https://gis.ny.gov/disclaimer",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -333,7 +333,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the OPEN-NY Terms of Use",
         "terms_url": "https://data.ny.gov/dataset/OPEN-NY-Terms-Of-Use/77gx-ii52",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -451,7 +451,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by NYSDEC's Website Usage and Policies",
         "terms_url": "https://dec.ny.gov/about/website-usage-and-policies",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -688,7 +688,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by NYSDOT's Legal Disclaimer",
         "terms_url": "https://www.dot.ny.gov/main/legal-disclaimer",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -747,7 +747,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the NYS ITS Geospatial Services disclaimer",
         "terms_url": "https://gis.ny.gov/disclaimer",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -806,7 +806,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the NYS ITS Geospatial Services disclaimer",
         "terms_url": "https://gis.ny.gov/disclaimer",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -865,7 +865,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the NYS ITS Geospatial Services disclaimer",
         "terms_url": "https://gis.ny.gov/disclaimer",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -924,7 +924,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the NYS ITS Geospatial Services disclaimer",
         "terms_url": "https://gis.ny.gov/disclaimer",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -1157,7 +1157,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the disclaimer on the Greene County Web Map",
         "terms_url": "https://gis.gcgovny.com/greenewebmap/",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -1275,7 +1275,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the disclaimer and terms on the Washington County Parcel Viewer",
         "terms_url": "https://gis.washingtoncountyny.gov/webmap/",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -1392,7 +1392,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the City of Syracuse Open Data Portal's Terms of Use",
         "terms_url": "https://data.syr.gov/pages/termsofuse",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -1974,8 +1974,8 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
-        "terms_url": "https://www.nyc.gov/main/terms-of-use",
+        "license_name": "No restrictions on use: NYC Administrative Code § 23-502(d) (the Open Data Law, Local Law 11 of 2012)",
+        "terms_url": "https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
       "report_errors": {
@@ -1993,7 +1993,8 @@
         "The platform (Socrata) is the software the portal runs on. It is not the publisher: New York City Office of Technology and Innovation publishes these datasets.",
         "Each dataset's own page on NYC Open Data, the link in each search result, is the official record of that dataset.",
         "To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner).",
-        "This is a catalog of dataset descriptions, not the data itself."
+        "This is a catalog of dataset descriptions, not the data itself.",
+        "The City provides this data for informational purposes only, with no warranty that it is complete, accurate, or fit for any purpose (NYC Administrative Code § 23-504)."
       ]
     },
     {
@@ -2090,8 +2091,8 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
-        "terms_url": "https://nycmaps.nyc.gov/",
+        "license_name": "No restrictions on use: NYC Administrative Code § 23-502(d) (the Open Data Law, Local Law 11 of 2012)",
+        "terms_url": "https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
       "report_errors": {
@@ -2110,7 +2111,8 @@
         "The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York City Office of Technology and Innovation publishes these datasets.",
         "Each dataset's own page on NYCMapHub, the link in each search result, is the official record of that dataset.",
         "To report an error in a dataset or its description, use the contact on that dataset's own portal page.",
-        "This is a catalog of dataset descriptions, not the data itself."
+        "This is a catalog of dataset descriptions, not the data itself.",
+        "The City provides this data for informational purposes only, with no warranty that it is complete, accurate, or fit for any purpose (NYC Administrative Code § 23-504)."
       ]
     },
     {
@@ -2208,7 +2210,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by Suffolk County Open Data's Terms & Conditions",
         "terms_url": "https://opendata.suffolkcountyny.gov/pages/terms-conditions",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -2443,7 +2445,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the Broome County GIS Portal's website disclaimer and terms and conditions",
         "terms_url": "https://gis.broomecountyny.gov/Website/GISWeb/Portal.htm",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -2558,7 +2560,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by Otsego County's Legal Disclaimer for GIS Data and Mapping Tools",
         "terms_url": "https://otsegocountyny.maps.arcgis.com/sharing/rest/content/items/e89ba4401f6f4d379258e900de6fbbd3/data",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -2849,7 +2851,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the legal disclaimer on Chautauqua County's GIS page",
         "terms_url": "https://chautauquacountyny.gov/information-services/Geographic-Information-Systems",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -2908,7 +2910,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by the City of Buffalo Open Data Policy",
         "terms_url": "https://data.buffalony.gov/stories/s/City-of-Buffalo-Open-Data-Policy/xhgt-q9im/",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -2967,7 +2969,7 @@
         ]
       },
       "terms": {
-        "license_name": "None stated by the publisher",
+        "license_name": "Set by DataROC's Terms of Use",
         "terms_url": "https://data.cityofrochester.gov/pages/terms-of-use",
         "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
       },
@@ -3566,7 +3568,8 @@
         "The platform (Socrata) is the software the portal runs on. It is not the publisher: Lehman College, City University of New York publishes these datasets.",
         "Each dataset's own page on Lehman College Community Connect: Bronx Information Portal, the link in each search result, is the official record of that dataset.",
         "To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner).",
-        "This is a catalog of dataset descriptions, not the data itself."
+        "This is a catalog of dataset descriptions, not the data itself.",
+        "The portal's only terms link is Tyler Technologies' agreement with the governments and schools that run Socrata portals, not terms the publisher states for the data."
       ]
     },
     {

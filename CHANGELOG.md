@@ -31,7 +31,9 @@ Dataset search matches every word of the query.
   descriptions. Each gives one of the three answers to "is this official?". A test fails when
   the harvest reads a portal with no source. Each portal source carries the portal's own name
   (its site title; an unnamed ArcGIS services directory is named by its page title and
-  address), links the portal itself to check a figure, links its own terms page or says "None
+  address), links the portal itself to check a figure, cites what sets its terms (NYC Open Data and
+  NYCMapHub: the Open Data Law, NYC Administrative Code § 23-502(d), with § 23-504's no-warranty
+  point as a caveat; other portals: their own terms, policy or disclaimer page) or says "None
   stated by the publisher" with the page looked at, and sends errors in the original records to
   the publisher (Tyler's Contact Dataset Owner guide for Socrata portals, or the publisher's own
   contact page; a shared team address when one is shown, never a person's own). How current

@@ -151,7 +151,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the OPEN-NY Terms of Use",
         "Terms of use: https://data.ny.gov/download/77gx-ii52/application/pdf"
       ]
     },
@@ -185,7 +185,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ]
     },
@@ -219,7 +219,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the OPEN-NY Terms of Use",
         "Terms of use: https://data.ny.gov/dataset/OPEN-NY-Terms-Of-Use/77gx-ii52"
       ]
     },
@@ -287,7 +287,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by NYSDEC's Website Usage and Policies",
         "Terms of use: https://dec.ny.gov/about/website-usage-and-policies"
       ]
     },
@@ -423,7 +423,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by NYSDOT's Legal Disclaimer",
         "Terms of use: https://www.dot.ny.gov/main/legal-disclaimer"
       ]
     },
@@ -457,7 +457,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ]
     },
@@ -491,7 +491,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ]
     },
@@ -525,7 +525,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ]
     },
@@ -559,7 +559,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ]
     },
@@ -695,7 +695,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the disclaimer on the Greene County Web Map",
         "Terms of use: https://gis.gcgovny.com/greenewebmap/"
       ]
     },
@@ -763,7 +763,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the disclaimer and terms on the Washington County Parcel Viewer",
         "Terms of use: https://gis.washingtoncountyny.gov/webmap/"
       ]
     },
@@ -831,7 +831,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the City of Syracuse Open Data Portal's Terms of Use",
         "Terms of use: https://data.syr.gov/pages/termsofuse"
       ]
     },
@@ -1169,8 +1169,8 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
-        "Terms of use: https://www.nyc.gov/main/terms-of-use"
+        "License: No restrictions on use: NYC Administrative Code § 23-502(d) (the Open Data Law, Local Law 11 of 2012)",
+        "Terms of use: https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807"
       ]
     },
     {
@@ -1237,8 +1237,8 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
-        "Terms of use: https://nycmaps.nyc.gov/"
+        "License: No restrictions on use: NYC Administrative Code § 23-502(d) (the Open Data Law, Local Law 11 of 2012)",
+        "Terms of use: https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807"
       ]
     },
     {
@@ -1305,7 +1305,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by Suffolk County Open Data's Terms & Conditions",
         "Terms of use: https://opendata.suffolkcountyny.gov/pages/terms-conditions"
       ]
     },
@@ -1440,7 +1440,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the Broome County GIS Portal's website disclaimer and terms and conditions",
         "Terms of use: https://gis.broomecountyny.gov/Website/GISWeb/Portal.htm"
       ]
     },
@@ -1506,7 +1506,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by Otsego County's Legal Disclaimer for GIS Data and Mapping Tools",
         "Terms of use: https://otsegocountyny.maps.arcgis.com/sharing/rest/content/items/e89ba4401f6f4d379258e900de6fbbd3/data"
       ]
     },
@@ -1675,7 +1675,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the legal disclaimer on Chautauqua County's GIS page",
         "Terms of use: https://chautauquacountyny.gov/information-services/Geographic-Information-Systems"
       ]
     },
@@ -1709,7 +1709,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the City of Buffalo Open Data Policy",
         "Terms of use: https://data.buffalony.gov/stories/s/City-of-Buffalo-Open-Data-Policy/xhgt-q9im/"
       ]
     },
@@ -1743,7 +1743,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by DataROC's Terms of Use",
         "Terms of use: https://data.cityofrochester.gov/pages/terms-of-use"
       ]
     },
@@ -2655,7 +2655,7 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the OPEN-NY Terms of Use",
             "Terms of use: https://data.ny.gov/download/77gx-ii52/application/pdf"
           ]
         }
@@ -2692,7 +2692,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the OPEN-NY Terms of Use",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://data.ny.gov/download/77gx-ii52/application/pdf"
       ],
@@ -2751,7 +2751,7 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the NYS ITS Geospatial Services disclaimer",
             "Terms of use: https://gis.ny.gov/disclaimer"
           ]
         }
@@ -2788,7 +2788,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ],
@@ -2847,7 +2847,7 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the OPEN-NY Terms of Use",
             "Terms of use: https://data.ny.gov/dataset/OPEN-NY-Terms-Of-Use/77gx-ii52"
           ]
         }
@@ -2884,7 +2884,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the OPEN-NY Terms of Use",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://data.ny.gov/dataset/OPEN-NY-Terms-Of-Use/77gx-ii52"
       ],
@@ -3039,7 +3039,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by NYSDEC's Website Usage and Policies",
             "Terms of use: https://dec.ny.gov/about/website-usage-and-policies"
           ]
         }
@@ -3076,7 +3076,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by NYSDEC's Website Usage and Policies",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://dec.ny.gov/about/website-usage-and-policies"
       ],
@@ -3423,7 +3423,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by NYSDOT's Legal Disclaimer",
             "Terms of use: https://www.dot.ny.gov/main/legal-disclaimer"
           ]
         }
@@ -3460,7 +3460,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by NYSDOT's Legal Disclaimer",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://www.dot.ny.gov/main/legal-disclaimer"
       ],
@@ -3519,7 +3519,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the NYS ITS Geospatial Services disclaimer",
             "Terms of use: https://gis.ny.gov/disclaimer"
           ]
         }
@@ -3556,7 +3556,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ],
@@ -3615,7 +3615,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the NYS ITS Geospatial Services disclaimer",
             "Terms of use: https://gis.ny.gov/disclaimer"
           ]
         }
@@ -3652,7 +3652,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ],
@@ -3711,7 +3711,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the NYS ITS Geospatial Services disclaimer",
             "Terms of use: https://gis.ny.gov/disclaimer"
           ]
         }
@@ -3748,7 +3748,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ],
@@ -3807,7 +3807,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the NYS ITS Geospatial Services disclaimer",
             "Terms of use: https://gis.ny.gov/disclaimer"
           ]
         }
@@ -3844,7 +3844,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the NYS ITS Geospatial Services disclaimer",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://gis.ny.gov/disclaimer"
       ],
@@ -4191,7 +4191,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the disclaimer on the Greene County Web Map",
             "Terms of use: https://gis.gcgovny.com/greenewebmap/"
           ]
         }
@@ -4228,7 +4228,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the disclaimer on the Greene County Web Map",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://gis.gcgovny.com/greenewebmap/"
       ],
@@ -4383,7 +4383,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the disclaimer and terms on the Washington County Parcel Viewer",
             "Terms of use: https://gis.washingtoncountyny.gov/webmap/"
           ]
         }
@@ -4420,7 +4420,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the disclaimer and terms on the Washington County Parcel Viewer",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://gis.washingtoncountyny.gov/webmap/"
       ],
@@ -4575,7 +4575,7 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the City of Syracuse Open Data Portal's Terms of Use",
             "Terms of use: https://data.syr.gov/pages/termsofuse"
           ]
         }
@@ -4612,7 +4612,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the City of Syracuse Open Data Portal's Terms of Use",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://data.syr.gov/pages/termsofuse"
       ],
@@ -5533,8 +5533,8 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
-            "Terms of use: https://www.nyc.gov/main/terms-of-use"
+            "License: No restrictions on use: NYC Administrative Code § 23-502(d) (the Open Data Law, Local Law 11 of 2012)",
+            "Terms of use: https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807"
           ]
         }
       ],
@@ -5570,11 +5570,11 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: No restrictions on use: NYC Administrative Code § 23-502(d) (the Open Data Law, Local Law 11 of 2012)",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
-        "Terms of use: https://www.nyc.gov/main/terms-of-use"
+        "Terms of use: https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807"
       ],
-      "scopeNote": "Known gap: Records whose map extent is wholly outside New York are dropped. Caveat: The platform (Socrata) is the software the portal runs on. It is not the publisher: New York City Office of Technology and Innovation publishes these datasets. Caveat: Each dataset's own page on NYC Open Data, the link in each search result, is the official record of that dataset. Caveat: To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner). Caveat: This is a catalog of dataset descriptions, not the data itself."
+      "scopeNote": "Known gap: Records whose map extent is wholly outside New York are dropped. Caveat: The platform (Socrata) is the software the portal runs on. It is not the publisher: New York City Office of Technology and Innovation publishes these datasets. Caveat: Each dataset's own page on NYC Open Data, the link in each search result, is the official record of that dataset. Caveat: To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner). Caveat: This is a catalog of dataset descriptions, not the data itself. Caveat: The City provides this data for informational purposes only, with no warranty that it is complete, accurate, or fit for any purpose (NYC Administrative Code § 23-504)."
     },
     {
       "@id": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#catalog-nyc-dcp-mapping",
@@ -5725,8 +5725,8 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
-            "Terms of use: https://nycmaps.nyc.gov/"
+            "License: No restrictions on use: NYC Administrative Code § 23-502(d) (the Open Data Law, Local Law 11 of 2012)",
+            "Terms of use: https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807"
           ]
         }
       ],
@@ -5762,11 +5762,11 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: No restrictions on use: NYC Administrative Code § 23-502(d) (the Open Data Law, Local Law 11 of 2012)",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
-        "Terms of use: https://nycmaps.nyc.gov/"
+        "Terms of use: https://codelibrary.amlegal.com/codes/newyorkcity/latest/NYCadmin/0-0-0-216807"
       ],
-      "scopeNote": "Known gap: Records whose map extent is wholly outside New York are dropped. Caveat: The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York City Office of Technology and Innovation publishes these datasets. Caveat: Each dataset's own page on NYCMapHub, the link in each search result, is the official record of that dataset. Caveat: To report an error in a dataset or its description, use the contact on that dataset's own portal page. Caveat: This is a catalog of dataset descriptions, not the data itself."
+      "scopeNote": "Known gap: Records whose map extent is wholly outside New York are dropped. Caveat: The platform (ArcGIS) is the software the portal runs on. It is not the publisher: New York City Office of Technology and Innovation publishes these datasets. Caveat: Each dataset's own page on NYCMapHub, the link in each search result, is the official record of that dataset. Caveat: To report an error in a dataset or its description, use the contact on that dataset's own portal page. Caveat: This is a catalog of dataset descriptions, not the data itself. Caveat: The City provides this data for informational purposes only, with no warranty that it is complete, accurate, or fit for any purpose (NYC Administrative Code § 23-504)."
     },
     {
       "@id": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#catalog-putnam-county",
@@ -5917,7 +5917,7 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by Suffolk County Open Data's Terms & Conditions",
             "Terms of use: https://opendata.suffolkcountyny.gov/pages/terms-conditions"
           ]
         }
@@ -5954,7 +5954,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by Suffolk County Open Data's Terms & Conditions",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://opendata.suffolkcountyny.gov/pages/terms-conditions"
       ],
@@ -6300,7 +6300,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the Broome County GIS Portal's website disclaimer and terms and conditions",
             "Terms of use: https://gis.broomecountyny.gov/Website/GISWeb/Portal.htm"
           ]
         }
@@ -6337,7 +6337,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the Broome County GIS Portal's website disclaimer and terms and conditions",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://gis.broomecountyny.gov/Website/GISWeb/Portal.htm"
       ],
@@ -6490,7 +6490,7 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by Otsego County's Legal Disclaimer for GIS Data and Mapping Tools",
             "Terms of use: https://otsegocountyny.maps.arcgis.com/sharing/rest/content/items/e89ba4401f6f4d379258e900de6fbbd3/data"
           ]
         }
@@ -6527,7 +6527,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by Otsego County's Legal Disclaimer for GIS Data and Mapping Tools",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://otsegocountyny.maps.arcgis.com/sharing/rest/content/items/e89ba4401f6f4d379258e900de6fbbd3/data"
       ],
@@ -6969,7 +6969,7 @@
           ],
           "accrualPeriodicity": "weekly",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the legal disclaimer on Chautauqua County's GIS page",
             "Terms of use: https://chautauquacountyny.gov/information-services/Geographic-Information-Systems"
           ]
         }
@@ -7006,7 +7006,7 @@
       ],
       "accrualPeriodicity": "weekly",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the legal disclaimer on Chautauqua County's GIS page",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://chautauquacountyny.gov/information-services/Geographic-Information-Systems"
       ],
@@ -7065,7 +7065,7 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by the City of Buffalo Open Data Policy",
             "Terms of use: https://data.buffalony.gov/stories/s/City-of-Buffalo-Open-Data-Policy/xhgt-q9im/"
           ]
         }
@@ -7102,7 +7102,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by the City of Buffalo Open Data Policy",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://data.buffalony.gov/stories/s/City-of-Buffalo-Open-Data-Policy/xhgt-q9im/"
       ],
@@ -7161,7 +7161,7 @@
           ],
           "accrualPeriodicity": "daily",
           "rights": [
-            "License: None stated by the publisher",
+            "License: Set by DataROC's Terms of Use",
             "Terms of use: https://data.cityofrochester.gov/pages/terms-of-use"
           ]
         }
@@ -7198,7 +7198,7 @@
       ],
       "accrualPeriodicity": "daily",
       "rights": [
-        "License: None stated by the publisher",
+        "License: Set by DataROC's Terms of Use",
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://data.cityofrochester.gov/pages/terms-of-use"
       ],
@@ -8161,7 +8161,7 @@
         "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
         "Terms of use: https://support.socrata.com/hc/en-us/articles/360019057154-Data-Insights-Software-As-A-Service-License-Agreement"
       ],
-      "scopeNote": "Known gap: Records whose map extent is wholly outside New York are dropped. Caveat: The platform (Socrata) is the software the portal runs on. It is not the publisher: Lehman College, City University of New York publishes these datasets. Caveat: Each dataset's own page on Lehman College Community Connect: Bronx Information Portal, the link in each search result, is the official record of that dataset. Caveat: To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner). Caveat: This is a catalog of dataset descriptions, not the data itself."
+      "scopeNote": "Known gap: Records whose map extent is wholly outside New York are dropped. Caveat: The platform (Socrata) is the software the portal runs on. It is not the publisher: Lehman College, City University of New York publishes these datasets. Caveat: Each dataset's own page on Lehman College Community Connect: Bronx Information Portal, the link in each search result, is the official record of that dataset. Caveat: To report an error in a dataset or its description, use the contact on that dataset's own portal page (Socrata pages have Contact Dataset Owner). Caveat: This is a catalog of dataset descriptions, not the data itself. Caveat: The portal's only terms link is Tyler Technologies' agreement with the governments and schools that run Socrata portals, not terms the publisher states for the data."
     },
     {
       "@id": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#catalog-cornell-cugir",
