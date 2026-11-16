@@ -18,6 +18,13 @@ Dataset search matches every word of the query.
   synonym key ("tax lot", and the new "tax parcel" and "tax parcels") is one concept, so its
   words are not also searched alone. The question set scores 27 of 27 before and after.
 
+### Added
+
+- `DATA-SOURCES.json` (draft, not yet read by the server): where each kind of data comes from,
+  in BetaNYC's about-data format (`betanyc-data-sources/1`), for the coming `about_data` tool
+  (betanyc-ai-workspace #1672). Eleven sources, each with one of the three answers to "is this
+  official?". The tool, the shared module 1.4.0 and the catalog files come in a later change.
+
 Bundled copies refreshed after the master list gained counties, cities, towns and villages
 (ny-gov-web-registry #59, #60) and the registry linked its rows to it (grounding #37).
 

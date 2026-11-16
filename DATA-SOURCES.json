@@ -1,0 +1,593 @@
+{
+  "format": "betanyc-data-sources/1",
+  "server": {
+    "name": "ny-data-registry-mcp",
+    "title": "NY Data Registry MCP server",
+    "description": "Finds open data across New York's data portals: which portal covers a place or topic, how to query it, and, from a nightly index of the portals' catalogs, which datasets and columns exist. It lists dataset descriptions, not the data itself.",
+    "kind": "mcp",
+    "repository": "https://github.com/BetaNYC/ny-data-registry-mcp",
+    "documentation_url": "https://github.com/BetaNYC/ny-data-registry-mcp#readme",
+    "package_url": "https://www.npmjs.com/package/@betanyc/ny-data-registry-mcp",
+    "license": {
+      "name": "MIT",
+      "url": "https://spdx.org/licenses/MIT.html"
+    },
+    "contact_email": "lab@beta.nyc",
+    "keywords": [
+      "New York",
+      "open data",
+      "data catalog",
+      "data portals",
+      "Socrata",
+      "ArcGIS"
+    ]
+  },
+  "sources": [
+    {
+      "id": "portal-registry",
+      "title": "New York data portal list",
+      "what": "BetaNYC's list of New York open data portals and sources (state, county, city, agency, library and nonprofit): each one's address, platform, API type, whether a key is needed, dataset count, status and the date it was last checked.",
+      "source_name": "NY Data Portal Registry",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "official": false,
+      "how_gathered": "Kept by BetaNYC in the grounding-ai-with-ny-open-data repo and published on GitHub Pages. The server ships a copy and loads the published one at startup when it can reach it.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "curated"
+        ],
+        "detail": "BetaNYC opens each portal and records what it finds, with the evidence and the date checked on every row. Which MCP server to hand a source off to (how_to_query) comes from BetaNYC's own list in data/handoffs.json."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "registry_generated"
+      },
+      "update_frequency": "asNeeded",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State: statewide, state agencies, counties, cities, NYC and regions",
+        "known_gaps": [
+          "A place that is not in the list was not checked. That is not the same as having no portal.",
+          "Rows marked UNCONFIRMED were not fully checked."
+        ]
+      },
+      "terms": {
+        "license_name": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "terms_url": "https://github.com/BetaNYC/grounding-ai-with-ny-open-data/blob/main/LICENSE",
+        "credit_line": "Source: NY Data Portal Registry, BetaNYC."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/grounding-ai-with-ny-open-data/issues"
+      },
+      "tools": [
+        "find_sources",
+        "list_sources_for_place",
+        "how_to_query",
+        "check_source",
+        "registry_info",
+        "search_datasets",
+        "whats_new"
+      ],
+      "caveats": [
+        "Each row says when it was last checked. A portal can move or close after that date.",
+        "check_source makes one request to the portal's address when you ask and reports what came back. That result is the portal's own reply, compared with this list."
+      ]
+    },
+    {
+      "id": "government-bodies",
+      "title": "Who runs each data site",
+      "what": "For rows with a registry_id, the government body that runs the site: its name, level of government, kind of body and website (runs_it).",
+      "source_name": "NY Gov Web Registry",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://github.com/BetaNYC/ny-gov-web-registry",
+      "official": false,
+      "how_gathered": "Read at startup from data/registry.json in BetaNYC's ny-gov-web-registry repo on GitHub. When that cannot be reached, the server uses the copy it ships, which holds only the bodies the bundled portal list points to.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "curated",
+          "reshaped"
+        ],
+        "detail": "The list is kept by BetaNYC, and its own docs/sources.md names the source of every fact. This server keeps only the id, name, short name, level, kind, main web address and status of each body."
+      },
+      "verify_at": "https://github.com/BetaNYC/ny-gov-web-registry/blob/main/docs/sources.md",
+      "freshness": {
+        "kind": "hook",
+        "key": "gov_bodies_snapshot"
+      },
+      "update_frequency": "asNeeded",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State and New York City government bodies",
+        "known_gaps": [
+          "Rows with no registry_id have no runs_it. Some portal rows from older indexes carry no id yet."
+        ]
+      },
+      "terms": {
+        "license_name": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "terms_url": "https://github.com/BetaNYC/ny-gov-web-registry/blob/main/LICENSE-DATA",
+        "credit_line": "Source: NY Gov Web Registry, BetaNYC."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-gov-web-registry/issues"
+      },
+      "tools": [
+        "find_sources",
+        "list_sources_for_place",
+        "how_to_query",
+        "check_source",
+        "registry_info",
+        "search_datasets",
+        "whats_new"
+      ]
+    },
+    {
+      "id": "places",
+      "title": "New York places",
+      "what": "The 62 counties, 62 cities, five NYC boroughs and the regions this server uses to match a place name to registry rows.",
+      "source_name": "NY Data Registry places list",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/data/ny-places.json",
+      "official": false,
+      "how_gathered": "A file kept by hand in this repo and shipped with the server.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "curated"
+        ],
+        "detail": "Written by hand from general knowledge of New York's counties, cities, boroughs and regions."
+      },
+      "verify_at": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/data/ny-places.json",
+      "freshness": {
+        "kind": "hook",
+        "key": "bundled_files"
+      },
+      "update_frequency": "asNeeded",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Not yet checked against an official list of places. Towns and villages are not in it."
+        ]
+      },
+      "terms": {
+        "license_name": "MIT",
+        "license_url": "https://spdx.org/licenses/MIT.html",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "list_sources_for_place",
+        "find_sources",
+        "search_datasets"
+      ]
+    },
+    {
+      "id": "catalog-socrata",
+      "title": "Dataset catalog: Socrata portals",
+      "what": "Titles, descriptions, tags, columns, formats and dates of the datasets on the Socrata portals in the registry, such as Open NY (data.ny.gov), Health Data NY and NYC Open Data.",
+      "source_name": "Socrata Discovery API",
+      "publisher": {
+        "name": "Tyler Technologies",
+        "url": "https://www.tylertech.com/"
+      },
+      "source_url": "https://dev.socrata.com/docs/other/discovery",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads each Socrata portal through the Discovery API every night.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "continual",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State: the registry portals this platform runs",
+        "known_gaps": []
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "Each dataset's own publisher is the government or institution that runs its portal. Its page on that portal, the link in each row, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself. A dataset missing from the index may still exist: replies list the registry portals the index does not search."
+      ]
+    },
+    {
+      "id": "catalog-arcgis",
+      "title": "Dataset catalog: ArcGIS portals",
+      "what": "Titles, descriptions, tags, layers, fields, formats and dates of the datasets on the ArcGIS Hub sites, ArcGIS Online organizations, ArcGIS Enterprise portals and ArcGIS Server directories in the registry.",
+      "source_name": "ArcGIS REST API",
+      "publisher": {
+        "name": "Esri",
+        "url": "https://www.esri.com/"
+      },
+      "source_url": "https://developers.arcgis.com/rest/",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. Hub sites and ArcGIS Online organizations are read every night; county Enterprise portals and ArcGIS Server directories once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "continual",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State: the registry portals this platform runs",
+        "known_gaps": [
+          "ArcGIS Server directories are read once a week and read at most a few layers per service.",
+          "Some portals are not read yet, or their last read failed. registry_info and each search reply say which."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "Each dataset's own publisher is the government or institution that runs its portal. Its page on that portal, the link in each row, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself. A dataset missing from the index may still exist: replies list the registry portals the index does not search."
+      ]
+    },
+    {
+      "id": "catalog-geoblacklight",
+      "title": "Dataset catalog: Cornell's geospatial repository",
+      "what": "Titles, descriptions, subjects, formats and links of the public map data records in CUGIR, Cornell University Library's geospatial repository, limited to New York.",
+      "source_name": "CUGIR metadata in OpenGeoMetadata edu.cornell",
+      "publisher": {
+        "name": "Cornell University Library",
+        "url": "https://cugir.library.cornell.edu/"
+      },
+      "source_url": "https://github.com/OpenGeoMetadata/edu.cornell",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The CUGIR site is not called. The harvest downloads Cornell's records from OpenGeoMetadata on GitHub once a week.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "irregular",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State: the registry portals this platform runs",
+        "known_gaps": [
+          "Only public, current records are kept. Records wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "license_name": "Set by each portal. Most datasets carry no license of their own",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/terms.md",
+        "credit_line": "Dataset descriptions from each portal's own catalog, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/OpenGeoMetadata/edu.cornell/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "Each dataset's own publisher is the government or institution that runs its portal. Its page on that portal, the link in each row, is the official record of that dataset.",
+        "This is a catalog of dataset descriptions, not the data itself. A dataset missing from the index may still exist: replies list the registry portals the index does not search."
+      ]
+    },
+    {
+      "id": "hand-kept",
+      "title": "Places with no data portal",
+      "what": "For registry rows with no data portal, the pages, map viewers, downloads and request forms the place does offer, so a search can still point to them.",
+      "source_name": "NY Data Registry hand-kept list",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/data/hand-kept.json",
+      "official": false,
+      "how_gathered": "A file kept by hand in this repo. The nightly harvest turns each entry into an index entry. Nothing is fetched.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "curated"
+        ],
+        "detail": "BetaNYC opens each place's own pages and records what it offers, with the page's address."
+      },
+      "verify_at": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/data/hand-kept.json",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "asNeeded",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State: places with no data portal",
+        "known_gaps": [
+          "Not every place without a portal has an entry yet."
+        ]
+      },
+      "terms": {
+        "license_name": "MIT",
+        "license_url": "https://spdx.org/licenses/MIT.html",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "whats_new"
+      ],
+      "caveats": [
+        "Each entry links to the place's own page. That page, not this list, is the official record."
+      ]
+    },
+    {
+      "id": "topics",
+      "title": "Shared topics",
+      "what": "24 shared topics (housing, transportation, elections and so on) given to each dataset in the index, and the crosswalk from each portal label to its topics.",
+      "source_name": "NY Data Registry topics",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/topics.md",
+      "official": false,
+      "how_gathered": "Assigned by the nightly harvest from each dataset's own categories, tags and department, using the rules in data/topics.json and data/topic-hand-assigned.json. The crosswalk is published with every index.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "curated"
+        ],
+        "detail": "BetaNYC wrote the topic list and the matching rules, and decided some broad labels by hand. The portals' own categories and tags are kept unchanged beside the topics."
+      },
+      "verify_at": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/topics.md",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State: every dataset in the index",
+        "known_gaps": [
+          "Datasets whose portal gives no category, tag or department get no topic. list_topics gives the share with at least one."
+        ]
+      },
+      "terms": {
+        "license_name": "MIT",
+        "license_url": "https://spdx.org/licenses/MIT.html",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "list_topics",
+        "search_datasets"
+      ],
+      "caveats": [
+        "A topic is BetaNYC's label, not the portal's. A dataset can have several."
+      ]
+    },
+    {
+      "id": "coverage",
+      "title": "Which portals the index searches",
+      "what": "For each registry row, whether the nightly harvest reads it, read it with no datasets, failed, has not read it yet, or does not read it and why.",
+      "source_name": "NY Data Registry harvest coverage",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://github.com/BetaNYC/ny-data-registry-mcp#the-nightly-harvest",
+      "official": false,
+      "how_gathered": "Worked out by the server from the portal list, the harvest settings in data/harvest-config.json and the index. It never calls a portal.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "merged",
+          "counted"
+        ],
+        "detail": "Joins each portal-list row to the harvest settings and to the index's record of its last read, and counts datasets per portal."
+      },
+      "verify_at": "https://github.com/BetaNYC/ny-data-registry-mcp/releases",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State: every row in the portal list",
+        "known_gaps": [
+          "Most registry rows have no catalog this server can read. No search result is not proof that no data exists."
+        ]
+      },
+      "terms": {
+        "license_name": "MIT",
+        "license_url": "https://spdx.org/licenses/MIT.html",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "registry_info"
+      ]
+    },
+    {
+      "id": "join-keys",
+      "title": "Join keys",
+      "what": "Which column names count as a shared key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), used to find datasets that can be joined.",
+      "source_name": "NY Data Registry join-key list",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/data/key-columns.json",
+      "official": false,
+      "how_gathered": "A file kept by hand in this repo and shipped with the server. find_joinable matches it against the column names in the index.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "curated"
+        ],
+        "detail": "BetaNYC lists the exact column names that count as each key, and leaves out vague names such as id or tract."
+      },
+      "verify_at": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/data/key-columns.json",
+      "freshness": {
+        "kind": "hook",
+        "key": "bundled_files"
+      },
+      "update_frequency": "asNeeded",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "A key column under a name not on the list is missed."
+        ]
+      },
+      "terms": {
+        "license_name": "MIT",
+        "license_url": "https://spdx.org/licenses/MIT.html",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "find_joinable"
+      ],
+      "caveats": [
+        "Two datasets sharing a key column can be joined. It does not mean their values match."
+      ]
+    },
+    {
+      "id": "standard-descriptions",
+      "title": "Croissant and DCAT-US descriptions",
+      "what": "One dataset's description written in Croissant 1.1 or DCAT-US 3.0, from get_dataset_columns with standard, and the statewide Croissant and DCAT-US files published with each index.",
+      "source_name": "NY Data Registry index",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://github.com/BetaNYC/ny-data-registry-mcp/releases",
+      "official": false,
+      "how_gathered": "Built from the index by the server when you ask, and for the statewide files by the nightly harvest.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "reshaped",
+          "merged"
+        ],
+        "detail": "Maps each portal's catalog record into the standard's fields. Where a dataset has no license, adds the portal's terms-of-use page from BetaNYC's list in data/terms-pages.json, labeled 'terms page, not a license'. Fields the portal does not give are left out and listed in missing. A license is never guessed."
+      },
+      "verify_at": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/docs/standard-metadata-plan.md",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State: every dataset in the index",
+        "known_gaps": [
+          "DCAT-US's contact email is always missing, and about 13% of datasets have no description."
+        ]
+      },
+      "terms": {
+        "license_name": "MIT",
+        "license_url": "https://spdx.org/licenses/MIT.html",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "get_dataset_columns"
+      ],
+      "caveats": [
+        "The description is BetaNYC's rewrite of the portal's record into a standard. The dataset's page on its own portal is the official record."
+      ]
+    }
+  ]
+}
