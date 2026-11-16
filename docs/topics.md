@@ -112,8 +112,7 @@ Columns: `portal_id`, `label_type` (category, tag, department), `original_label`
 `normalized_label`, `topic_ids`, `topic_names`, `assigned_by` (rule, hand, acronym, none),
 `non_topical` (place, year, format or housekeeping, publisher), `dataset_count`.
 
-[`topics-crosswalk-2026-11-05.csv`](topics-crosswalk-2026-11-05.csv) in this folder is the
-crosswalk for the 2026-11-05 index, kept for review. On that index, 14,082 portal labels:
+On the 2026-11-05 index (the one this feature was reviewed against), 14,082 portal labels:
 6,982 matched a rule, 77 were hand-assigned, 69 took an agency's topics, and 6,954 got no topic
 (695 of those named a place, a year, a format or a publisher).
 

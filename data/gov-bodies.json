@@ -1,9 +1,36 @@
 {
   "source": "https://raw.githubusercontent.com/BetaNYC/ny-gov-web-registry/main/data/registry.json",
-  "snapshot_date": "2026-11-14",
-  "source_commit": "ee250e2a684fb4cf080fc98a57a0addca66338fa",
+  "snapshot_date": "2026-11-16",
+  "source_commit": "4d4250dc7129630595248b9d8572f42512758a2f",
   "note": "Bundled fallback: only the bodies the bundled registry's rows point to. Rebuild with scripts/bundle_gov_bodies.mjs.",
   "bodies": [
+    {
+      "id": "adirondack-park-agency",
+      "name": "Adirondack Park Agency",
+      "short_name": "APA",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "apa.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "albany-county",
+      "name": "Albany County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.albanycountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "allegany-county",
+      "name": "Allegany County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.alleganyco.gov",
+      "status": "active"
+    },
     {
       "id": "board-of-elections",
       "name": "Board of Elections",
@@ -14,12 +41,669 @@
       "status": "active"
     },
     {
+      "id": "broome-county",
+      "name": "Broome County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
       "id": "campaign-finance-board",
       "name": "Campaign Finance Board",
       "short_name": "CFB",
       "government_level": "nyc",
       "classification": "Advisory or Regulatory Organization",
       "primary_domain": "www.nyccfb.info",
+      "status": "active"
+    },
+    {
+      "id": "capital-district-transportation-authority",
+      "name": "Capital District Transportation Authority",
+      "short_name": null,
+      "government_level": "authority",
+      "classification": "state-authority",
+      "primary_domain": "www.cdta.org",
+      "status": "active"
+    },
+    {
+      "id": "cattaraugus-county",
+      "name": "Cattaraugus County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.cattco.gov",
+      "status": "active"
+    },
+    {
+      "id": "cayuga-county",
+      "name": "Cayuga County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "cayugacounty.gov",
+      "status": "active"
+    },
+    {
+      "id": "chautauqua-county",
+      "name": "Chautauqua County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "chautauquacountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "chemung-county",
+      "name": "Chemung County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "chemungcountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "chenango-county",
+      "name": "Chenango County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-albany",
+      "name": "City of Albany",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-amsterdam",
+      "name": "City of Amsterdam",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "amsterdamny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-auburn",
+      "name": "City of Auburn",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "auburnny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-batavia",
+      "name": "City of Batavia",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-beacon",
+      "name": "City of Beacon",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "beaconny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-binghamton",
+      "name": "City of Binghamton",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-buffalo",
+      "name": "City of Buffalo",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "www.buffalony.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-canandaigua",
+      "name": "City of Canandaigua",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "canandaiguanewyork.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-cohoes",
+      "name": "City of Cohoes",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cohoes-ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-corning",
+      "name": "City of Corning",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofcorningny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-cortland",
+      "name": "City of Cortland",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cortlandny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-dunkirk",
+      "name": "City of Dunkirk",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofdunkirkny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-elmira",
+      "name": "City of Elmira",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofelmirany.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-fulton",
+      "name": "City of Fulton",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityoffultonny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-geneva",
+      "name": "City of Geneva",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-glen-cove",
+      "name": "City of Glen Cove",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "glencoveny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-glens-falls",
+      "name": "City of Glens Falls",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "www.cityofglensfallsny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-gloversville",
+      "name": "City of Gloversville",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofgloversvilleny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-hornell",
+      "name": "City of Hornell",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-hudson",
+      "name": "City of Hudson",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "hudsonny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-ithaca",
+      "name": "City of Ithaca",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-jamestown",
+      "name": "City of Jamestown",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-johnstown",
+      "name": "City of Johnstown",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "www.cityofjohnstown-ny.com",
+      "status": "active"
+    },
+    {
+      "id": "city-of-kingston",
+      "name": "City of Kingston",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "kingston-ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-lackawanna",
+      "name": "City of Lackawanna",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "lackawannany.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-little-falls",
+      "name": "City of Little Falls",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "thisislittlefalls.com",
+      "status": "active"
+    },
+    {
+      "id": "city-of-lockport",
+      "name": "City of Lockport",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "lockportny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-long-beach",
+      "name": "City of Long Beach",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "www.longbeachny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-mechanicville",
+      "name": "City of Mechanicville",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "mechanicvilleny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-middletown",
+      "name": "City of Middletown",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "middletownny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-mount-vernon",
+      "name": "City of Mount Vernon",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "mountvernonny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-new-rochelle",
+      "name": "City of New Rochelle",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "newrochelleny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-newburgh",
+      "name": "City of Newburgh",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofnewburgh-ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-niagara-falls",
+      "name": "City of Niagara Falls",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "niagarafallsny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-north-tonawanda",
+      "name": "City of North Tonawanda",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "northtonawanda.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-norwich",
+      "name": "City of Norwich",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "norwichnewyork.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-ogdensburg",
+      "name": "City of Ogdensburg",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-olean",
+      "name": "City of Olean",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofolean.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-oneida",
+      "name": "City of Oneida",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-oneonta",
+      "name": "City of Oneonta",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "www.oneonta.ny.us",
+      "status": "active"
+    },
+    {
+      "id": "city-of-oswego",
+      "name": "City of Oswego",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "oswegony.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-peekskill",
+      "name": "City of Peekskill",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofpeekskillny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-plattsburgh",
+      "name": "City of Plattsburgh",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofplattsburgh-ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-port-jervis",
+      "name": "City of Port Jervis",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "portjervisny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-poughkeepsie",
+      "name": "City of Poughkeepsie",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-rensselaer",
+      "name": "City of Rensselaer",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "www.rensselaerny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-rochester",
+      "name": "City of Rochester",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "cityofrochester.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-rome",
+      "name": "City of Rome",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "romeny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-rye",
+      "name": "City of Rye",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "ryeny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-salamanca",
+      "name": "City of Salamanca",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "salamancany.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-saratoga-springs",
+      "name": "City of Saratoga Springs",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "saratogaspringsny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-schenectady",
+      "name": "City of Schenectady",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-sherrill",
+      "name": "City of Sherrill",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "sherrillny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-syracuse",
+      "name": "City of Syracuse",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "syr.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-tonawanda",
+      "name": "City of Tonawanda",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-troy",
+      "name": "City of Troy",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "troyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-utica",
+      "name": "City of Utica",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "city-of-watertown",
+      "name": "City of Watertown",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "watertown-ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "city-of-watervliet",
+      "name": "City of Watervliet",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "www.watervliet.com",
+      "status": "active"
+    },
+    {
+      "id": "city-of-white-plains",
+      "name": "City of White Plains",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "www.cityofwhiteplains.com",
+      "status": "active"
+    },
+    {
+      "id": "city-of-yonkers",
+      "name": "City of Yonkers",
+      "short_name": null,
+      "government_level": "city",
+      "classification": null,
+      "primary_domain": "yonkersny.gov",
+      "status": "active"
+    },
+    {
+      "id": "clinton-county",
+      "name": "Clinton County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "clintoncountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "columbia-county",
+      "name": "Columbia County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.columbiacountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "cortland-county",
+      "name": "Cortland County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.cortlandcountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "cuny",
+      "name": "City University of New York",
+      "short_name": "CUNY",
+      "government_level": "authority",
+      "classification": "public-university",
+      "primary_domain": "cuny.edu",
+      "status": "active"
+    },
+    {
+      "id": "delaware-county",
+      "name": "Delaware County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "delcony.gov",
       "status": "active"
     },
     {
@@ -68,6 +752,87 @@
       "status": "active"
     },
     {
+      "id": "dutchess-county",
+      "name": "Dutchess County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "dutchessny.gov",
+      "status": "active"
+    },
+    {
+      "id": "erie-county",
+      "name": "Erie County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "erie.gov",
+      "status": "active"
+    },
+    {
+      "id": "essex-county",
+      "name": "Essex County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "essexcountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "franklin-county",
+      "name": "Franklin County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "franklincountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "fulton-county",
+      "name": "Fulton County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "fultoncountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "genesee-county",
+      "name": "Genesee County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "geneseeny.gov",
+      "status": "active"
+    },
+    {
+      "id": "greene-county",
+      "name": "Greene County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "greenecountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "hamilton-county",
+      "name": "Hamilton County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.hamiltoncountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "herkimer-county",
+      "name": "Herkimer County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "herkimercountyny.gov",
+      "status": "active"
+    },
+    {
       "id": "independent-budget-office",
       "name": "Independent Budget Office",
       "short_name": "IBO",
@@ -77,12 +842,75 @@
       "status": "active"
     },
     {
+      "id": "jefferson-county",
+      "name": "Jefferson County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.jeffersoncountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "lewis-county",
+      "name": "Lewis County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "lewiscountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "livingston-county",
+      "name": "Livingston County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "livingstoncountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "madison-county",
+      "name": "Madison County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "monroe-county",
+      "name": "Monroe County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "monroecounty.gov",
+      "status": "active"
+    },
+    {
+      "id": "montgomery-county",
+      "name": "Montgomery County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.montgomerycountyny.gov",
+      "status": "active"
+    },
+    {
       "id": "mta",
       "name": "Metropolitan Transportation Authority",
       "short_name": "MTA",
       "government_level": "authority",
       "classification": "public-benefit-corporation",
       "primary_domain": "mta.info",
+      "status": "active"
+    },
+    {
+      "id": "nassau-county",
+      "name": "Nassau County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "nassaucountyny.gov",
       "status": "active"
     },
     {
@@ -110,6 +938,123 @@
       "government_level": "nyc",
       "classification": "Mayoral Agency",
       "primary_domain": "www.nyc.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-public-library",
+      "name": "New York Public Library",
+      "short_name": "NYPL",
+      "government_level": "nyc",
+      "classification": "Nonprofit Organization",
+      "primary_domain": "www.nypl.org",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-board-of-elections",
+      "name": "New York State Board of Elections",
+      "short_name": "BOE",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "elections.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-commission-on-ethics-and-lobbying-in-government",
+      "name": "New York State Commission on Ethics and Lobbying in Government",
+      "short_name": null,
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "ethics.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-department-of-environmental-conservation",
+      "name": "New York State Department of Environmental Conservation",
+      "short_name": "DEC",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "dec.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-department-of-health",
+      "name": "New York State Department of Health",
+      "short_name": "DOH",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "health.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-department-of-labor",
+      "name": "New York State Department of Labor",
+      "short_name": "DOL",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "dol.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-department-of-state",
+      "name": "New York State Department of State",
+      "short_name": "DOS",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "dos.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-department-of-transportation",
+      "name": "New York State Department of Transportation",
+      "short_name": "DOT",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "dot.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-education-department",
+      "name": "New York State Education Department",
+      "short_name": "NYSED",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "nysed.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-office-of-information-technology-services",
+      "name": "New York State Office of Information Technology Services",
+      "short_name": "ITS",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "its.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "new-york-state-office-of-parks-recreation-and-historic-preservation",
+      "name": "New York State Office of Parks, Recreation and Historic Preservation",
+      "short_name": "OPRHP",
+      "government_level": "nys",
+      "classification": "state-agency",
+      "primary_domain": "parks.ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "niagara-county",
+      "name": "Niagara County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "niagaracounty.gov",
+      "status": "active"
+    },
+    {
+      "id": "niagara-frontier-transportation-authority",
+      "name": "Niagara Frontier Transportation Authority",
+      "short_name": null,
+      "government_level": "authority",
+      "classification": "state-authority",
+      "primary_domain": "www.nfta.com",
       "status": "active"
     },
     {
@@ -158,6 +1103,60 @@
       "status": "active"
     },
     {
+      "id": "oneida-county",
+      "name": "Oneida County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "oneidacountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "onondaga-county",
+      "name": "Onondaga County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "onondaga.gov",
+      "status": "active"
+    },
+    {
+      "id": "ontario-county",
+      "name": "Ontario County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.ontariocountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "orange-county",
+      "name": "Orange County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "orleans-county",
+      "name": "Orleans County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "orleanscountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "oswego-county",
+      "name": "Oswego County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "oswegocountyny.gov",
+      "status": "active"
+    },
+    {
       "id": "oti",
       "name": "Office of Technology and Innovation",
       "short_name": "OTI",
@@ -167,12 +1166,228 @@
       "status": "active"
     },
     {
+      "id": "otsego-county",
+      "name": "Otsego County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
       "id": "panynj",
       "name": "Port Authority of New York and New Jersey",
       "short_name": "PANYNJ",
       "government_level": "bi-state",
       "classification": "bi-state-authority",
       "primary_domain": "panynj.gov",
+      "status": "active"
+    },
+    {
+      "id": "putnam-county",
+      "name": "Putnam County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "putnamcountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "rensselaer-county",
+      "name": "Rensselaer County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.rensco.com",
+      "status": "active"
+    },
+    {
+      "id": "rochester-genesee-regional-transportation-authority",
+      "name": "Rochester-Genesee Regional Transportation Authority",
+      "short_name": null,
+      "government_level": "authority",
+      "classification": "state-authority",
+      "primary_domain": "www.rgrta.com",
+      "status": "active"
+    },
+    {
+      "id": "rockland-county",
+      "name": "Rockland County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "saratoga-county",
+      "name": "Saratoga County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "saratogacountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "schenectady-county",
+      "name": "Schenectady County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "schenectadycountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "schoharie-county",
+      "name": "Schoharie County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "schohariecounty-ny.gov",
+      "status": "active"
+    },
+    {
+      "id": "schuyler-county",
+      "name": "Schuyler County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.schuylercountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "seneca-county",
+      "name": "Seneca County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.senecacountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "st-lawrence-county",
+      "name": "St. Lawrence County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.stlawco.gov",
+      "status": "active"
+    },
+    {
+      "id": "steuben-county",
+      "name": "Steuben County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "steubencountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "suffolk-county",
+      "name": "Suffolk County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "suffolkcountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "sullivan-county",
+      "name": "Sullivan County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.sullivanny.gov",
+      "status": "active"
+    },
+    {
+      "id": "suny",
+      "name": "State University of New York",
+      "short_name": "SUNY",
+      "government_level": "authority",
+      "classification": "public-university",
+      "primary_domain": "suny.edu",
+      "status": "active"
+    },
+    {
+      "id": "tioga-county",
+      "name": "Tioga County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": null,
+      "status": "active"
+    },
+    {
+      "id": "tompkins-county",
+      "name": "Tompkins County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "tompkinscountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "ulster-county",
+      "name": "Ulster County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "ulstercountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "warren-county",
+      "name": "Warren County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "warrencountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "washington-county",
+      "name": "Washington County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.washingtoncountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "wayne-county",
+      "name": "Wayne County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "waynecountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "westchester-county",
+      "name": "Westchester County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.westchestercountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "wyoming-county",
+      "name": "Wyoming County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": "www.wyomingcountyny.gov",
+      "status": "active"
+    },
+    {
+      "id": "yates-county",
+      "name": "Yates County",
+      "short_name": null,
+      "government_level": "county",
+      "classification": null,
+      "primary_domain": null,
       "status": "active"
     }
   ]
