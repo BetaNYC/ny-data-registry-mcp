@@ -47,6 +47,37 @@ export function expandTerms(tokens: string[]): { term: string; weight: number }[
   return [...out].map(([term, weight]) => ({ term, weight }));
 }
 
+/**
+ * The query split into concepts, for search_datasets. Each typed word is one concept: the word,
+ * its stem and its synonyms. A two-word synonym key ("tax lot") makes the adjacent pair one
+ * concept: the pair as a phrase plus the key's synonyms, so "tax" is not also searched alone.
+ * search_datasets requires every concept (AND across concepts, OR inside one).
+ */
+export function expandConcepts(tokens: string[]): { term: string; weight: number }[][] {
+  syn ??= readDataJson<{ terms: Record<string, string[]> }>("synonyms.json").terms;
+  const concepts: { term: string; weight: number }[][] = [];
+  const add = (c: Map<string, number>, t: string, w: number) => {
+    const k = t.toLowerCase().trim();
+    if (k && !c.has(k)) c.set(k, w);
+  };
+  for (let i = 0; i < tokens.length; i++) {
+    const c = new Map<string, number>();
+    const pair = i + 1 < tokens.length ? `${tokens[i]} ${tokens[i + 1]}` : null;
+    if (pair && syn[pair]) {
+      add(c, pair, 1);
+      for (const s of syn[pair]) add(c, s, 0.5);
+      i++;
+    } else {
+      const t = tokens[i];
+      add(c, t, 1);
+      if (t.endsWith("s") && t.length > 3) add(c, t.slice(0, -1), 0.9);
+      for (const s of syn[t] ?? []) add(c, s, 0.5);
+    }
+    concepts.push([...c].map(([term, weight]) => ({ term, weight })));
+  }
+  return concepts;
+}
+
 // ─── output shape ────────────────────────────────────────────────────────────
 
 export function sourceSummary(s: Source) {

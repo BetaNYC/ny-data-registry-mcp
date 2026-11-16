@@ -340,3 +340,26 @@ test("synonyms: two-word keys match only the adjacent pair", async () => {
   const typed = expandTerms(tokenize("tax lot")).filter((t) => t.weight >= 0.9).map((t) => t.term);
   assert.deepEqual(typed.sort(), ["lot", "tax"], "synonyms are never weighted like typed words");
 });
+
+test("every word of the query must match; a two-word synonym key is one concept", async () => {
+  const { expandConcepts, tokenize } = await import("../dist/sources.js");
+  const concepts = (q) => expandConcepts(tokenize(q)).map((c) => c.map((t) => t.term));
+  const tp = concepts("tax parcels");
+  assert.equal(tp.length, 1, "'tax parcels' is one concept, so 'tax' is never searched alone");
+  assert.ok(tp[0].includes("parcels") && tp[0].includes("tax lot"));
+  assert.equal(concepts("opioid tax").length, 2);
+  // OR across words would also return all 431 NYC SYNTHETIC rows; AND keeps only Putnam's.
+  const r = searchDatasets({ query: "SYNTHETIC putnam" });
+  assert.equal(r.total_matches, PUTNAM_SYNTH);
+  assert.equal(r.match, undefined);
+});
+
+test("when no dataset has every word, any one word matches and the reply says so", () => {
+  const r = searchDatasets({ query: "SYNTHETIC zqxjvw" });
+  assert.equal(r.match, "any");
+  assert.ok(r.match_note);
+  assert.ok(r.total_matches >= NYC_SYNTH + PUTNAM_SYNTH, "every SYNTHETIC row matches on the one word it has");
+  const none = searchDatasets({ query: "zqxjvw" });
+  assert.equal(none.total_matches, 0, "a one-word query never falls back");
+  assert.equal(none.match, undefined);
+});
