@@ -6,6 +6,8 @@
     "parcels": ["parcel", "tax parcel", "tax lot", "tax map", "real property"],
     "tax lot": ["parcel", "parcels", "tax parcel", "tax map"],
     "tax lots": ["parcel", "parcels", "tax parcel", "tax map"],
+    "tax parcel": ["tax parcels", "parcel", "parcels", "tax lot", "tax map", "real property"],
+    "tax parcels": ["tax parcel", "parcel", "parcels", "tax lot", "tax map", "real property"],
     "rat": ["rodent", "rodents"],
     "rats": ["rodent", "rodents"],
     "rodent": ["rodents", "rat"],

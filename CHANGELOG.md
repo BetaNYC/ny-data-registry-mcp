@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Dataset search matches every word of the query.
+
+### Changed
+
+- `search_datasets`: a dataset must match every word of the query (the word, its stem or one of
+  its synonyms). Before, any one word was enough, so "tax parcels" in Erie County also counted
+  opioid excise tax reports: 208 matches, now 113. When no dataset has every word, the search
+  falls back to any one word and the reply says so (`match: "any"`, `match_note`). A two-word
+  synonym key ("tax lot", and the new "tax parcel" and "tax parcels") is one concept, so its
+  words are not also searched alone. The question set scores 27 of 27 before and after.
+
 The index is rebuilt every night on GitHub Actions, and a quality gate keeps a worse index
 from being published. See [#14](https://github.com/BetaNYC/ny-data-registry-mcp/issues/14)
 (epic [#7](https://github.com/BetaNYC/ny-data-registry-mcp/issues/7)).

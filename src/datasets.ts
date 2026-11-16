@@ -9,7 +9,7 @@ import { openDb, indexExists, stripHtml } from "./db.js";
 import { indexPath } from "./paths.js";
 import { installPendingIndex } from "./fetchindex.js";
 import { staleNote } from "./indexage.js";
-import { expandTerms, placeMatches, tokenize } from "./sources.js";
+import { expandConcepts, expandTerms, placeMatches, tokenize } from "./sources.js";
 import { resolvePlace, places, type ResolvedPlace } from "./places.js";
 import { registry, registryIdFor, sourceIdsForRegistryId, type Source } from "./registry.js";
 import { hasTopics, resolveTopic, topicRules, coveragePercent, CROSSWALK_NAME, type TopicDef } from "./topics.js";
@@ -157,17 +157,24 @@ function ftsQuery(q: string): string | null {
 }
 
 /**
- * `all`: every typed word, its stem and its synonyms (used for counts, groups and the CSV).
- * `typed`: only the typed words and their stems (weight >= 0.9). Ranking uses `typed` first, so
- * a dataset full of synonym words never outranks one that has the words actually asked for.
+ * `all`: every concept must match; inside a concept, the typed word, its stem or a synonym will do
+ * (used for counts, groups and the CSV). `typed`: the same, with only typed words and stems
+ * (weight >= 0.9). Ranking uses `typed` first, so a dataset full of synonym words never outranks
+ * one that has the words actually asked for. `anyAll` / `anyTyped` are the looser OR forms, used
+ * only when no dataset matches every concept.
  */
-function ftsQueries(q: string): { all: string; typed: string; hasSynonyms: boolean } | null {
-  const terms = expandTerms(tokenize(q));
-  if (!terms.length) return null;
+function ftsQueries(q: string): { all: string; typed: string; hasSynonyms: boolean; anyAll: string; anyTyped: string; concepts: number } | null {
+  const concepts = expandConcepts(tokenize(q));
+  if (!concepts.length) return null;
   const quote = (t: string) => `"${t.replace(/"/g, "")}"`;
-  const typed = terms.filter((t) => t.weight >= 0.9).map((t) => quote(t.term));
-  const all = terms.map((t) => quote(t.term));
-  return { all: all.join(" OR "), typed: typed.join(" OR "), hasSynonyms: all.length > typed.length };
+  const or = (ts: string[]) => (ts.length > 1 ? `(${ts.join(" OR ")})` : ts[0]);
+  const typedOf = (c: { term: string; weight: number }[]) => c.filter((t) => t.weight >= 0.9).map((t) => quote(t.term));
+  const allOf = (c: { term: string; weight: number }[]) => c.map((t) => quote(t.term));
+  const all = concepts.map((c) => or(allOf(c))).join(" AND ");
+  const typed = concepts.map((c) => or(typedOf(c))).join(" AND ");
+  const anyAll = concepts.flatMap(allOf).join(" OR ");
+  const anyTyped = concepts.flatMap(typedOf).join(" OR ");
+  return { all, typed, hasSynonyms: all !== typed, anyAll, anyTyped, concepts: concepts.length };
 }
 
 /** Synonym-only matches count this much of their text score when ranked. */
@@ -353,7 +360,8 @@ export function searchDatasets(a: SearchArgs) {
   if (!query && !a.topic) throw new Error("give a query, a topic, or both");
   const topic = a.topic ? topicArg(a.topic) : null;
   if (topic && !hasTopics(d)) throw new Error(NO_TOPICS_NOTE);
-  const fq = query ? ftsQuery(query) : null;
+  const qx = query ? ftsQueries(query) : null;
+  let fq = qx?.all ?? null;
   if (query && !fq) return { query, total_matches: 0, results: [], note: "the query has no searchable words" };
   const where: string[] = ["d.removed_at IS NULL"];
   const params: (string | number)[] = [];
@@ -404,12 +412,20 @@ export function searchDatasets(a: SearchArgs) {
   // bm25 column weights: dataset_id, name, description, tags, columns, portal, place.
   const rankExpr = fq ? "bm25(datasets_fts, 0, 10.0, 1.5, 3.0, 1.0, 0.5, 0.5)" : "0";
   const order = fq ? "rank, d.id" : "COALESCE(d.views, 0) DESC, d.id";
-  const total = (d.prepare(`SELECT COUNT(*) AS n ${from}`).get(...bind(null)) as { n: number }).n;
+  let total = (d.prepare(`SELECT COUNT(*) AS n ${from}`).get(...bind(null)) as { n: number }).n;
+  // Every word must match. Only when nothing has every word does any one word do (match: "any").
+  let qs = qx ? { all: qx.all, typed: qx.typed, hasSynonyms: qx.hasSynonyms } : null;
+  let matchMode: "all" | "any" = "all";
+  if (qx && total === 0 && qx.concepts > 1) {
+    fq = qx.anyAll;
+    qs = { all: qx.anyAll, typed: qx.anyTyped, hasSynonyms: qx.anyAll !== qx.anyTyped };
+    matchMode = "any";
+    total = (d.prepare(`SELECT COUNT(*) AS n ${from}`).get(...bind(null)) as { n: number }).n;
+  }
 
   // The pool is the best RANK_POOL_MAX by text relevance; d.id breaks ties so pages are stable.
   const poolSql = `SELECT d.id, d.name, d.type, d.views, d.portal_id, p.name AS portal_name, p.entity AS portal_entity, d.platform_family, d.place_counties,
         ${rankExpr} AS rank ${from} ORDER BY ${order} LIMIT ?`;
-  const qs = query ? ftsQueries(query) : null;
   let pool: PoolRow[];
   if (!qs || !qs.hasSynonyms) {
     pool = d.prepare(poolSql).all(...bind(null), RANK_POOL_MAX) as unknown as PoolRow[];
@@ -443,6 +459,7 @@ export function searchDatasets(a: SearchArgs) {
     ...(topic ? { topic: { id: topic.id, name: topic.name } } : {}),
     place: resolved?.name ?? null,
     total_matches: total,
+    ...(matchMode === "any" ? { match: "any", match_note: "No dataset has every word of the query, so these match any one of them." } : {}),
     ranked_pool: capped
       ? { size: pool.length, capped: true, note: `Only the ${pool.length} best text matches of ${total} were re-ranked and can be paged; narrow the query or add filters to reach the rest.` }
       : { size: pool.length, capped: false },
