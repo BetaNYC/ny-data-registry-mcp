@@ -6,6 +6,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cacheDir, readDataJson, REGISTRY_PAGE, REGISTRY_URL, USER_AGENT } from "./paths.js";
+import { fetchWithRetry } from "./http.js";
 import { familyFor, FAMILIES, type FamilyResult } from "./families.js";
 import { placeForRow, type RowPlace } from "./places.js";
 
@@ -206,7 +207,7 @@ export async function refreshRegistry(timeoutMs = 5000): Promise<LoadedRegistry>
   try {
     const headers: Record<string, string> = { "User-Agent": USER_AGENT };
     if (cached && meta.etag) headers["If-None-Match"] = meta.etag;
-    const res = await fetch(REGISTRY_URL, { headers, signal: AbortSignal.timeout(timeoutMs) });
+    const res = await fetchWithRetry(REGISTRY_URL, { headers, signal: AbortSignal.timeout(timeoutMs) }, Date.now() + timeoutMs);
     if (res.status === 304 && cached) {
       meta.fetched_at = new Date().toISOString();
       writeFileSync(f.meta, JSON.stringify(meta));

@@ -8,7 +8,7 @@ import { datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColum
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
-import { annotateTools, BETANYC_INSTRUCTIONS, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
+import { annotateTools, BETANYC_INSTRUCTIONS, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
 import { registry } from "./registry.js";
 import { govBodies } from "./govbodies.js";
 import { VERSION } from "./paths.js";
@@ -367,7 +367,19 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
   );
 }
 
-const text = (v: unknown) => ({ content: [{ type: "text", text: toolJson(v) }] });
+/** Keys this package reads from env. No error text repeats them (#39). */
+const secrets = () => [process.env.SOCRATA_APP_TOKEN, process.env.GITHUB_TOKEN];
+/** An isError result: a plain sentence, stack lines dropped, keys redacted (#43). */
+const fail = (message: string) => toolError(message, { secrets: secrets() });
+
+/** The JSON answer, or an isError result when the answer is a failure: a top-level `error`
+ * (unknown dataset, source or date) or `place_error` (a place this server does not know). */
+const text = (v: unknown) => {
+  const o = v as { error?: unknown; place_error?: unknown } | null;
+  const err = typeof o?.error === "string" ? o.error : typeof o?.place_error === "string" ? o.place_error : null;
+  if (err) return fail(err);
+  return { content: [{ type: "text", text: toolJson(v) }] as Record<string, any>[] };
+};
 
 export async function callTool(name: string, args: unknown) {
   // The shared tools answer in plain text plus structuredContent, and need no index.
@@ -427,10 +439,9 @@ export async function callTool(name: string, args: unknown) {
         return text(whatsNew(a.since, a.portal, a.limit));
       }
       default:
-        return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
+        return fail(`Unknown tool: ${name}. The tools are: ${TOOLS.map((t) => t.name).join(", ")}.`);
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
+    return fail(err instanceof Error ? err.message : String(err));
   }
 }

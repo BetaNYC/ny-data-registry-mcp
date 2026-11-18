@@ -373,7 +373,7 @@ export function searchDatasets(a: SearchArgs) {
   if (a.place) {
     const p = resolvePlace(a.place);
     resolved = p;
-    if (!p) return { query: query ?? null, place_error: `'${a.place}' is not a New York place this server knows`, total_matches: 0, results: [] };
+    if (!p) return { query: query ?? null, place_error: `'${a.place}' is not a New York place this server knows. Give a county, city, NYC borough or region, such as 'Erie County' or 'Brooklyn', or leave place out`, total_matches: 0, results: [] };
     if (p.kind === "state") where.push("p.place_scope = 'statewide'");
     else if (p.kind === "region") {
       where.push("(p.region = ? OR p.place_scope = 'statewide')");
@@ -805,7 +805,7 @@ export function datasetStandard(ref: string, standard: Standard) {
 
 export function findJoinable(ref: string, column?: string, limitPerKey = 10) {
   const r = findDataset(ref);
-  if (!r) return { error: `no dataset '${ref}' in the index` };
+  if (!r) return { error: `no dataset '${ref}' in the index. Use search_datasets to find its dataset_id.` };
   const d = db();
   let keys = d.prepare("SELECT key_label, group_concat(DISTINCT field) AS field FROM dataset_columns WHERE dataset_id = ? AND key_label IS NOT NULL GROUP BY key_label").all(r.id) as { key_label: string; field: string }[];
   if (column) {
@@ -848,7 +848,7 @@ export function findJoinable(ref: string, column?: string, limitPerKey = 10) {
 
 export function whatsNew(since: string, portal?: string, limit = 50) {
   const d = db();
-  if (!/^\d{4}-\d{2}-\d{2}/.test(since)) return { error: "since must be a date, YYYY-MM-DD" };
+  if (!/^\d{4}-\d{2}-\d{2}/.test(since)) return { error: "since must be a date, YYYY-MM-DD, for example 2026-11-01" };
   const params: string[] = [since];
   let pw = "";
   let uw = "";

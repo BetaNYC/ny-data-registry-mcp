@@ -300,7 +300,7 @@ export function lookupSource(ref: { source_id?: string; registry_id?: string; en
   const reg = registry().sources;
   if (ref.source_id) {
     const s = reg.find((x) => x.source_id === ref.source_id);
-    return s ? { source: s } : { error: `no source with source_id '${ref.source_id}'` };
+    return s ? { source: s } : { error: `no source with source_id '${ref.source_id}'. Use find_sources or list_sources_for_place to find its source_id` };
   }
   if (ref.registry_id) {
     const rid = ref.registry_id.trim();
@@ -315,7 +315,7 @@ export function lookupSource(ref: { source_id?: string; registry_id?: string; en
     const m = reg.filter((x) => (x.url && safeHost(x.url) === host) || (x.api_endpoint && safeHost(x.api_endpoint) === host));
     if (m.length === 1) return { source: m[0] };
     if (m.length > 1) return { candidates: m };
-    return { error: `no registry row with host ${host}` };
+    return { error: `no registry row with host ${host}. Try source_id or entity instead` };
   }
   if (ref.entity) {
     const q = ref.entity.toLowerCase().trim();
@@ -325,7 +325,7 @@ export function lookupSource(ref: { source_id?: string; registry_id?: string; en
     const loose = reg.filter((x) => x.entity.toLowerCase().includes(q) || (x.portal_name ?? "").toLowerCase().includes(q));
     if (loose.length === 1) return { source: loose[0] };
     if (loose.length > 1) return { candidates: loose };
-    return { error: `no registry row matches '${ref.entity}'` };
+    return { error: `no registry row matches '${ref.entity}'. Try find_sources with part of the name` };
   }
   return { error: "give one of source_id, registry_id, entity or url" };
 }

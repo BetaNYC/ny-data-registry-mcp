@@ -19,7 +19,7 @@
  *   https://docs.github.com/en/rest/repos/contents#download-a-repository-archive-tar
  */
 import { gunzipSync } from "node:zlib";
-import { politeFetch } from "../http.js";
+import { politeFetch, redactHeaders } from "../http.js";
 import { bboxCenterInNY, bboxIntersectsNY, isLonLatBox } from "../places.js";
 import { stripHtml, type Distribution, type HarvestedDataset } from "../db.js";
 
@@ -253,7 +253,7 @@ export async function harvestOgm(repo: OgmRepo, maxBytes = 200 * 1024 * 1024): P
   const headers: Record<string, string> = { "X-GitHub-Api-Version": "2022-11-28" };
   if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
   const r = await politeFetch(url, { binary: true, timeoutMs: 300000, headers });
-  if (!r.ok || !r.bytes) throw new Error(`HTTP ${r.status} from ${url}: ${r.body.slice(0, 200)}`);
+  if (!r.ok || !r.bytes) throw new Error(redactHeaders(`HTTP ${r.status} from ${url}: ${r.body.slice(0, 200)}`, headers));
   if (r.bytes.length > maxBytes) throw new Error(`archive is ${r.bytes.length} bytes, over the ${maxBytes} cap`);
   const files = readTar(gunzipSync(r.bytes));
   const { records, withdrawn, unreadable } = recordsFromFiles(files);

@@ -7,11 +7,17 @@
  *   api.us.socrata.com). Workspace engineering standard § 6, "Polite Socrata querying".
  * - robots.txt is read once per host and honored for our agent and for `*`.
  * - Conditional requests (If-None-Match / If-Modified-Since) against an on-disk cache.
- * - Up to two retries on 429 or 503, honoring Retry-After (delay-seconds or an HTTP-date,
- *   RFC 9110 § 10.2.3), otherwise backing off 5 s then 10 s; every wait is capped at 60 s.
- *   A 429 also doubles that host's gap for the rest of the run (capped at 10 s).
- *   Socrata sends 429 and 503 when throttling (https://dev.socrata.com/docs/response-codes).
- *   No other retries.
+ * - Up to two retries on 429 or a 5xx (500, 502, 503, 504), honoring Retry-After
+ *   (delay-seconds or an HTTP-date, RFC 9110 § 10.2.3), otherwise backing off 5 s then 10 s;
+ *   every wait is capped at 60 s. A 429 also doubles that host's gap for the rest of the run
+ *   (capped at 10 s). Socrata sends 429 and 503 when throttling
+ *   (https://dev.socrata.com/docs/response-codes). No other retries.
+ * - Timeout: 60 s per request unless the caller passes less. Only the nightly harvest uses the
+ *   default: some portals take longer than 30 s to answer one page of a large catalog (the
+ *   2026-11-17 run timed out on two state GIS portals at 60 s). The server's own live request,
+ *   check_source, passes 20 s, and robots.txt 15 s.
+ * - Error text never carries a value from `headers` (an app token, say), even when the
+ *   server echoes it back in the body.
  * - A bot block (403/429 challenge, or an HTML page where JSON was expected) is
  *   reported as `blocked` and never worked around.
  * - NY_DATA_OFFLINE=1 makes every call fail fast, so tests can never reach the network.
@@ -80,7 +86,7 @@ export function minIntervalMs(): number {
 export const SOCRATA_MIN_INTERVAL_MS = 2000;
 const MAX_WAIT_MS = 60_000;
 const MAX_WIDENED_GAP_MS = 10_000;
-const RETRY_STATUSES = new Set([429, 503]);
+const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 const MAX_RETRIES = 2;
 
 export function isSocrataHost(host: string): boolean {
@@ -290,15 +296,44 @@ export async function politeFetch(url: string, opts: PoliteOptions = {}): Promis
   };
 }
 
+/**
+ * `text` with every value of `headers` (and, for "Bearer xyz", the token alone) replaced by
+ * "[redacted]". For error text that repeats part of a response body: some servers echo the
+ * request's headers, and harvest errors end up in public GitHub issues.
+ */
+export function redactHeaders(text: string, headers: Record<string, string> | undefined): string {
+  const values = Object.values(headers ?? {}).flatMap((v) => [v, v.split(/\s+/).pop() ?? ""]).filter((v) => v.length >= 4);
+  for (const v of values.sort((a, b) => b.length - a.length)) text = text.split(v).join("[redacted]");
+  return text;
+}
+
 export async function politeJson<T = any>(url: string, opts: PoliteOptions = {}): Promise<{ data: T; resp: PoliteResponse }> {
   const resp = await politeFetch(url, { ...opts, expectJson: true });
   if (resp.status !== 200 && resp.status !== 304) {
-    throw new Error(`HTTP ${resp.status} from ${url}: ${resp.body.slice(0, 300)}`);
+    throw new Error(redactHeaders(`HTTP ${resp.status} from ${url}: ${resp.body.slice(0, 300)}`, opts.headers));
   }
   try {
     return { data: JSON.parse(resp.body) as T, resp };
   } catch {
-    throw new Error(`invalid JSON from ${url}: ${resp.body.slice(0, 200)}`);
+    throw new Error(redactHeaders(`invalid JSON from ${url}: ${resp.body.slice(0, 200)}`, opts.headers));
+  }
+}
+
+/**
+ * fetch() for the few requests that skip politeFetch: BetaNYC's own files on GitHub (the
+ * registry and government-bodies refreshes, the index manifest and the index download), which
+ * need no robots.txt or per-host gap. Retries 429 and 5xx up to MAX_RETRIES, honoring
+ * Retry-After, but only when the wait ends before `deadline` (ms since the epoch); otherwise it
+ * returns the last response as is. Pass the request's own timeout signal in `init`.
+ */
+export async function fetchWithRetry(url: string, init: RequestInit, deadline: number): Promise<Response> {
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(url, init);
+    if (!RETRY_STATUSES.has(res.status) || attempt > MAX_RETRIES) return res;
+    const wait = retryWaitMs(res.headers.get("retry-after"), attempt);
+    if (Date.now() + wait >= deadline) return res;
+    await res.body?.cancel().catch(() => undefined);
+    await sleep(wait);
   }
 }
 

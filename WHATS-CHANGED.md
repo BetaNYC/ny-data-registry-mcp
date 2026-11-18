@@ -10,7 +10,7 @@ To report a bug in this server or ask for a new feature, [open an issue on GitHu
 ## Unreleased: Tools say they only read, and answers name their source and date
 
 - **Tags:** MCP
-- **What changed:** Every tool now tells your AI app that it only reads data and never changes anything, and gives a short title. Apps that ask before running a tool that might change something can use this. One tool, check_source, is marked as reaching a live website, because it makes one request to the portal you ask about. The others answer from BetaNYC's list of sources and the downloaded index.
+- **What changed:** Every tool now tells your AI app that it only reads data and never changes anything, and gives a short title. Apps that ask before running a tool that might change something can use this. One tool, check_source, is marked as reaching a live website, because it makes one request to the portal you ask about. The others answer from BetaNYC's list of sources and the downloaded index. When something goes wrong, such as a dataset or place the server does not know, the answer is now marked as an error and says what to try next.
 - **MCP version:** [ny-data-registry-mcp 0.4.0](CHANGELOG.md)
 
 ## 2026-11-13: Dataset search gives the whole answer in one call
