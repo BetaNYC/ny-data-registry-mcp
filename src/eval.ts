@@ -1,14 +1,17 @@
 /**
  * Runs eval/questions.json against the real built index and scores it.
  * Pass mark: right answer in the top 3 for >= 90% of questions, and zero invariant
- * violations (nothing dead or out-of-state reported as live).
+ * violations (nothing dead or out-of-state reported as live, and no dataset from a portal the
+ * registry does not mark live unless the harvest reads that portal on purpose).
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { callTool } from "./tools.js";
-import { registry } from "./registry.js";
+import { registry, type Source } from "./registry.js";
 import { db } from "./datasets.js";
 import { bboxIntersectsNY } from "./places.js";
+import { readDataJson } from "./paths.js";
+import { planFor, type HarvestConfig } from "./harvest/run.js";
 
 interface Step {
   tool: string;
@@ -74,8 +77,30 @@ function checkStep(step: Step, body: any): { ok: boolean; why: string } {
   return { ok: false, why: "no check defined" };
 }
 
+/**
+ * Whether a dataset from a registry row that is not "live" is a violation, judged by the
+ * harvester's own plan for that row (`planFor`, with the same harvest-config.json), so the eval
+ * and the harvest cannot disagree. A "no portal" row is read on purpose in two ways: it is on
+ * `allow_no_portal` and its endpoint still appears in the row (an adapter reads it, epic #7 D4),
+ * or it has a hand-kept entry (the harvest indexes its links, D6). Its datasets must be the kind
+ * the plan writes today: adapter datasets while an adapter reads the row, `hand-kept:` links while
+ * the hand-kept list does. An adapter switched off keeps its last read, as it does for live rows.
+ * A dead or UNCONFIRMED row is never read, so any dataset from it is a violation.
+ * Returns the violation text (without the tool name), or null.
+ */
+export function nonLivePortalViolation(datasetId: string, src: Source, cfg: HarvestConfig): string | null {
+  if (src.status === "live") return null;
+  const marked = `${datasetId} from a portal the registry marks ${src.status}`;
+  if (src.status !== "no-portal") return marked;
+  const plan = planFor(src, cfg);
+  if (plan.kind === "skip") return plan.code === "adapter-off" ? null : `${marked}, which the harvest does not read (${plan.reason})`;
+  const handKept = datasetId.startsWith(`${src.source_id}:hand-kept:`);
+  if (handKept !== (plan.kind === "hand-kept")) return `${marked}, as ${handKept ? "a hand-kept link" : "an adapter dataset"}, but the harvest now reads it as ${plan.kind}`;
+  return null;
+}
+
 /** Invariants on every returned item. */
-function invariants(tool: string, body: any): string[] {
+function invariants(tool: string, body: any, cfg: HarvestConfig): string[] {
   const v: string[] = [];
   const reg = new Map(registry().sources.map((s) => [s.source_id, s]));
   const lists = [body?.results, body?.own, body?.within, body?.regional, Array.isArray(body?.statewide) ? body.statewide : null].filter(Array.isArray) as any[][];
@@ -87,7 +112,8 @@ function invariants(tool: string, body: any): string[] {
         if (row?.harvest_status === "refused") v.push(`${tool}: ${r.dataset_id} comes from a portal refused as out-of-state`);
         if (row?.extent && bboxIntersectsNY(JSON.parse(row.extent)) === false) v.push(`${tool}: ${r.dataset_id} lies wholly outside New York`);
         const src = reg.get(r.portal_id);
-        if (src && src.status !== "live") v.push(`${tool}: ${r.dataset_id} from a portal the registry marks ${src.status}`);
+        const bad = src ? nonLivePortalViolation(r.dataset_id, src, cfg) : null;
+        if (bad) v.push(`${tool}: ${bad}`);
       }
     }
   }
@@ -99,6 +125,8 @@ export async function runEval(): Promise<{ markdown: string; passed: boolean; sc
   const rows: string[] = [];
   let pass = 0;
   const violations: string[] = [];
+  // The harvester's own config, so the invariants judge "no portal" rows as the harvest does.
+  const cfg = readDataJson<HarvestConfig>("harvest-config.json");
   for (const q of qs) {
     let ok = true;
     const why: string[] = [];
@@ -114,7 +142,7 @@ export async function runEval(): Promise<{ markdown: string; passed: boolean; sc
       const c = checkStep(step, body);
       if (!c.ok) ok = false;
       why.push(`${step.tool}: ${c.why}`);
-      violations.push(...invariants(step.tool, body));
+      violations.push(...invariants(step.tool, body, cfg));
     }
     if (ok) pass++;
     rows.push(`| ${q.id} | ${q.q.replace(/\|/g, "/")} | ${ok ? "PASS" : "**MISS**"} | ${why.join("; ").replace(/\|/g, "/").slice(0, 400)} |`);

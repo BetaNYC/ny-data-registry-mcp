@@ -18,7 +18,7 @@ import {
   portalSelf, searchPortal, type ArcgisItem, type FilterResult,
 } from "./arcgis.js";
 
-interface HarvestConfig {
+export interface HarvestConfig {
   defaults: {
     max_layer_requests_per_portal: number;
     socrata_only: string[];

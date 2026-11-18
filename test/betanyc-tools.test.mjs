@@ -115,7 +115,9 @@ test("WHATS-CHANGED.md ships in the npm package", () => {
   // (https://nodejs.org/api/child_process.html#spawning-bat-and-cmd-files-on-windows).
   // The arguments are fixed strings, so the shell sees nothing from outside.
   const out = execFileSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { encoding: "utf8", shell: process.platform === "win32" });
-  const files = JSON.parse(out)[0].files.map((f) => f.path);
+  // npm 11 and earlier print an array of packages; npm 12 prints an object keyed by package name.
+  const packed = JSON.parse(out);
+  const files = (Array.isArray(packed) ? packed[0] : Object.values(packed)[0]).files.map((f) => f.path);
   assert.ok(files.includes("WHATS-CHANGED.md"), files.join(", "));
   assert.ok(files.includes("dist/betanyc-tools.js"));
 });
