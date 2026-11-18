@@ -339,7 +339,9 @@ test("get_dataset_columns with standard returns that document; without it, the r
   assert.deepEqual(unexpectedDcatErrors(d.document, d.missing), []);
   const bad = await callTool("get_dataset_columns", { dataset: "new-york-city:syn-lic1", standard: "schema.org" });
   assert.equal(bad.isError, true);
-  const missing = parse(await callTool("get_dataset_columns", { dataset: "nope", standard: "croissant" }));
-  assert.match(missing.error, /no dataset/);
+  // An unknown dataset is a failure, so isError (#43), with what to do next.
+  const missing = await callTool("get_dataset_columns", { dataset: "nope", standard: "croissant" });
+  assert.equal(missing.isError, true);
+  assert.match(missing.content[0].text, /^Error: no dataset 'nope'.*Use search_datasets/);
   closeDb();
 });

@@ -11,6 +11,17 @@ Dataset search matches every word of the query.
 
 ### Changed
 
+- Failures are MCP errors (`isError: true`) with a plain sentence and what to try, through the
+  shared `toolError` (stack lines dropped, upstream bodies cut to 500 characters, keys from env
+  redacted). Before, an unknown dataset, source or place, or a bad `whats_new` date, came back
+  as an ordinary answer with an `error` or `place_error` field (#43). Test: `test/errors.test.mjs`.
+- `src/http.ts`: retries 500, 502 and 504 as well as 429 and 503. The four requests to GitHub
+  that skip it (registry and government-bodies refreshes, index manifest, index download) now
+  retry 429 and 5xx through `fetchWithRetry`, never past their own timeout. The 60 s request
+  timeout and the 10 minute download timeout carry their reasons in the code (#35).
+- `src/http.ts`: error text built from a response body has every request-header value removed
+  (`redactHeaders`), so an echoed `X-App-Token` or GitHub token cannot reach a public harvest
+  issue (#39).
 - Every tool now carries MCP tool annotations (`title`, `readOnlyHint: true`, `openWorldHint`),
   set with the shared module's `annotateTools`. `openWorldHint` is `true` only for
   `check_source`. Tests: `test/tool-size.test.mjs` and the stdio smoke test (#34).

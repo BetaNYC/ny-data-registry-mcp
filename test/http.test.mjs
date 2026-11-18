@@ -167,3 +167,60 @@ test("429 on every try: two retries, then reported as blocked", async () => {
     }
   );
 });
+
+test("a 502 is retried like a 503; a 500 that persists is returned after two retries (#35)", async () => {
+  await withStub(
+    (url, _init, calls) => {
+      if (url.endsWith("/robots.txt")) return new Response("", { status: 404 });
+      const n = calls.filter((c) => !c.url.endsWith("/robots.txt")).length;
+      if (url.endsWith("/flaky")) return n === 1 ? new Response("bad gateway", { status: 502, headers: { "retry-after": "0" } }) : json({ ok: true });
+      return new Response("down", { status: 500, headers: { "retry-after": "0" } });
+    },
+    async (calls) => {
+      const ok = await politeFetch("https://r.example/flaky");
+      assert.equal(ok.status, 200);
+      const down = await politeFetch("https://r.example/down");
+      assert.equal(down.status, 500);
+      assert.equal(calls.filter((c) => c.url.endsWith("/down")).length, 3, "one try and two retries");
+    }
+  );
+});
+
+test("fetchWithRetry: retries a 503 when Retry-After fits before the deadline, never past it (#35)", async () => {
+  const { fetchWithRetry } = await import("../dist/http.js");
+  await withStub(
+    (_url, _init, calls) => (calls.length === 1 ? new Response("", { status: 503, headers: { "retry-after": "0" } }) : json({ ok: true })),
+    async (calls) => {
+      const r = await fetchWithRetry("https://github.example/registry.json", {}, Date.now() + 5000);
+      assert.equal(r.status, 200);
+      assert.equal(calls.length, 2);
+    }
+  );
+  await withStub(
+    () => new Response("", { status: 429, headers: { "retry-after": "30" } }),
+    async (calls) => {
+      const r = await fetchWithRetry("https://github.example/registry.json", {}, Date.now() + 5000);
+      assert.equal(r.status, 429, "a 30 s wait does not fit a 5 s deadline, so the 429 is returned at once");
+      assert.equal(calls.length, 1);
+    }
+  );
+});
+
+test("a key sent as a header never appears in error text, even when the server echoes it (#39)", async () => {
+  const { politeJson } = await import("../dist/http.js");
+  const KEY = "fake-app-token-0123456789";
+  await withStub(
+    (url, init) => {
+      if (url.endsWith("/robots.txt")) return new Response("", { status: 404 });
+      return new Response(`error: bad token ${init.headers["X-App-Token"]} / Bearer ${KEY}`, { status: 400 });
+    },
+    async () => {
+      for (const headers of [{ "X-App-Token": KEY }, { Authorization: `Bearer ${KEY}` }]) {
+        const err = await politeJson("https://k.example/api", { headers }).catch((e) => e);
+        assert.ok(err instanceof Error);
+        assert.doesNotMatch(err.message, new RegExp(KEY), err.message);
+        assert.match(err.message, /\[redacted\]/);
+      }
+    }
+  );
+});

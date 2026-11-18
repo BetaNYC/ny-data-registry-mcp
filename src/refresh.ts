@@ -23,6 +23,7 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { SCHEMA_VERSION } from "./db.js";
 import { indexPath, USER_AGENT } from "./paths.js";
+import { fetchWithRetry } from "./http.js";
 import { closeDb, db } from "./datasets.js";
 import {
   downloadIndex, indexUrl, installPendingIndex, isLoopback, pendingPath, readSource, sourcePath, writeSource, SQLITE_NAME, type IndexSource,
@@ -131,7 +132,7 @@ function parseManifest(v: unknown): PublishedManifest {
 }
 
 async function getText(url: string): Promise<{ status: number; text: string }> {
-  const res = await fetch(url, { headers: { "User-Agent": USER_AGENT }, redirect: "follow", signal: AbortSignal.timeout(MANIFEST_TIMEOUT_MS) });
+  const res = await fetchWithRetry(url, { headers: { "User-Agent": USER_AGENT }, redirect: "follow", signal: AbortSignal.timeout(MANIFEST_TIMEOUT_MS) }, Date.now() + MANIFEST_TIMEOUT_MS);
   return { status: res.status, text: res.ok ? await res.text() : "" };
 }
 

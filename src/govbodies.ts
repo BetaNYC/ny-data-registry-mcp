@@ -11,6 +11,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cacheDir, readDataJson, USER_AGENT } from "./paths.js";
+import { fetchWithRetry } from "./http.js";
 
 export const GOV_REGISTRY_URL = "https://raw.githubusercontent.com/BetaNYC/ny-gov-web-registry/main/data/registry.json";
 export const GOV_REGISTRY_REPO = "BetaNYC/ny-gov-web-registry";
@@ -134,7 +135,7 @@ export async function refreshGovBodies(timeoutMs = 5000): Promise<LoadedGovBodie
   try {
     const headers: Record<string, string> = { "User-Agent": USER_AGENT };
     if (cached && meta.etag) headers["If-None-Match"] = meta.etag;
-    const res = await fetch(GOV_REGISTRY_URL, { headers, signal: AbortSignal.timeout(timeoutMs) });
+    const res = await fetchWithRetry(GOV_REGISTRY_URL, { headers, signal: AbortSignal.timeout(timeoutMs) }, Date.now() + timeoutMs);
     if (res.status === 304 && cached) {
       meta.fetched_at = new Date().toISOString();
       writeFileSync(f.meta, JSON.stringify(meta));
