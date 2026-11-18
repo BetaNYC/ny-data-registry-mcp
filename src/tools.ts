@@ -34,6 +34,10 @@ import { STANDARDS } from "./standards/build.js";
 export const SERVER_INSTRUCTIONS =
   "New York open data portals and their datasets, from BetaNYC's registry and a nightly index of the portals' catalogs. " +
   "It describes datasets; it does not hold the data itself. " +
+  // Said once here, not in each tool description (#45).
+  "Source rows (find_sources, list_sources_for_place, how_to_query, check_source) and dataset rows carry registry_id when the row has one: the id of the row's government body in BetaNYC/ny-gov-web-registry, for joining the two. " +
+  "Source rows also carry runs_it, the government body that runs the site (name, government_level, classification, website), looked up by registry_id in that list; null when the row has no id, found: false when the list lacks it. runs_it_source says which copy of the list answered. " +
+  "Every answer carries data_source: the source, its publisher, a link and how current it is, with a cite line to quote. " +
   BETANYC_INSTRUCTIONS;
 
 /** The last harvest of the installed index, or "not fetched yet" before the first download. */
@@ -133,10 +137,6 @@ async function requireIndex(): Promise<void> {
 
 const FAMILY_ENUM = [...FAMILIES];
 const TOPIC_IDS = topicRules().topics.map((t) => t.id) as [string, ...string[]];
-/** One sentence, shared by every tool whose reply names a data site. */
-const REGISTRY_ID_NOTE = "registry_id, when a row has one, is the id of the row's government body in BetaNYC/ny-gov-web-registry, for joining the two.";
-/** For the tools whose source rows carry runs_it. */
-const RUNS_IT_NOTE = "runs_it names the government body that runs the site (name, government_level, classification, website), looked up by registry_id in that list; null when the row has no id, found: false when the list lacks it. runs_it_source says which copy of the list answered.";
 const STATUS_ENUM = ["live", "no-portal", "UNCONFIRMED", "dead", "any"] as const;
 
 /**
@@ -149,7 +149,7 @@ const DOMAIN_TOOLS = [
   {
     name: "find_sources",
     description:
-      "Find New York open data portals and sources (state, county, city, agency, library, nonprofit) in BetaNYC's registry by topic, name or place. Returns each source's portal URL, platform family, API type, dataset count, status and last-verified date. Searches portal names and notes, not dataset titles (use search_datasets for datasets). Default status filter is 'live'. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
+      "Find New York open data portals and sources (state, county, city, agency, library, nonprofit) in BetaNYC's registry by topic, name or place. Returns each source's portal URL, platform family, API type, dataset count, status and last-verified date. Searches portal names and notes, not dataset titles (use search_datasets for datasets). Default status filter is 'live'.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -169,7 +169,7 @@ const DOMAIN_TOOLS = [
   {
     name: "list_sources_for_place",
     description:
-      "Everything the registry knows for one New York place (county, one of the 62 cities, an NYC borough, or a region): its own portal(s), sources for cities inside it, regional sources, and statewide sources that cover it. Says plainly whether the place has a portal, was checked and has none ('no-portal-exists'), or is not in the registry ('not-in-registry', which means unchecked, not absent). " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
+      "Everything the registry knows for one New York place (county, one of the 62 cities, an NYC borough, or a region): its own portal(s), sources for cities inside it, regional sources, and statewide sources that cover it. Says plainly whether the place has a portal, was checked and has none ('no-portal-exists'), or is not in the registry ('not-in-registry', which means unchecked, not absent).",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -184,7 +184,7 @@ const DOMAIN_TOOLS = [
   {
     name: "how_to_query",
     description:
-      "How to get data from one registry source: its endpoint (copied verbatim, never guessed), API type, whether a key is needed and which env var holds it, an example request, and which MCP server to hand off to (the `socrata` MCP with the right domain, or the matching @betanyc MCP). Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
+      "How to get data from one registry source: its endpoint (copied verbatim, never guessed), API type, whether a key is needed and which env var holds it, an example request, and which MCP server to hand off to (the `socrata` MCP with the right domain, or the matching @betanyc MCP). Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -198,7 +198,7 @@ const DOMAIN_TOOLS = [
   {
     name: "check_source",
     description:
-      "Live check of one source's portal URL: one polite request, redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. Never calls key-required or account-gated sources, and reports a bot block rather than working around it. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
+      "Live check of one source's portal URL: one polite request, redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. Never calls key-required or account-gated sources, and reports a bot block rather than working around it.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -223,8 +223,7 @@ const DOMAIN_TOOLS = [
       "Use group_by to summarize by entity, county or platform_family instead. " +
       "Rows are compact (id, name, portal, type, update date, link, formats); detail: 'full' adds description, API endpoint, views, column count and, for Socrata, the domain + 4x4 to hand to the `socrata` MCP. " +
       `Replies stay under about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
-      "When the index is more than 14 days old (NY_DATA_INDEX_STALE_DAYS), the reply carries index_note saying so and how to update it. " +
-      REGISTRY_ID_NOTE,
+      "When the index is more than 14 days old (NY_DATA_INDEX_STALE_DAYS), the reply carries index_note saying so and how to update it.",
     inputSchema: {
       type: "object",
       additionalProperties: false,

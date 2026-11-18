@@ -349,9 +349,12 @@ GitHub turns off scheduled workflows in a public repository after 60 days with n
 ## How it was checked
 
 - `npm test`: offline tests from recorded fixtures (`test/fixtures/`, each says which request produced it), including a stdio smoke test that starts the server and calls all thirteen tools.
-- `node dist/cli.js eval`: a fixed set of real questions (`eval/questions.json`) scored against the real index. Results: `eval/runs/`.
+- `node dist/cli.js eval`: a fixed set of real questions (`eval/questions.json`) scored against the real index. Results: `eval/runs/`. The nightly harvest also runs it as a quality gate before publishing. `test/eval-set.test.mjs` keeps the set well formed (at least 10 questions, each step a real tool with arguments it accepts and one check).
+- Other checks in `npm test`: `test/stdout.test.mjs` (in server mode, every stdout line is a JSON-RPC message), `test/tool-size.test.mjs` (the tool list plus instructions stays under its budget, and no sentence repeats across tool descriptions), `test/bundled.test.mjs` (the two bundled copies of other repos' data, `data/gov-bodies.json` and `data/ny-data-portal-registry.json`, name their source and date and match `data/BUNDLED.sha256`).
 
-Latest results (2026-11-05, office-mac), all in `eval/runs/`:
+Latest question-set run: **2026-11-18**, 27 / 27 in the top 3, 0 invariant violations, against the published `index-latest` (last harvest 2026-11-05) and registry 2026-11-13, offline after the download ([eval/runs/2026-11-18-question-set.md](eval/runs/2026-11-18-question-set.md)).
+
+First results (2026-11-05, office-mac), all in `eval/runs/`:
 
 - `npm test`: **44 / 44 pass**.
 - Question set: **27 / 27** in the top 3, **0** invariant violations. The set was written by the same agent that built the tool, so treat 100% as an upper bound; two checks (Q01, Q13) were tightened during the build when a loose check passed on the wrong county's parcels.

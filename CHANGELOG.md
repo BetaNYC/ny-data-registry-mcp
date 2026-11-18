@@ -11,6 +11,16 @@ Dataset search matches every word of the query.
 
 ### Changed
 
+- The `registry_id` and `runs_it` notes, repeated in five tool descriptions, are said once in the
+  server instructions, with a line about `data_source`. The tool-list budget drops to 26,500
+  characters (25,947 measured), and a test fails if any sentence repeats across descriptions
+  (#45).
+- `test/stdout.test.mjs`: starts the server, calls every tool over raw stdio, and fails on any
+  stdout line that is not a JSON-RPC message (#44).
+- `data/BUNDLED.sha256` and `test/bundled.test.mjs`: the bundled copies of the government-bodies
+  list and the portal registry match recorded sums and name their source and date (#42).
+- `test/eval-set.test.mjs` keeps `eval/questions.json` well formed; a 2026-11-18 run against the
+  published index scored 27/27 with no invariant violations (`eval/runs/`) (#40).
 - Every answer from the ten registry and index tools carries a `data_source` block (source,
   publisher, link, `as_of`, `as_of_kind`, `cite`), built with the shared `provenance()` (#36,
   #37). Test: `test/answers.test.mjs`.
