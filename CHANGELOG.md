@@ -11,6 +11,15 @@ Dataset search matches every word of the query.
 
 ### Changed
 
+- Every answer from the ten registry and index tools carries a `data_source` block (source,
+  publisher, link, `as_of`, `as_of_kind`, `cite`), built with the shared `provenance()` (#36,
+  #37). Test: `test/answers.test.mjs`.
+- `list_sources_for_place`: at most 25 rows per list by default (`limit`, up to 100), with
+  `counts` and a `showing` note. "Long Island" was about 116 KB with 104 rows (#38).
+- `get_dataset_columns`: 100 columns by default (`limit` up to 500, `offset`), with
+  `columns_shown`. The widest dataset in the index has 1,266 columns (#38).
+- `find_sources`, `find_joinable` (per key) and `whats_new` say when a list was cut and how to
+  get the rest; `whats_new` adds `data_updated_total` (#38).
 - Failures are MCP errors (`isError: true`) with a plain sentence and what to try, through the
   shared `toolError` (stack lines dropped, upstream bodies cut to 500 characters, keys from env
   redacted). Before, an unknown dataset, source or place, or a bad `whats_new` date, came back

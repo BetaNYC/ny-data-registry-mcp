@@ -2,16 +2,16 @@ import { z } from "zod";
 import { basename } from "node:path";
 import { readFileSync } from "node:fs";
 import { FAMILIES } from "./families.js";
-import { findSources, howToQuery, listSourcesForPlace, registryInfo } from "./sources.js";
+import { findSources, howToQuery, listSourcesForPlace, PLACE_LIST_DEFAULT, PLACE_LIST_MAX, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
-import { awaitIndex, downloadState } from "./fetchindex.js";
+import { COLUMNS_DEFAULT, COLUMNS_MAX, datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
+import { awaitIndex, downloadState, INDEX_RELEASES_PAGE } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
-import { annotateTools, BETANYC_INSTRUCTIONS, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
+import { annotateTools, BETANYC_INSTRUCTIONS, provenance, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
 import { registry } from "./registry.js";
 import { govBodies } from "./govbodies.js";
-import { VERSION } from "./paths.js";
+import { REGISTRY_PAGE, VERSION } from "./paths.js";
 import { topicRules } from "./topics.js";
 import { STANDARDS } from "./standards/build.js";
 
@@ -176,6 +176,7 @@ const DOMAIN_TOOLS = [
       properties: {
         place: { type: "string", description: "e.g. 'Erie County', 'Syracuse', 'Queens', 'NYC', 'North Country'" },
         include_statewide: { type: "boolean", description: "List the statewide sources too (default true)" },
+        limit: { type: "integer", minimum: 1, maximum: PLACE_LIST_MAX, description: `Most rows in each list (own, within, regional, statewide). Default ${PLACE_LIST_DEFAULT}` },
       },
       required: ["place"],
     },
@@ -266,6 +267,8 @@ const DOMAIN_TOOLS = [
       properties: {
         dataset: { type: "string", description: "dataset_id from search_datasets, a Socrata 4x4, an ArcGIS item id, or the dataset URL" },
         standard: { type: "string", enum: [...STANDARDS], description: "Return the description as Croissant 1.1 ('croissant') or DCAT-US 3.0 ('dcat-us') instead of the column list" },
+        limit: { type: "integer", minimum: 1, maximum: COLUMNS_MAX, description: `Most columns to list. Default ${COLUMNS_DEFAULT}` },
+        offset: { type: "integer", minimum: 0, description: "Skip this many columns (columns_shown.next_offset)" },
       },
       required: ["dataset"],
     },
@@ -280,7 +283,7 @@ const DOMAIN_TOOLS = [
       properties: {
         dataset: { type: "string", description: "dataset_id, Socrata 4x4, ArcGIS item id or URL" },
         column: { type: "string", description: "Limit to one key (a field name in the dataset, or a key label like 'BBL')" },
-        limit_per_key: { type: "integer", minimum: 1, maximum: 50 },
+        limit_per_key: { type: "integer", minimum: 1, maximum: 50, description: "Datasets listed per key. Default 10" },
       },
       required: ["dataset"],
     },
@@ -297,7 +300,7 @@ const DOMAIN_TOOLS = [
       properties: {
         since: { type: "string", description: "YYYY-MM-DD" },
         portal: { type: "string", description: "source_id, registry_id (every site of that government) or part of a portal name" },
-        limit: { type: "integer", minimum: 1, maximum: 200 },
+        limit: { type: "integer", minimum: 1, maximum: 200, description: "Most rows in each list. Default 50" },
       },
       required: ["since"],
     },
@@ -326,7 +329,7 @@ const ARG_SHAPES = {
     status: z.enum(STATUS_ENUM).optional(),
     limit: z.number().int().min(1).max(50).optional(),
   },
-  list_sources_for_place: { place: z.string().min(1), include_statewide: z.boolean().optional() },
+  list_sources_for_place: { place: z.string().min(1), include_statewide: z.boolean().optional(), limit: z.number().int().min(1).max(PLACE_LIST_MAX).optional() },
   how_to_query: { source_id: z.string().optional(), registry_id: z.string().optional(), entity: z.string().optional() },
   check_source: { source_id: z.string().optional(), registry_id: z.string().optional(), url: z.string().optional() },
   registry_info: {},
@@ -346,7 +349,7 @@ const ARG_SHAPES = {
     export: z.enum(EXPORT_MODE).optional(),
   },
   list_topics: { portal: z.string().optional() },
-  get_dataset_columns: { dataset: z.string().min(1), standard: z.enum(STANDARDS).optional() },
+  get_dataset_columns: { dataset: z.string().min(1), standard: z.enum(STANDARDS).optional(), limit: z.number().int().min(1).max(COLUMNS_MAX).optional(), offset: z.number().int().min(0).optional() },
   find_joinable: { dataset: z.string().min(1), column: z.string().optional(), limit_per_key: z.number().int().min(1).max(50).optional() },
   whats_new: { since: z.string(), portal: z.string().optional(), limit: z.number().int().min(1).max(200).optional() },
 };
@@ -366,6 +369,37 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
       `Unknown parameters are rejected rather than ignored, because ignoring one would return results that look right but answer a different question.`
   );
 }
+
+/**
+ * The `data_source` block every domain answer carries (#36, #37): the source, its publisher, a
+ * link and how current it is, from the shared provenance() helper, with the same names as the
+ * sources in DATA-SOURCES.json. `cite` is the same as one plain line.
+ */
+type Prov = ReturnType<typeof provenance>;
+const cite = (p: Prov) => ({ ...p.provenance, cite: p.text });
+const registrySource = () =>
+  provenance({ sourceName: "NY Data Portal Registry", publisher: "BetaNYC", sourceUrl: REGISTRY_PAGE, kind: "snapshot", asOf: registry().generated || null });
+const indexSource = () =>
+  provenance({ sourceName: "NY Data Registry index", publisher: "BetaNYC", sourceUrl: INDEX_RELEASES_PAGE, kind: "snapshot", asOf: (indexInfo()?.last_harvest as string | null) ?? null });
+/** One dataset: its portal's catalog, the dataset's own page, as of the harvest that last saw it. */
+function datasetSource(b: Record<string, any>): Prov {
+  try {
+    return provenance({ sourceName: `${b.portal} catalog`, publisher: b.entity, sourceUrl: b.url, kind: "snapshot", asOf: b.last_seen ?? null });
+  } catch {
+    return indexSource(); // no portal name, publisher or link on the row
+  }
+}
+/** check_source: the portal page itself, fetched for this answer; otherwise the registry row. */
+function checkSourceSource(b: Record<string, any>): Prov {
+  if (b.checked !== true) return registrySource();
+  try {
+    return provenance({ sourceName: b.source?.portal_name || b.source?.entity, publisher: b.source?.entity, sourceUrl: b.url, kind: "live", asOf: b.checked_at });
+  } catch {
+    return registrySource();
+  }
+}
+const withSource = (body: unknown, p: Prov) =>
+  body && typeof body === "object" && !("error" in body) && !("place_error" in body) ? { ...(body as object), data_source: cite(p) } : body;
 
 /** Keys this package reads from env. No error text repeats them (#39). */
 const secrets = () => [process.env.SOCRATA_APP_TOKEN, process.env.GITHUB_TOKEN];
@@ -388,27 +422,28 @@ export async function callTool(name: string, args: unknown) {
     if (INDEX_TOOLS.has(name)) await requireIndex();
     switch (name) {
       case "find_sources":
-        return text(findSources(parseToolArgs("find_sources", args)));
+        return text(withSource(findSources(parseToolArgs("find_sources", args)), registrySource()));
       case "list_sources_for_place": {
         const a = parseToolArgs("list_sources_for_place", args);
-        return text(listSourcesForPlace(a.place, a.include_statewide ?? true));
+        return text(withSource(listSourcesForPlace(a.place, a.include_statewide ?? true, a.limit), registrySource()));
       }
       case "how_to_query": {
         const a = parseToolArgs("how_to_query", args);
         if (!a.source_id && !a.registry_id && !a.entity) throw new Error("give one of source_id, registry_id or entity");
-        return text(howToQuery(a));
+        return text(withSource(howToQuery(a), registrySource()));
       }
       case "check_source": {
         const a = parseToolArgs("check_source", args);
         if (!a.source_id && !a.registry_id && !a.url) throw new Error("give one of source_id, registry_id or url");
-        return text(await checkSource(a));
+        const r = await checkSource(a);
+        return text(withSource(r, checkSourceSource(r as Record<string, any>)));
       }
       case "registry_info":
         parseToolArgs("registry_info", args);
-        return text({ ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() });
+        return text(withSource({ ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() }, registrySource()));
       case "search_datasets": {
         const r = searchDatasets(parseToolArgs("search_datasets", args)) as Record<string, any>;
-        const out = text(r);
+        const out = text(withSource(r, indexSource()));
         // MCP resource_link content (spec 2025-06-18 and later, "Resource Links" under Tool Result).
         // The JSON text block above stays the answer; this lets a client open or attach the file.
         if (r.export?.uri) {
@@ -425,18 +460,20 @@ export async function callTool(name: string, args: unknown) {
         return out;
       }
       case "list_topics":
-        return text(listTopics(parseToolArgs("list_topics", args)));
+        return text(withSource(listTopics(parseToolArgs("list_topics", args)), indexSource()));
       case "get_dataset_columns": {
         const a = parseToolArgs("get_dataset_columns", args);
-        return text(a.standard ? datasetStandard(a.dataset, a.standard) : getDatasetColumns(a.dataset));
+        if (a.standard) return text(withSource(datasetStandard(a.dataset, a.standard), indexSource()));
+        const r = getDatasetColumns(a.dataset, a.limit, a.offset) as Record<string, any>;
+        return text(withSource(r, datasetSource(r)));
       }
       case "find_joinable": {
         const a = parseToolArgs("find_joinable", args);
-        return text(findJoinable(a.dataset, a.column, a.limit_per_key));
+        return text(withSource(findJoinable(a.dataset, a.column, a.limit_per_key), indexSource()));
       }
       case "whats_new": {
         const a = parseToolArgs("whats_new", args);
-        return text(whatsNew(a.since, a.portal, a.limit));
+        return text(withSource(whatsNew(a.since, a.portal, a.limit), indexSource()));
       }
       default:
         return fail(`Unknown tool: ${name}. The tools are: ${TOOLS.map((t) => t.name).join(", ")}.`);

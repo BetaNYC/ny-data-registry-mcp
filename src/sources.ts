@@ -213,6 +213,10 @@ export function findSources(args: FindArgs) {
     total_matches: scored.length,
     results: scored.slice(0, limit).map((x) => ({ ...sourceSummary(x.s), match: x.pm ?? "keyword", score: Math.round(x.score * 100) / 100 })),
     runs_it_source: runsItSource(),
+    showing:
+      scored.length > limit
+        ? `Showing ${limit} of ${scored.length}. Narrow with place, tier, platform_family or status, or raise limit (up to 50).`
+        : `Showing all ${scored.length}.`,
     note:
       scored.length === 0
         ? "No registry row matched. This searches portal names and notes, not dataset titles; try search_datasets (needs the harvested index) or list_sources_for_place."
@@ -222,7 +226,11 @@ export function findSources(args: FindArgs) {
 
 // ─── list_sources_for_place ──────────────────────────────────────────────────
 
-export function listSourcesForPlace(placeInput: string, includeStatewide = true) {
+/** list_sources_for_place lists at most this many rows in each of its four lists by default (#38). */
+export const PLACE_LIST_DEFAULT = 25;
+export const PLACE_LIST_MAX = 100;
+
+export function listSourcesForPlace(placeInput: string, includeStatewide = true, limit = PLACE_LIST_DEFAULT) {
   const reg = registry();
   const place = resolvePlace(placeInput);
   if (!place) {
@@ -267,17 +275,27 @@ export function listSourcesForPlace(placeInput: string, includeStatewide = true)
     message = `${place.name} is in the registry but its status is UNCONFIRMED.`;
   }
   const detail = (s: Source) => ({ ...sourceSummary(s), notes: s.notes });
+  const liveStatewide = statewide.filter((s) => s.status === "live");
+  // Every list is cut at `limit`; `counts` has the full sizes and `showing` says what was cut (#38).
+  const counts = { own: own.length, within: within.length, regional: covering.length, statewide: liveStatewide.length };
+  const cut = Object.entries(counts)
+    .filter(([k, n]) => n > limit && (k !== "statewide" || includeStatewide))
+    .map(([k, n]) => `${k} ${limit} of ${n}`);
   return {
     place: placeInput,
     resolved: place,
     answer,
     message,
-    own: own.map(detail),
-    within: within.map(detail),
-    regional: covering.map(sourceSummary),
+    counts,
+    showing: cut.length
+      ? `Showing ${limit} per list: ${cut.join(", ")}. Pass limit (up to ${PLACE_LIST_MAX}) to list more, or use find_sources with this place and a topic to narrow it.`
+      : "Every list is complete.",
+    own: own.slice(0, limit).map(detail),
+    within: within.slice(0, limit).map(detail),
+    regional: covering.slice(0, limit).map(sourceSummary),
     statewide: includeStatewide
-      ? statewide.filter((s) => s.status === "live").map(sourceSummary)
-      : `${statewide.filter((s) => s.status === "live").length} live statewide sources also cover this place (include_statewide=true to list them)`,
+      ? liveStatewide.slice(0, limit).map(sourceSummary)
+      : `${liveStatewide.length} live statewide sources also cover this place (include_statewide=true to list them)`,
     runs_it_source: runsItSource(),
     registry_generated: reg.generated,
   };

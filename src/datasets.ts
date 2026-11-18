@@ -742,14 +742,27 @@ function findDataset(ref: string): DatasetRow | null {
   return null;
 }
 
-export function getDatasetColumns(ref: string) {
+/** get_dataset_columns lists this many columns by default, and never more than the maximum (#38). */
+export const COLUMNS_DEFAULT = 100;
+export const COLUMNS_MAX = 500;
+
+export function getDatasetColumns(ref: string, limit = COLUMNS_DEFAULT, offset = 0) {
   const r = findDataset(ref);
   if (!r) return { error: `no dataset '${ref}' in the index. Use search_datasets to find its dataset_id.` };
-  const cols = db().prepare("SELECT name, field, type, description, layer, key_label FROM dataset_columns WHERE dataset_id = ? ORDER BY id").all(r.id);
+  const total = (db().prepare("SELECT COUNT(*) AS n FROM dataset_columns WHERE dataset_id = ?").get(r.id) as { n: number }).n;
+  const cols = db().prepare("SELECT name, field, type, description, layer, key_label FROM dataset_columns WHERE dataset_id = ? ORDER BY id LIMIT ? OFFSET ?").all(r.id, limit, offset);
+  const next = offset + cols.length < total ? offset + cols.length : null;
   const full = db().prepare("SELECT license, publisher, extent, row_count, update_frequency, first_seen, last_seen, provenance, formats FROM datasets WHERE id = ?").get(r.id) as Record<string, string | null>;
   return {
     ...summary(r),
     columns: cols,
+    columns_shown: {
+      offset,
+      returned: cols.length,
+      total,
+      next_offset: next,
+      note: next === null ? (offset ? `Columns ${offset + 1} to ${total} of ${total}.` : `All ${total} columns.`) : `Showing columns ${offset + 1} to ${offset + cols.length} of ${total}. Call again with offset ${next} for the next ones (limit up to ${COLUMNS_MAX}).`,
+    },
     columns_note:
       r.columns_status === "not-fetched"
         ? "Columns not fetched yet (per-portal request cap). Read them live from the service: GET <api_endpoint>?f=json, then each layer ?f=json."
@@ -833,6 +846,7 @@ export function findJoinable(ref: string, column?: string, limitPerKey = 10) {
       your_column: k.field,
       datasets_sharing_key: total,
       by_portal: byPortal,
+      showing: total > top.length ? `Showing ${top.length} of ${total}. Raise limit_per_key (up to 50), or use search_datasets with the key's name to see more.` : `Showing all ${total}.`,
       top: top.map((t) => {
         const f = d.prepare("SELECT field FROM dataset_columns WHERE dataset_id = ? AND key_label = ? LIMIT 1").get(t.id, k.key_label) as { field: string };
         return { dataset_id: t.id, name: t.name, portal: t.portal_name, their_column: f?.field, views: t.views, url: t.permalink };
@@ -863,11 +877,22 @@ export function whatsNew(since: string, portal?: string, limit = 50) {
     .prepare(`SELECT c.change, c.at, c.dataset_id, ds.name, p.name AS portal, ds.permalink, ds.updated_at FROM changes c JOIN datasets ds ON ds.id = c.dataset_id JOIN portals p ON p.id = c.portal_id WHERE c.at >= ?${pw} ORDER BY c.at DESC, c.change LIMIT ?`)
     .all(...params, String(limit));
   const firstRun = (d.prepare("SELECT MIN(started_at) AS s FROM harvest_runs").get() as { s: string | null }).s;
+  const updatedFrom = `FROM datasets ds JOIN portals p ON p.id = ds.portal_id WHERE ds.removed_at IS NULL AND ds.updated_at >= ?${uw}`;
   const updated = d
-    .prepare(`SELECT ds.id AS dataset_id, ds.name, p.name AS portal, ds.updated_at, ds.permalink FROM datasets ds JOIN portals p ON p.id = ds.portal_id WHERE ds.removed_at IS NULL AND ds.updated_at >= ?${uw} ORDER BY ds.updated_at DESC LIMIT ?`)
+    .prepare(`SELECT ds.id AS dataset_id, ds.name, p.name AS portal, ds.updated_at, ds.permalink ${updatedFrom} ORDER BY ds.updated_at DESC LIMIT ?`)
     .all(...params, String(limit));
+  const updatedTotal = (d.prepare(`SELECT COUNT(*) AS n ${updatedFrom}`).get(...params) as { n: number }).n;
+  const changesTotal = (counts as { n: number }[]).reduce((a, c) => a + c.n, 0);
+  const cut = [
+    changesTotal > rows.length ? `index_change_detail ${rows.length} of ${changesTotal}` : "",
+    updatedTotal > updated.length ? `data_updated_per_portal ${updated.length} of ${updatedTotal}` : "",
+  ].filter(Boolean);
   return {
     since,
+    showing: cut.length
+      ? `Showing the newest: ${cut.join(", ")}. Raise limit (up to 200), use a later since date, or filter by portal for the rest.`
+      : "Both lists are complete.",
+    data_updated_total: updatedTotal,
     index_changes: counts,
     index_change_detail: rows,
     data_updated_per_portal: updated,

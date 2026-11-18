@@ -19,7 +19,7 @@ Thirteen tools, in three groups.
 | Tool | What it answers |
 |---|---|
 | `find_sources` | Which portals cover this topic or place? Filters: place, tier, platform family, has API, key required, status (default `live`) |
-| `list_sources_for_place` | Everything for one county, city, NYC borough or region. Says whether the place **has a portal**, was **checked and has none**, or is **not in the registry** (unchecked, not absent) |
+| `list_sources_for_place` | Everything for one county, city, NYC borough or region. Says whether the place **has a portal**, was **checked and has none**, or is **not in the registry** (unchecked, not absent). Up to 25 rows per list by default (`limit`, up to 100), with full `counts` |
 | `how_to_query` | Endpoint (verbatim from the registry, never guessed), API type, key and env var, example request, and which MCP to hand off to. Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows |
 | `check_source` | One live request to a portal URL: status, redirect, response time, and whether that matches the registry |
 | `registry_info` | Row counts, registry date and origin, unmapped platform strings, index size and last harvest |
@@ -30,7 +30,7 @@ Thirteen tools, in three groups.
 |---|---|
 | `search_datasets` | Dataset titles, descriptions, tags and **column names** across Socrata and ArcGIS portals. Filters: topic, place, portal, platform family, format (csv, geojson, shapefile, kml, api, xlsx …), updated since. One call gives the whole answer: the true number of matches, a count per portal when they don't all fit, the best rows, and a CSV file with every match. `group_by` summarizes by entity, county or platform family instead |
 | `list_topics` | The 24 shared topics, with how many datasets and portals each has, and the share of datasets with a topic. Filter: portal |
-| `get_dataset_columns` | Fields and types, every distribution (format + URL), license, publisher, extent, and per-field provenance. With `standard`, the dataset's description as Croissant or DCAT-US instead |
+| `get_dataset_columns` | Fields and types (100 columns by default; `limit` up to 500 and `offset` page through the rest), every distribution (format + URL), license, publisher, extent, and per-field provenance. With `standard`, the dataset's description as Croissant or DCAT-US instead |
 | `find_joinable` | Datasets sharing a join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP), from a curated key-column map, not raw name equality |
 | `whats_new` | Datasets added, changed or removed since a date |
 
@@ -45,6 +45,10 @@ Thirteen tools, in three groups.
 These three come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding to each of its MCP servers: change it in the BetaNYC workspace, never here. They answer in plain text plus `structuredContent` matching a declared `outputSchema`.
 
 All tool inputs are strict: an unknown parameter is rejected by name, never silently dropped (same rule as `nyc-311-mcp`).
+
+**Every answer names its source.** Each answer from the ten registry and index tools carries a `data_source` block: the source and its publisher (the same names as in [DATA-SOURCES.json](DATA-SOURCES.json)), a link a person can open, `as_of` with `as_of_kind`, and `cite`, the same as one plain line to quote. Registry tools cite the NY Data Portal Registry as of its `generated` date; index tools cite the NY Data Registry index as of its last harvest; `get_dataset_columns` cites the dataset's own portal and page as of the harvest that last saw it; `check_source` cites the portal it reached, as of that request.
+
+**Every list is bounded.** Each list has a default size and a maximum in its schema, and the answer says when it was cut and how to get the rest (`showing`, or `columns_shown` for columns). `search_datasets` gives the whole answer in one call (below).
 
 Every failure comes back as an MCP error (`isError: true`) with one plain sentence saying what went wrong and what to try: an unknown dataset, source or place, a bad date, an unknown parameter. No stack traces, upstream bodies cut to 500 characters, and no key from the environment is ever repeated.
 
