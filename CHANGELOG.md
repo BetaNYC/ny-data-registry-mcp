@@ -308,6 +308,13 @@ See [#10](https://github.com/BetaNYC/ny-data-registry-mcp/issues/10) (part of
 - `search_datasets` could exceed the 20 KB reply limit by a few hundred bytes
   (since 0.3.0). The note saying how many rows were left out was added after
   trimming; it now counts against the limit.
+- The question set's invariant flagged every dataset from a "no portal" row, including
+  the rows the harvest reads on purpose (`allow_no_portal`, and the hand-kept list), so the
+  nightly harvest's quality gate failed from 2026-11-16 on City of Mount Vernon datasets
+  ([#30](https://github.com/BetaNYC/ny-data-registry-mcp/issues/30)). It now asks the
+  harvester's own plan for the row: a dataset passes when the harvest reads that row and writes
+  that kind of dataset. Dead and UNCONFIRMED rows, other "no portal" rows, and allowed rows
+  whose endpoint has changed are still violations.
 
 ## [0.3.0] — 2026-11-13
 
