@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { tempIndexPath, buildFixtureIndex } from "./helpers.mjs";
+import { assertEveryToolAnnotated } from "../dist/betanyc-tools.js";
 
 const index = await buildFixtureIndex(tempIndexPath());
 const server = fileURLToPath(new URL("../dist/index.js", import.meta.url));
@@ -43,6 +44,10 @@ test("stdio server starts, lists 13 tools, and answers every one", async () => {
   try {
     const { tools } = await client.listTools();
     assert.equal(tools.length, 13);
+    // What a client actually receives: every tool says it only reads (#34).
+    assertEveryToolAnnotated(tools);
+    for (const t of tools) assert.equal(t.annotations.readOnlyHint, true, t.name);
+    assert.deepEqual(tools.filter((t) => t.annotations.openWorldHint).map((t) => t.name), ["check_source"]);
     for (const [name, args] of CALLS) {
       const r = await client.callTool({ name, arguments: args });
       assert.notEqual(r.isError, true, `${name}: ${r.content?.[0]?.text}`);

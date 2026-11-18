@@ -5,12 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] — Unreleased
 
 Dataset search matches every word of the query.
 
 ### Changed
 
+- Every tool now carries MCP tool annotations (`title`, `readOnlyHint: true`, `openWorldHint`),
+  set with the shared module's `annotateTools`. `openWorldHint` is `true` only for
+  `check_source`. Tests: `test/tool-size.test.mjs` and the stdio smoke test (#34).
+- `test/tool-size.test.mjs`: the tool list plus server instructions must stay at or under
+  27,000 characters (26,545 on 2026-11-18) (#41).
+- `src/betanyc-tools.ts`: BetaNYC's shared module 1.5.0 (was 1.4.0), and
+  `scripts/whats_changed.py` 1.4.1 with its `scripts/mcp_shared/data-sources.schema.json`
+  (were 1.4.0), copied unchanged from betanyc-ai-workspace (#1702).
 - `search_datasets`: a dataset must match every word of the query (the word, its stem or one of
   its synonyms). Before, any one word was enough, so "tax parcels" in Erie County also counted
   opioid excise tax reports: 208 matches, now 113. When no dataset has every word, the search

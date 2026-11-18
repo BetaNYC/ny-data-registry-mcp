@@ -8,7 +8,7 @@ import { datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColum
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
-import { BETANYC_INSTRUCTIONS, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
+import { annotateTools, BETANYC_INSTRUCTIONS, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
 import { registry } from "./registry.js";
 import { govBodies } from "./govbodies.js";
 import { VERSION } from "./paths.js";
@@ -139,7 +139,13 @@ const REGISTRY_ID_NOTE = "registry_id, when a row has one, is the id of the row'
 const RUNS_IT_NOTE = "runs_it names the government body that runs the site (name, government_level, classification, website), looked up by registry_id in that list; null when the row has no id, found: false when the list lacks it. runs_it_source says which copy of the list answered.";
 const STATUS_ENUM = ["live", "no-portal", "UNCONFIRMED", "dead", "any"] as const;
 
-export const TOOLS = [
+/**
+ * Every tool only reads. openWorldHint (MCP ToolAnnotations): true only for check_source, which
+ * makes one live request to a portal; the rest answer from the registry and the downloaded index.
+ */
+const LIVE_TOOLS = new Set(["check_source"]);
+
+const DOMAIN_TOOLS = [
   {
     name: "find_sources",
     description:
@@ -281,6 +287,7 @@ export const TOOLS = [
   },
   {
     name: "whats_new",
+    annotations: { title: "What's new on the portals" },
     description:
       "Datasets added, changed or removed in the index since a date, and datasets whose portal says they were updated since then. Optional portal filter. " +
       "For changes to this server itself (new tools, fixes, corrections), use whats_changed instead.",
@@ -295,9 +302,17 @@ export const TOOLS = [
       required: ["since"],
     },
   },
-  // BetaNYC standard tools: what's changed in this server, who built it, and where its data comes from.
-  ...betanyc.tools,
 ];
+
+export const TOOLS = annotateTools(
+  [
+    ...DOMAIN_TOOLS,
+    // BetaNYC standard tools: what's changed in this server, who built it, and where its data
+    // comes from. They declare their own annotations.
+    ...betanyc.tools,
+  ],
+  Object.fromEntries(DOMAIN_TOOLS.map((t) => [t.name, LIVE_TOOLS.has(t.name)])),
+);
 
 const family = z.enum(FAMILIES);
 const ARG_SHAPES = {
