@@ -6,7 +6,14 @@
 // source in full. No network: about_data reads DATA-SOURCES.json and local state only.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import "./helpers.mjs";
+
+// No index, as on CI: each catalog's date then reads "not fetched yet", the longest form. An index
+// installed on this machine must not make the sizes pass here and fail there.
+process.env.NY_DATA_INDEX = join(tmpdir(), `nydr-no-index-${process.pid}`, "ny-data-index.sqlite");
+process.env.NY_DATA_INDEX_AUTO_DOWNLOAD = "0";
 
 const { callTool, TOOLS, betanycTools } = await import("../dist/tools.js");
 const shared = betanycTools(); // the shared module's own about_data, every source in full

@@ -658,7 +658,8 @@ export const text = (v: unknown) => {
  * Every source stays reachable: about_data with its topic gives it in full.
  * To drop this layer, the shared module needs the same (reported to the workspace).
  */
-const CATALOG = (topic: string) => topic.startsWith("catalog-");
+/** A portal catalog: one per portal (catalog-*), and portal-catalogs, what the harvest does to any. */
+const CATALOG = (topic: string) => topic.startsWith("catalog-") || topic === "portal-catalogs";
 type AdSource = {
   topic: string; source: string; publisher: string; source_url: string; official: boolean;
   changed_by_betanyc: { changed: boolean; steps: string[]; detail: string | null }; as_of: string; as_of_status: string;
@@ -734,7 +735,10 @@ function aboutData(args: unknown) {
   const catalogs = sources.filter((s) => CATALOG(s.topic));
   if (sc.topic === null || catalogs.length < 2) return full;
   const keep = sources.map((s, i) => [s, parts[i + 1]] as const).filter(([s]) => !CATALOG(s.topic));
-  const line = (s: AdSource) => `- ${s.topic}: ${s.source} (${s.publisher}), ${s.source_url}, ${/^\d/.test(s.as_of) ? `as of ${s.as_of}` : `how current: ${s.as_of}`}`;
+  // Before the index is downloaded every catalog has the same undated state: say it once.
+  const sameState = catalogs.every((s) => s.as_of === catalogs[0].as_of) && !/^\d/.test(catalogs[0].as_of) ? catalogs[0].as_of : null;
+  const line = (s: AdSource) =>
+    `- ${s.topic}: ${s.source} (${s.publisher}), ${s.source_url}` + (sameState ? "" : /^\d/.test(s.as_of) ? `, as of ${s.as_of}` : `, how current: ${s.as_of}`);
   const byAnswer = new Map<string, AdSource[]>();
   for (const s of catalogs) byAnswer.set(shortAnswer(s), [...(byAnswer.get(shortAnswer(s)) ?? []), s]);
   const text = [
@@ -745,7 +749,7 @@ function aboutData(args: unknown) {
     ].join("\n"),
     ...keep.map(([, block]) => block),
     [
-      `Portal catalogs behind '${sc.topic}' (${catalogs.length}). Each is that portal's own catalog, copied by BetaNYC's nightly harvest; the portal named is the official record. For one in full (terms, credit line, caveats, where to report an error), call about_data with its topic.`,
+      `Portal catalogs behind '${sc.topic}' (${catalogs.length}). Each is that portal's own catalog, copied by BetaNYC's nightly harvest; the portal named is the official record. For one in full (terms, credit line, caveats, where to report an error), call about_data with its topic.` + (sameState ? ` How current, for all of them: ${sameState}.` : ""),
       ...[...byAnswer].flatMap(([answer, g]) => [`${answer}. This copy should not be considered the official record (${g.length}):`, ...g.map(line)]),
     ].join("\n"),
     ...tail,
