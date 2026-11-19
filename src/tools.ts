@@ -319,12 +319,22 @@ const DOMAIN_TOOLS = [
   },
 ];
 
+/** about_data's definition with its topic described as this server answers it. */
+function withShortAboutData<T extends { inputSchema: any }>(t: T): T {
+  const topic = t.inputSchema?.properties?.topic;
+  if (!topic) return t;
+  const description =
+    "A source id, or a tool name for the data behind that tool. Any case. Default: a short list of every source. \"all\": every source in full.";
+  return { ...t, inputSchema: { ...t.inputSchema, properties: { ...t.inputSchema.properties, topic: { ...topic, description } } } };
+}
+
 export const TOOLS = annotateTools(
   [
     ...DOMAIN_TOOLS,
     // BetaNYC standard tools: what's changed in this server, who built it, and where its data
-    // comes from. They declare their own annotations.
-    ...betanyc.tools,
+    // comes from. They declare their own annotations. about_data's topic says what no topic gives
+    // here (aboutData below): a short list, not every source in full.
+    ...betanyc.tools.map((t) => (t.name === "about_data" ? withShortAboutData(t) : t)),
   ],
   Object.fromEntries(DOMAIN_TOOLS.map((t) => [t.name, LIVE_TOOLS.has(t.name)])),
 );
@@ -534,8 +544,111 @@ export const text = (v: unknown) => {
   return { content: [{ type: "text", text: toolJson(hideLocalPathsDeep(v)) }] as Record<string, any>[] };
 };
 
+/**
+ * about_data, kept short. The shared module (betanyc-tools.ts 1.5.2) answers with every source
+ * in full: with no topic, all 69 (about 200,000 characters of text, and the same again as
+ * structuredContent), and for an index tool such as search_datasets, 67 of them, because each of
+ * the 60 portal catalogs is its own source and each names all the index tools. This layer works on
+ * the shared answer's own structuredContent, so the words and the outputSchema stay the shared
+ * module's; it never edits betanyc-tools.ts:
+ *   no topic: a short list, one line per source (topic, source name, publisher, official answer),
+ *     with how to ask for more. `sources` is empty; `overview` has the list.
+ *   a tool name whose sources include more than one portal catalog: BetaNYC's own sources in
+ *     full, and the catalogs one line each (topic, name, publisher, link, how current, official
+ *     answer) in `portal_catalogs`.
+ *   one source id, or "all": the shared answer, unchanged (every source in full, on request).
+ * Every source stays reachable: about_data with its topic gives it in full.
+ * To drop this layer, the shared module needs the same (reported to the workspace).
+ */
+const CATALOG = (topic: string) => topic.startsWith("catalog-");
+type AdSource = {
+  topic: string; source: string; publisher: string; source_url: string; official: boolean;
+  changed_by_betanyc: { changed: boolean; steps: string[]; detail: string | null }; as_of: string; as_of_status: string;
+};
+const kindOf = (s: AdSource) => officialKind(s.official, s.changed_by_betanyc.changed, s.changed_by_betanyc.steps);
+/** The official answer in a few words, as the shared module words its first sentence. */
+function shortAnswer(s: AdSource): string {
+  const k = kindOf(s);
+  if (k === "produced-by-betanyc") return "BetaNYC produced this";
+  if (k === "modified-by-betanyc") return `BetaNYC modified this data: ${whatWasDone(s.changed_by_betanyc.steps)}`;
+  return "BetaNYC did not modify it";
+}
+const ABOUT_DATA_MORE =
+  "For one source in full (what it is, how it is gathered, what BetaNYC did, how current it is, what it covers, terms and credit line, where to report an error), call about_data with its topic. For the sources behind one tool, give the tool's name as topic. topic \"all\" gives every source in full, which is long.";
+
+function aboutData(args: unknown) {
+  const full = betanyc.call("about_data", args);
+  const sc = full.structuredContent as Record<string, any> | undefined;
+  if (full.isError || !sc || !Array.isArray(sc.sources) || !sc.sources.length) return full;
+  const askedAll = !!args && typeof args === "object" && typeof (args as any).topic === "string" && (args as any).topic.trim().toLowerCase() === "all";
+  const sources = sc.sources as AdSource[];
+  const parts = String(full.content[0].text).split("\n\n");
+  // [head, one block per source, contact and who built it, the note when there is one]
+  if (parts.length < sources.length + 2) return full;
+  const head = parts[0].split("\n");
+  const tail = parts.slice(sources.length + 1);
+  const officialLine = head[1];
+  const fileLine = head[head.length - 1];
+
+  if (sc.topic === null && !askedAll) {
+    const groups = new Map<string, AdSource[]>();
+    for (const s of sources) {
+      const k = kindOf(s);
+      groups.set(k, [...(groups.get(k) ?? []), s]);
+    }
+    const heading: Record<string, string> = {
+      "produced-by-betanyc": "BetaNYC produced these. They are not official records:",
+      "modified-by-betanyc": "BetaNYC modified these. Each copy should not be considered the official record; the source named is:",
+      "published-as-is": "Published as is (BetaNYC did not modify them):",
+    };
+    const lines = [
+      `Where the data in ${sc.server.name} ${sc.server.version} comes from: ${sources.length} sources, listed short (topic: source, publisher).`,
+      ABOUT_DATA_MORE,
+      officialLine,
+    ];
+    for (const k of ["produced-by-betanyc", "modified-by-betanyc", "published-as-is"]) {
+      const g = groups.get(k);
+      if (!g) continue;
+      lines.push("", heading[k], ...g.map((s) => `- ${s.topic}: ${s.source} (${s.publisher})`));
+    }
+    lines.push("", fileLine);
+    const text = [lines.join("\n"), ...tail].join("\n\n");
+    const overview = sources.map((s) => ({ topic: s.topic, source: s.source, publisher: s.publisher, official_answer: kindOf(s) }));
+    return { content: [{ type: "text", text }], structuredContent: { ...sc, sources: [], overview, more: ABOUT_DATA_MORE } };
+  }
+
+  const catalogs = sources.filter((s) => CATALOG(s.topic));
+  if (sc.topic === null || catalogs.length < 2) return full;
+  const keep = sources.map((s, i) => [s, parts[i + 1]] as const).filter(([s]) => !CATALOG(s.topic));
+  const line = (s: AdSource) => `- ${s.topic}: ${s.source} (${s.publisher}), ${s.source_url}, ${/^\d/.test(s.as_of) ? `as of ${s.as_of}` : `how current: ${s.as_of}`}`;
+  const byAnswer = new Map<string, AdSource[]>();
+  for (const s of catalogs) byAnswer.set(shortAnswer(s), [...(byAnswer.get(shortAnswer(s)) ?? []), s]);
+  const text = [
+    [
+      `Where the data in ${sc.server.name} ${sc.server.version} comes from, for '${sc.topic}': ${sources.length} sources. BetaNYC's own sources in full, then ${catalogs.length} portal catalogs one line each.`,
+      officialLine,
+      fileLine,
+    ].join("\n"),
+    ...keep.map(([, block]) => block),
+    [
+      `Portal catalogs behind '${sc.topic}' (${catalogs.length}). Each is that portal's own catalog, copied by BetaNYC's nightly harvest; the portal named is the official record. For one in full (terms, credit line, caveats, where to report an error), call about_data with its topic.`,
+      ...[...byAnswer].flatMap(([answer, g]) => [`${answer}. This copy should not be considered the official record (${g.length}):`, ...g.map(line)]),
+    ].join("\n"),
+    ...tail,
+  ].join("\n\n");
+  const portal_catalogs = catalogs.map((s) => ({
+    topic: s.topic, source: s.source, publisher: s.publisher, source_url: s.source_url,
+    official_answer: kindOf(s), as_of: s.as_of,
+  }));
+  return {
+    content: [{ type: "text", text }],
+    structuredContent: { ...sc, sources: keep.map(([s]) => s), portal_catalogs, more: ABOUT_DATA_MORE },
+  };
+}
+
 export async function callTool(name: string, args: unknown) {
   // The shared tools answer in plain text plus structuredContent, and need no index.
+  if (name === "about_data") return hideLocalPathsDeep(aboutData(args));
   if (betanyc.handles(name)) return hideLocalPathsDeep(betanyc.call(name, args));
   try {
     if (INDEX_TOOLS.has(name)) await requireIndex();

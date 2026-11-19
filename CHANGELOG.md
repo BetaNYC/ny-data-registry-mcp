@@ -141,6 +141,15 @@ Dataset search matches every word of the query.
   this data: cleaned it, left some records out, reshaped it, and joined it with other data". The
   six Socrata catalogs are not cleaned. New source `portal-check`; `coverage` also names
   `whats_new`. `data.json` rebuilt.
+- `about_data` is short. With no topic it was 198,462 characters in a live check (the shared
+  module gives every source in full, and the 60 portal catalogs are one source each); now it is a
+  list of every source, one line each (topic, name, publisher, official answer), about 7,000
+  characters, with how to ask for more. With a tool's name (192,235 characters for
+  `search_datasets`, since every catalog names every index tool), BetaNYC's own sources come in
+  full and the portal catalogs one line each with their link and date (at most about 22,000
+  characters). One source, or `all`, is the shared module's answer, unchanged. This is a layer
+  over the shared module's own answer in `src/tools.ts`; `betanyc-tools.ts` is not edited. Test:
+  `test/about-data-size.test.mjs` (budgets, and every source still reachable by its topic).
 - Per-field `provenance` in harvested records: a field the harvest cleaned or chose is
   `derived`, not `portal`. ArcGIS Server, GeoBlacklight and InvenioRDM descriptions with HTML
   removed or spaces squeezed; the ArcGIS Server publisher, taken from `copyrightText`; an ArcGIS
