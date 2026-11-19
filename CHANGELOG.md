@@ -36,6 +36,8 @@ Dataset search matches every word of the query.
 
 ### Changed
 
+- The npm package leaves out `dist/publish/` (the nightly harvest's publish, gate and rollback
+  tooling, which runs from the repository): 156 files, was 184. A test checks it.
 - `search_datasets` with `export: "never"`: the automatic summary no longer says "export has
   the full list"; it says offset pages through the rest.
 - `about_data` topic `portal-catalogs` names each portal's own catalog, at the portal's address,
