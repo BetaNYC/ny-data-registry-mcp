@@ -213,7 +213,7 @@ test("F3d: a failed cache write in the registry refresh does not show this machi
         assert.equal(calls.length, 1);
         assert.ok(r.refresh_error, "the write failed");
         assert.ok(!r.refresh_error.includes(blocker), r.refresh_error);
-        assert.match(r.refresh_error, /\[cache folder\]/);
+        assert.match(r.refresh_error, /<temp>\//, "the temp folder is named <temp>");
         const info = (await callTool("registry_info", {})).content[0].text;
         assert.ok(!info.includes(blocker), "registry_info shows the cache path");
       }
@@ -241,7 +241,7 @@ test("F3d: the same for the master list of government bodies", async () => {
         assert.equal(calls.length, 1);
         assert.ok(g.refresh_error, "the write failed");
         assert.ok(!g.refresh_error.includes(blocker), g.refresh_error);
-        assert.match(g.refresh_error, /\[cache folder\]/);
+        assert.match(g.refresh_error, /<temp>\//);
       }
     );
   } finally {
@@ -252,29 +252,7 @@ test("F3d: the same for the master list of government bodies", async () => {
   }
 });
 
-test("F3d: the index path appears in the no-index error on purpose, and in no other error", async () => {
-  const idx = process.env.NY_DATA_INDEX;
-  const errors = [
-    ["how_to_query", { source_id: "nope" }],
-    ["get_dataset_columns", { dataset: "nope" }],
-    ["whats_new", { since: "soon" }],
-    ["check_source", { url: "https://nowhere.example/" }],
-  ];
-  for (const [name, args] of errors) assert.ok(!(await callTool(name, args)).content[0].text.includes(idx), name);
-  const saved = process.env.NY_DATA_INDEX;
-  const missing = join(mkdtempSync(join(tmpdir(), "nydr-none-")), "absent.sqlite");
-  const savedAuto = process.env.NY_DATA_INDEX_AUTO_DOWNLOAD;
-  process.env.NY_DATA_INDEX_AUTO_DOWNLOAD = "0";
-  process.env.NY_DATA_INDEX = missing;
-  try {
-    const { NoIndexError } = await import("../dist/datasets.js");
-    assert.match(new NoIndexError().message, new RegExp(`looked for ${missing.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
-  } finally {
-    process.env.NY_DATA_INDEX = saved;
-    if (savedAuto === undefined) delete process.env.NY_DATA_INDEX_AUTO_DOWNLOAD;
-    else process.env.NY_DATA_INDEX_AUTO_DOWNLOAD = savedAuto;
-  }
-});
+// The no-index error and registry_info's paths: test/no-personal-paths.test.mjs (post-merge fix).
 
 // ─── F7 ─────────────────────────────────────────────────────────────────────
 

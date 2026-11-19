@@ -18,7 +18,7 @@ const { TOOLS, callTool } = await import("../dist/tools.js");
 const { pruneExports, EXPORT_KEEP } = await import("../dist/exportcsv.js");
 const { CallToolResultSchema } = await import("@modelcontextprotocol/sdk/types.js");
 import { readFileSync, existsSync, mkdtempSync, writeFileSync, mkdirSync, readdirSync, utimesSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 
 const NYC_SYNTH = 431; // 430 plain + 1 tricky title
@@ -309,8 +309,12 @@ test("the MCP result carries a resource_link to the CSV and validates against th
   const link = parsed.content[1];
   assert.equal(link.type, "resource_link");
   assert.equal(link.mimeType, "text/csv");
-  assert.equal(link.uri, body.export.uri);
+  // The link is the client's handle to open the file, so it keeps the real file URI. The JSON the
+  // model reads shows the same path with the home and temp folders hidden (hideLocalPaths).
+  const { hideLocalPaths } = await import("../dist/paths.js");
   assert.match(link.uri, /^file:\/\//);
+  assert.equal(body.export.uri, hideLocalPaths(link.uri));
+  assert.ok(!body.export.path.includes(tmpdir()) && !body.export.path.includes(homedir()), body.export.path);
   assert.equal(link.size, body.export.bytes);
   const small = await callTool("search_datasets", { query: "zoning" });
   assert.equal(small.content.length, 1, "no file, no link");

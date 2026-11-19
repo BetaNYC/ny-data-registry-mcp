@@ -12,7 +12,7 @@ import { indexStatus } from "./refresh.js";
 import { annotateTools, BETANYC_INSTRUCTIONS, provenance, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
 import { registry } from "./registry.js";
 import { govBodies } from "./govbodies.js";
-import { REGISTRY_PAGE, VERSION } from "./paths.js";
+import { hideLocalPaths, hideLocalPathsDeep, REGISTRY_PAGE, VERSION } from "./paths.js";
 import { topicRules } from "./topics.js";
 import { STANDARDS } from "./standards/build.js";
 
@@ -381,8 +381,20 @@ type Prov = ReturnType<typeof provenance>;
 const cite = (p: Prov) => ({ ...p.provenance, cite: p.text });
 /** Where a modified copy is held: named next to the official record in a dataset's data_source. */
 const HELD_IN = { source: "NY Data Registry index", publisher: "BetaNYC", source_url: INDEX_RELEASES_PAGE };
+/** What BetaNYC did to make the registry, in the same terms as about_data (portal-registry). */
+const REGISTRY_MADE = "compiled and maintains this registry of New York data portals, checking each portal and recording what it finds";
+/** Registry answers (find_sources, list_sources_for_place, how_to_query, registry_info, and the
+ * registry half of check_source): BetaNYC's NY Data Portal Registry, which BetaNYC produced, as of
+ * its `generated` date. about_data gives portal-registry as produced by BetaNYC; this agrees. */
 const registrySource = () =>
-  provenance({ sourceName: "NY Data Portal Registry", publisher: "BetaNYC", sourceUrl: REGISTRY_PAGE, kind: "snapshot", asOf: registry().generated || null });
+  provenance({
+    sourceName: "NY Data Portal Registry",
+    publisher: "BetaNYC",
+    sourceUrl: REGISTRY_PAGE,
+    kind: "snapshot",
+    asOf: registry().generated || null,
+    changedByBetanyc: { kind: "produced-by-betanyc", detail: REGISTRY_MADE },
+  });
 /** What BetaNYC did to build the index, in the same terms as about_data (DATA-SOURCES.json). */
 const INDEX_BUILT =
   "built this index from the catalogs of New York's open data portals, keeping data records only, dropping records outside New York, and reshaping and joining them with its portal list. Each dataset's own page on its portal is its official record";
@@ -444,19 +456,22 @@ const withSource = (body: unknown, p: Prov) =>
 
 /** Keys this package reads from env. No error text repeats them (#39). */
 const secrets = () => [process.env.SOCRATA_APP_TOKEN, process.env.GITHUB_TOKEN];
-/** An isError result: a plain sentence, stack lines dropped, keys redacted (#43). */
-const fail = (message: string) => toolError(message, { secrets: secrets() });
+/** An isError result: a plain sentence, stack lines dropped, keys redacted (#43), and no
+ * personal folder (hideLocalPaths: the home folder reads "~"). */
+const fail = (message: string) => toolError(hideLocalPaths(message), { secrets: secrets() });
 
 /** The JSON answer, or an isError result when the answer is a failure and nothing else (failureOf). */
 export const text = (v: unknown) => {
   const err = failureOf(v);
   if (err !== null) return fail(err);
-  return { content: [{ type: "text", text: toolJson(v) }] as Record<string, any>[] };
+  // No tool answer carries a personal folder: every string, at any depth, has the home folder as
+  // "~" and the temp folder as "<temp>" (index.path, index_download.path, export.path, errors).
+  return { content: [{ type: "text", text: toolJson(hideLocalPathsDeep(v)) }] as Record<string, any>[] };
 };
 
 export async function callTool(name: string, args: unknown) {
   // The shared tools answer in plain text plus structuredContent, and need no index.
-  if (betanyc.handles(name)) return betanyc.call(name, args);
+  if (betanyc.handles(name)) return hideLocalPathsDeep(betanyc.call(name, args));
   try {
     if (INDEX_TOOLS.has(name)) await requireIndex();
     switch (name) {
@@ -474,8 +489,12 @@ export async function callTool(name: string, args: unknown) {
       case "check_source": {
         const a = parseToolArgs("check_source", args);
         if (!a.source_id && !a.registry_id && !a.url) throw new Error("give one of source_id, registry_id or url");
-        const r = await checkSource(a);
-        return text(withSource(r, checkSourceSource(r as Record<string, any>)));
+        const r = (await checkSource(a)) as Record<string, any>;
+        const out = withSource(r, checkSourceSource(r)) as Record<string, any>;
+        // A live check cites the portal it reached (data_source). The registry row it was compared
+        // with is BetaNYC's, and is cited on its own (registry_source), so the two never blur.
+        if (out?.data_source && out.data_source.source_url !== REGISTRY_PAGE) out.registry_source = cite(registrySource());
+        return text(out);
       }
       case "registry_info":
         parseToolArgs("registry_info", args);

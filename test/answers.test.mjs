@@ -152,3 +152,61 @@ test("index answers say BetaNYC built the index; a dataset's record says BetaNYC
   const ad = betanycTools().call("about_data", { topic: "get_dataset_columns" }).content[0].text;
   assert.match(ad, /BetaNYC modified this data: .*This copy should not be considered the official record/);
 });
+
+// Post-merge (epic #33): every tool's answer says what about_data says for that tool. Where
+// about_data gives a source BetaNYC modified or produced, the answer says BetaNYC modified or
+// produced it, with a kind about_data also gives.
+test("each tool's answer agrees with about_data on whether BetaNYC modified or produced its data", async () => {
+  const { betanycTools } = await import("../dist/tools.js");
+  const { officialKind } = await import("../dist/betanyc-tools.js");
+  const argsFor = Object.fromEntries(CALLS.map(([n, a]) => [n, a]));
+  let walked = 0;
+  for (const t of TOOLS) {
+    const ad = betanycTools().call("about_data", { topic: t.name });
+    if (ad.isError) {
+      assert.ok(["whats_changed", "about_betanyc", "about_data"].includes(t.name), `${t.name}: ${ad.content[0].text}`);
+      continue; // the three shared tools describe this server, not data
+    }
+    const told = new Set(ad.structuredContent.sources.map((s) => officialKind(s.official, s.changed_by_betanyc?.changed ?? false, s.changed_by_betanyc?.steps ?? [])));
+    const b = await call(t.name, argsFor[t.name]);
+    const said = [b.data_source, b.registry_source].filter(Boolean).map((s) => s.changed_by_betanyc?.kind).filter(Boolean);
+    if ([...told].some((k) => k !== "published-as-is")) assert.ok(said.length, `${t.name}: about_data says ${[...told]}, the answer says nothing`);
+    for (const k of said) assert.ok(told.has(k), `${t.name} says ${k}; about_data says ${[...told]}`);
+    for (const s of [b.data_source, b.registry_source].filter(Boolean)) {
+      if (s.changed_by_betanyc?.kind === "produced-by-betanyc") assert.match(s.cite, /^BetaNYC produced this\. It is not an official record\./, t.name);
+      if (s.changed_by_betanyc?.kind === "modified-by-betanyc") assert.match(s.cite, /^BetaNYC modified this data: /, t.name);
+    }
+    walked++;
+  }
+  assert.equal(walked, 10, "the ten registry and index tools");
+});
+
+test("registry answers say BetaNYC produced the registry; check_source keeps the live check apart from it", async () => {
+  for (const [name, args] of [["find_sources", { query: "health" }], ["list_sources_for_place", { place: "Erie County" }], ["how_to_query", { entity: "Nassau County" }], ["registry_info", {}], ["check_source", { source_id: "nys-department-of-health" }]]) {
+    const s = (await call(name, args)).data_source;
+    assert.equal(s.source, "NY Data Portal Registry", name);
+    assert.equal(s.changed_by_betanyc.kind, "produced-by-betanyc", name);
+    assert.match(s.cite, /^BetaNYC produced this\. It is not an official record\. What BetaNYC did: compiled and maintains this registry of New York data portals/, name);
+  }
+  // A check that reached the portal: data_source is the portal, fetched now (published as is);
+  // registry_source is the BetaNYC registry row it was compared with.
+  const realFetch = globalThis.fetch;
+  const saved = process.env.NY_DATA_OFFLINE;
+  process.env.NY_DATA_OFFLINE = "0";
+  globalThis.fetch = async () => new Response("<html></html>", { status: 200 });
+  resetHttpState();
+  try {
+    const b = await call("check_source", { source_id: "nys-department-of-health" });
+    assert.equal(b.checked, true);
+    assert.equal(b.data_source.as_of_kind, "retrieved");
+    assert.equal(b.data_source.changed_by_betanyc, undefined, "the live check is the portal's own reply");
+    assert.match(b.data_source.cite, /^Source: .*Fetched from the source for this answer/);
+    assert.equal(b.registry_source.source, "NY Data Portal Registry");
+    assert.equal(b.registry_source.changed_by_betanyc.kind, "produced-by-betanyc");
+    assert.notEqual(b.registry_source.cite, b.data_source.cite);
+  } finally {
+    globalThis.fetch = realFetch;
+    process.env.NY_DATA_OFFLINE = saved;
+    resetHttpState();
+  }
+});

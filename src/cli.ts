@@ -19,7 +19,7 @@ import { loadLocal, refreshRegistry, setRegistry } from "./registry.js";
 import { buildCoverage, coverageMarkdown } from "./coverage.js";
 import { buildParcelTable, parcelMarkdown, type ParcelSources } from "./parcels.js";
 import { refreshGovBodies } from "./govbodies.js";
-import { indexInfo } from "./datasets.js";
+import { indexInfo, NoIndexError } from "./datasets.js";
 import { runEval } from "./eval.js";
 import { downloadIndex, indexUrl } from "./fetchindex.js";
 import { checkForUpdate, UPDATE_EXIT_CODES } from "./refresh.js";
@@ -69,7 +69,15 @@ if (cmd === "update") {
   console.log(JSON.stringify(head, null, 2));
   console.log(`portals: ${portals.length} entries (see --stats-out for detail)`);
 } else if (cmd === "eval") {
-  const res = await runEval();
+  let res: Awaited<ReturnType<typeof runEval>>;
+  try {
+    res = await runEval();
+  } catch (e) {
+    // No index: say so plainly (the message names where it looked and how to get it), no stack.
+    if (!(e instanceof NoIndexError)) throw e;
+    console.error(e.message);
+    process.exit(1);
+  }
   const out = arg("out");
   if (out) {
     mkdirSync(dirname(out), { recursive: true });
