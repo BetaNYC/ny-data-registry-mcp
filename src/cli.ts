@@ -5,7 +5,7 @@
  * ny-data-registry stats
  * ny-data-registry download [--force]
  * ny-data-registry update [--check]
- * ny-data-registry topics [--crosswalk-out file.csv]
+ * ny-data-registry topics [--crosswalk-out file.csv] [--index path]
  * ny-data-registry coverage [--json] [--out file] [--index path] [--refresh]
  * ny-data-registry parcels [--json] [--out file] [--index path] [--refresh]
  * ny-data-registry standards [--out-dir dir]
@@ -93,11 +93,17 @@ if (cmd === "update") {
   process.exitCode = res.passed ? 0 : 1;
 } else if (cmd === "topics") {
   // Rebuild the topics on an existing index (the harvest does this itself) and report coverage.
-  if (!indexExists()) {
-    console.error(`no index at ${indexPath()}; run download or harvest first`);
+  // It writes to the index, so an option it does not know is an error, never ignored.
+  const path = arg("index") ?? indexPath();
+  const extra = process.argv.slice(3).filter((a, i, all) => !["--crosswalk-out", "--index"].includes(a.startsWith("--") ? a : all[i - 1]));
+  if (extra.length) {
+    console.error(`unknown option(s) for topics: ${extra.join(" ")}\nusage: ny-data-registry topics [--crosswalk-out file.csv] [--index path]`);
+    process.exitCode = 2;
+  } else if (!indexExists(path)) {
+    console.error(`no index at ${path}; run download or harvest first`);
     process.exitCode = 1;
   } else {
-    const db = openDb();
+    const db = openDb(path);
     const t = buildTopics(db);
     const out = arg("crosswalk-out");
     if (out) {

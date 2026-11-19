@@ -379,7 +379,8 @@ Search by topic. See [#18](https://github.com/BetaNYC/ny-data-registry-mcp/issue
   `data/topic-hand-assigned.json` (broad and ambiguous words, each with a reason). The harvest
   rebuilds every dataset's topics at the end of each run, and each published index carries
   `topic-crosswalk.csv` (every portal label and its topics). `ny-data-registry topics` rebuilds
-  them on a local index. New `topics` and `dataset_topics` tables; the schema version is
+  them on a local index (`--index path` for another one; an option it does not know is refused,
+  exit 2, never ignored). New `topics` and `dataset_topics` tables; the schema version is
   unchanged, so older servers still read new indexes. Method: `docs/topics.md`.
 
 Standard metadata. See [#17](https://github.com/BetaNYC/ny-data-registry-mcp/issues/17) (epic
