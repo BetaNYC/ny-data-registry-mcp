@@ -162,9 +162,13 @@ Dataset search matches every word of the query.
   characters, with how to ask for more. With a tool's name (192,235 characters for
   `search_datasets`, since every catalog names every index tool), BetaNYC's own sources come in
   full and the portal catalogs one line each with their link and date (at most about 22,000
-  characters). One source, or `all`, is the shared module's answer, unchanged. This is a layer over
-  the shared module's own answer in `src/tools.ts`; `betanyc-tools.ts` is not edited. Test:
-  `test/about-data-size.test.mjs` (budgets, and every source still reachable by its topic).
+  characters). One source, or `all`, is the shared module's answer, unchanged. The name of one of
+  the three shared tools (`whats_changed`, `about_betanyc`, `about_data`), which the shared module
+  answers with an error, gets a short answer saying that tool uses no data source, so the topic
+  description ("a source id, or any tool's name") is true. This is a layer over the shared
+  module's own answer in `src/tools.ts`; `betanyc-tools.ts` is not edited. Test:
+  `test/about-data-size.test.mjs` (budgets, every source still reachable by its topic, and every
+  tool name answered).
 - Per-field `provenance` in harvested records: a field the harvest cleaned or chose is
   `derived`, not `portal`. ArcGIS Server, GeoBlacklight and InvenioRDM descriptions with HTML
   removed or spaces squeezed; the ArcGIS Server publisher, taken from `copyrightText`; an ArcGIS

@@ -324,7 +324,7 @@ function withShortAboutData<T extends { inputSchema: any }>(t: T): T {
   const topic = t.inputSchema?.properties?.topic;
   if (!topic) return t;
   const description =
-    "A source id, or a tool name for the data behind it. Any case. Default: a short list of all sources; \"all\": each in full.";
+    "A source id, or any tool's name for the data behind it. Any case. Default: a short list of all sources; \"all\": each in full.";
   return { ...t, inputSchema: { ...t.inputSchema, properties: { ...t.inputSchema.properties, topic: { ...topic, description } } } };
 }
 
@@ -674,7 +674,23 @@ function shortAnswer(s: AdSource): string {
 const ABOUT_DATA_MORE =
   "For one source in full (what it is, how it is gathered, what BetaNYC did, how current it is, what it covers, terms and credit line, where to report an error), call about_data with its topic. For the sources behind one tool, give the tool's name as topic. topic \"all\" gives every source in full, which is long.";
 
+/** The three shared tools describe this server, not data: about_data with one of their names says
+ * so (the shared module answers "no data topic or tool named …"). */
+const SERVER_TOOLS: Record<string, string> = {
+  whats_changed: "whats_changed reads this server's WHATS-CHANGED.md, its own record of changes. It uses no data source.",
+  about_betanyc: "about_betanyc says who built this server and how to reach BetaNYC. It uses no data source.",
+  about_data: "about_data reads this server's DATA-SOURCES.json, the list of its data sources. Call it with no topic for that list.",
+};
 function aboutData(args: unknown) {
+  const asked = args && typeof args === "object" && typeof (args as any).topic === "string" ? (args as any).topic.trim().toLowerCase() : "";
+  if (Object.hasOwn(SERVER_TOOLS, asked) && Object.keys(args as object).length === 1) {
+    const base = betanyc.call("about_data", {});
+    const sc = base.structuredContent as Record<string, any> | undefined;
+    if (!base.isError && sc) {
+      const note = `${SERVER_TOOLS[asked]} ${ABOUT_DATA_MORE}`;
+      return { content: [{ type: "text", text: note }], structuredContent: { ...sc, topic: asked, sources: [], note } };
+    }
+  }
   const full = betanyc.call("about_data", args);
   const sc = full.structuredContent as Record<string, any> | undefined;
   if (full.isError || !sc || !Array.isArray(sc.sources) || !sc.sources.length) return full;

@@ -87,3 +87,22 @@ test("about_data's topic says a short list is the default", () => {
   assert.match(d, /"all": each in full/);
   assert.doesNotMatch(d, /Default: all/);
 });
+
+// Round 2 (finding 4): the topic description says "any tool's name". The shared module answers the
+// three shared tools' names with an error ("no data topic or tool named …"), so this server's layer
+// answers them: they describe the server, not data, and use no data source.
+test("about_data with a shared tool's name says it uses no data source, instead of an error", async () => {
+  const d = TOOLS.find((t) => t.name === "about_data").inputSchema.properties.topic.description;
+  assert.match(d, /any tool's name/);
+  for (const name of ["whats_changed", "about_betanyc", "about_data", "About_Data"]) {
+    assert.equal(shared.call("about_data", { topic: name }).isError, true, `the shared module still errors on ${name}`);
+    const r = await ask({ topic: name });
+    fitsSchema(r.structuredContent);
+    assert.equal(r.structuredContent.topic, name.toLowerCase());
+    assert.deepEqual(r.structuredContent.sources, []);
+    assert.match(r.content[0].text, name.toLowerCase() === "about_data" ? /DATA-SOURCES\.json/ : /uses no data source/);
+  }
+  // Every tool name gets an answer, not an error; a name that is no tool or source still errors.
+  for (const t of TOOLS) assert.notEqual((await callTool("about_data", { topic: t.name })).isError, true, t.name);
+  assert.equal((await callTool("about_data", { topic: "no_such_tool" })).isError, true);
+});
