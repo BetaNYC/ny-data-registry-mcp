@@ -104,10 +104,8 @@ function countedFrom(...lists: CountRow[][]): Counted {
   }
   return c;
 }
-/** Marks an answer with what it counted (`markCounted(v, countedFrom(rows))` or the rows). */
-export function markCounted<T extends object>(v: T, ...lists: (CountRow[] | Counted)[]): T {
-  const c = lists.length === 1 && !Array.isArray(lists[0]) ? (lists[0] as Counted) : countedFrom(...(lists as CountRow[][]));
-  Object.defineProperty(v, COUNTED, { value: c, enumerable: false });
+export function markCounted<T extends object>(v: T, ...lists: CountRow[][]): T {
+  Object.defineProperty(v, COUNTED, { value: countedFrom(...lists), enumerable: false });
   return v;
 }
 /**
@@ -527,8 +525,8 @@ export function searchDatasets(a: SearchArgs) {
   const orderExpr = fq ? rankExpr : "-COALESCE(d.views, 0)";
   const ctx: SearchCtx = { d, joins, whereSql, from, bindAll: bind(null), orderExpr, scored, a, total };
   // Every match, by portal: total_matches, the groups and the export count them all.
-  const counted = countedFrom(d.prepare(`SELECT d.portal_id AS portal_id, ${HAND_KEPT_SQL("d.native_id")} AS hk, COUNT(*) AS n ${from} GROUP BY 1, 2`).all(...bind(null)) as CountRow[]);
-  const reserve = sourcesBytes(counted);
+  const counted = d.prepare(`SELECT d.portal_id AS portal_id, ${HAND_KEPT_SQL("d.native_id")} AS hk, COUNT(*) AS n ${from} GROUP BY 1, 2`).all(...bind(null)) as CountRow[];
+  const reserve = sourcesBytes(countedFrom(counted));
   fitBudget = Math.max(RESPONSE_BUDGET_BYTES - reserve, MIN_FIT_BYTES);
   answerLimit = fitBudget + reserve;
 
@@ -585,11 +583,12 @@ export function searchDatasets(a: SearchArgs) {
   let groups: GroupRow[] | null = null;
   if (!pagingByHand && (overLimit || overBudget)) {
     groups = computeGroups(ctx, "portal", 3);
+    const rest = exportMode === "never" ? "and offset pages through the rest (export is off)." : "and export has the full list.";
     const summary = {
       auto_grouped: true,
       auto_grouped_reason: overLimit
-        ? `${total} datasets match, more than the reply's row limit (${limit}). Every match is counted by portal in groups; the best-ranked rows follow in results, and export has the full list.`
-        : `${total} datasets match, more than fit in this reply's ${answerLimit}-byte budget. Every match is counted by portal in groups; the best-ranked rows follow in results, and export has the full list.`,
+        ? `${total} datasets match, more than the reply's row limit (${limit}). Every match is counted by portal in groups; the best-ranked rows follow in results, ${rest}`
+        : `${total} datasets match, more than fit in this reply's ${answerLimit}-byte budget. Every match is counted by portal in groups; the best-ranked rows follow in results, ${rest}`,
       group_by: "portal",
       group_key: "portal_id",
       group_count: groups.length,
@@ -597,9 +596,9 @@ export function searchDatasets(a: SearchArgs) {
       groups,
     };
     // put the summary ahead of the rows, so a reader meets it first
-    const rest = { ...resp };
+    const rows = { ...resp };
     for (const k of Object.keys(resp)) delete resp[k];
-    Object.assign(resp, head, summary, rest);
+    Object.assign(resp, head, summary, rows);
   }
   if (exportMode === "always" || (exportMode === "auto" && groups !== null)) attachExport(ctx, resp);
   if (groups) fitSummary(resp, results, groups);
@@ -619,6 +618,7 @@ export function searchDatasets(a: SearchArgs) {
     results.pop();
     noteOmitted();
   }
+  if (groups && byteSize(resp) > fitBudget) fitGroups(resp, groups, null);
   return markCounted(resp, counted);
 }
 
@@ -681,6 +681,17 @@ function groupNote(by: GroupBy): string {
 }
 
 /** Group mode: shorten the title lists first, then drop the smallest groups (counted, never silently). */
+/** Groups left out so far (never printed), so a second fitting pass counts them all. */
+const LEFT_OUT = Symbol("groups left out");
+/** The call that lists one left-out group, by what the search was grouped by. */
+const GROUP_FILTER: Record<string, (k: string) => [string, string]> = {
+  portal: (k) => ["portal", k], entity: (k) => ["portal", k], county: (k) => ["place", `${k} County`], platform_family: (k) => ["platform_family", k],
+};
+/**
+ * Fits groups into the budget. Every group's count is the answer, so it goes last: first the
+ * titles, then each group's entity, registry_id and empty title list, then rows (to one), and only
+ * then the smallest groups, with a note saying how many, which, and the call that lists one.
+ */
 function fitGroups(resp: Record<string, unknown>, groups: GroupRow[], results: unknown[] | null): void {
   let n = Number(resp.top_per_group);
   while (n > 0 && byteSize(resp) > fitBudget) {
@@ -689,14 +700,20 @@ function fitGroups(resp: Record<string, unknown>, groups: GroupRow[], results: u
     resp.top_per_group = n;
     resp.groups_size_note = `Titles per group cut to ${n} to keep the answer under ${answerLimit} bytes.`;
   }
-  let dropped = 0;
-  while (groups.length > 1 && byteSize(resp) > fitBudget) {
-    groups.pop();
-    dropped++;
-    resp.groups_omitted_for_size = dropped;
-    resp.groups_size_note = `${dropped} smallest group(s) and the per-group titles were left out to keep the answer under ${answerLimit} bytes.${resp.export ? " The export CSV has every match." : " Add a filter (place, portal, platform_family) to see them."}`;
+  if (byteSize(resp) > fitBudget) {
+    for (const g of groups) for (const k of Object.keys(g)) if (!["key", "portal", "matches"].includes(k)) delete g[k];
+    resp.groups_size_note = `Titles, entity and registry_id per group left out to keep the answer under ${answerLimit} bytes; every group's count is here.`;
   }
-  void results;
+  while (results && results.length > 1 && byteSize(resp) > fitBudget) results.pop();
+  const out: GroupRow[] = ((resp as Record<symbol, GroupRow[]>)[LEFT_OUT] ??= []);
+  while (groups.length > 1 && byteSize(resp) > fitBudget) out.push(groups.pop()!);
+  if (out.length) {
+    const [arg, value] = GROUP_FILTER[String(resp.group_by)](out[0].key);
+    resp.groups_omitted_for_size = out.length;
+    resp.groups_size_note =
+      `${out.length} smallest group(s), ${out.reduce((a, g) => a + g.matches, 0)} matches (${out.slice(0, 3).map((g) => g.key).join(", ")}${out.length > 3 ? ", …" : ""}), were left out to keep the answer under ${answerLimit} bytes. ` +
+      `search_datasets with the same arguments and ${arg}: ${JSON.stringify(value)} lists one${resp.export ? "; export.path has every match" : ""}.`;
+  }
 }
 
 /**
@@ -728,7 +745,7 @@ function fitSummary(resp: Record<string, unknown>, results: unknown[], groups: G
   // with a match). The best-ranked rows are the answer, so keep them and leave out the smallest
   // groups instead; the export CSV and data_sources still cover every match.
   set(0, floor);
-  fitGroups(resp, groups, null);
+  fitGroups(resp, groups, results);
 }
 
 const CSV_HEADER = [

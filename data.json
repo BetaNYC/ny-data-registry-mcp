@@ -157,11 +157,11 @@
       ]
     },
     {
-      "@id": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+      "@id": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses",
       "@type": "Dataset",
-      "title": "New York open data portal catalogs",
-      "description": "New York open data portal catalogs, published by The government or institution that runs each portal.",
-      "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+      "title": "Each portal's own catalog, at the portal's address",
+      "description": "Each portal's own catalog, at the portal's address, published by The government or institution that runs the portal.",
+      "identifier": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses",
       "contactPoint": {
         "@type": "Kind",
         "fn": "BetaNYC (lists this dataset; report errors in the data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues)",
@@ -169,12 +169,12 @@
       },
       "publisher": {
         "@type": "Organization",
-        "name": "The government or institution that runs each portal"
+        "name": "The government or institution that runs the portal"
       },
       "landingPage": {
         "@type": "Document",
-        "title": "New York open data portal catalogs",
-        "accessURL": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest"
+        "title": "Each portal's own catalog, at the portal's address",
+        "accessURL": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses"
       },
       "page": [
         {
@@ -2782,11 +2782,11 @@
       },
       "source": [
         {
-          "@id": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+          "@id": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses",
           "@type": "Dataset",
-          "title": "New York open data portal catalogs",
-          "description": "New York open data portal catalogs, published by The government or institution that runs each portal.",
-          "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+          "title": "Each portal's own catalog, at the portal's address",
+          "description": "Each portal's own catalog, at the portal's address, published by The government or institution that runs the portal.",
+          "identifier": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses",
           "contactPoint": {
             "@type": "Kind",
             "fn": "BetaNYC (lists this dataset; report errors in the data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues)",
@@ -2794,12 +2794,12 @@
           },
           "publisher": {
             "@type": "Organization",
-            "name": "The government or institution that runs each portal"
+            "name": "The government or institution that runs the portal"
           },
           "landingPage": {
             "@type": "Document",
-            "title": "New York open data portal catalogs",
-            "accessURL": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest"
+            "title": "Each portal's own catalog, at the portal's address",
+            "accessURL": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses"
           },
           "page": [
             {
@@ -2815,7 +2815,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: New York open data portal catalogs (The government or institution that runs each portal), https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Each portal's own catalog, at the portal's address (The government or institution that runs the portal), https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row. On most platforms (ArcGIS, ArcGIS Server, GeoBlacklight, InvenioRDM) it also removes HTML from descriptions; Socrata values are kept as the portal gives them."
       ],

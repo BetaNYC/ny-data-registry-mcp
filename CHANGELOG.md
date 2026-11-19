@@ -36,6 +36,10 @@ Dataset search matches every word of the query.
 
 ### Changed
 
+- `search_datasets` with `export: "never"`: the automatic summary no longer says "export has
+  the full list"; it says offset pages through the rest.
+- `about_data` topic `portal-catalogs` names each portal's own catalog, at the portal's address,
+  as the official record, not this repository's README.
 - The `registry_id` and `runs_it` notes, repeated in five tool descriptions, are said once in the
   server instructions, with a line about `data_source`. The tool-list budget drops to 26,500
   characters (25,947 measured; 26,370 with the review fixes below), and a test fails if any
@@ -136,13 +140,15 @@ Dataset search matches every word of the query.
   (`answerSources`) turns them, and every `dataset_id` and `portal_id` in the answer, into
   sources. Before, `search_datasets` with `group_by: "portal"` named only `coverage` ("BetaNYC
   produced this"), and its automatic summary only the portals of the listed rows. Test:
-  `test/answer-sources.test.mjs`. A search's size budget (about 20 KB) now covers its sources:
-  rows and group titles are cut to leave room for them; when a search matches so many portals
-  that their sources take most of it, the reply keeps 8,000 bytes of rows and groups and its size
-  note gives the larger limit it kept to (on the 2026-11-05 index, a 30-portal search such as
-  "parcels" is about 20.8 KB). The best-ranked rows are kept first: when even untitled groups do
-  not fit, the smallest groups are left out, not the rows (the export has every match). The tool description says replies "aim for" about 20 KB. Test:
-  `test/search-budget-sources.test.mjs`.
+  `test/answer-sources.test.mjs`. A search's size budget (about 20 KB) now covers its sources.
+  Every group's count is kept, as in 0.3.0: to fit, a reply cuts group titles, then each
+  group's `entity`, `registry_id` and title list (its portal and count stay), then rows down to
+  one, and only then the smallest groups, with `groups_size_note` saying how many, which, and
+  the call that lists one. With 60 portals (about the published index's size) a grouped search
+  shows all 60 counts and names all 60 portals within 20,000 bytes. When a search matches so
+  many portals that their sources take most of the budget, the reply keeps 8,000 bytes of rows
+  and groups and its size note gives the larger limit it kept to. The tool description says
+  replies "aim for" about 20 KB. Test: `test/search-budget-sources.test.mjs`.
 - A portal with no entry of its own in `DATA-SOURCES.json` (the index is rebuilt every night,
   the list of sources only with a release, so a portal the registry adds or renames after a
   release has none) still says "BetaNYC modified this data", naming the portal, its publisher and
@@ -218,7 +224,9 @@ Dataset search matches every word of the query.
   produced this. It is not an official record." Anything an answer shows from a portal's catalog
   starts "BetaNYC modified this data: …" and ends with the portal as the official record. When
   an answer draws on more than one source, `data_sources` lists every one, grouped by what it
-  says (`says`), each with its `about_data_topic`, name, publisher, link and date.
+  says (`says`, once per group), one short line each with only what differs: `"<about_data
+  topic>: <name> (<publisher>), <link>"`, about 120 to 140 bytes per portal (a portal is one
+  line however many rows it has, keyed on its portal id).
 - `about_data`, the third BetaNYC standard tool (betanyc-ai-workspace #1672): where each kind
   of data comes from, from `DATA-SOURCES.json`. 70 sources: one for each of the 60 portals the
   harvest reads, published by the government or institution that runs it (the platform, such as

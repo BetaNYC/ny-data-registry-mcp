@@ -9,7 +9,7 @@ import { COLUMNS_DEFAULT, COLUMNS_MAX, COUNTED, countedOf, datasetStandard, db, 
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
-import { annotateTools, BETANYC_INSTRUCTIONS, provenance, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED, officialKind, whatWasDone } from "./betanyc-tools.js";
+import { annotateTools, BETANYC_INSTRUCTIONS, builtFrom, provenance, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED, officialKind, whatWasDone } from "./betanyc-tools.js";
 import { registry } from "./registry.js";
 import { govBodies } from "./govbodies.js";
 import { hideLocalPaths, hideLocalPathsDeep, REGISTRY_PAGE, VERSION } from "./paths.js";
@@ -232,7 +232,7 @@ const DOMAIN_TOOLS = [
     description:
       "Search dataset titles, descriptions, tags and column names across the harvested Socrata and ArcGIS portals in New York (needs the harvested index). Filter by topic, place, portal, platform family, download format (csv, geojson, shapefile, kml, api, xlsx) or last-updated date. " +
       "topic is one of 24 shared topics (list_topics), assigned from each dataset's own categories, tags and department; a dataset can have several. Give a query, a topic, or both; a topic alone lists that topic, most-viewed first. Rows carry their topic ids. " +
-      "One call gives the whole answer. total_matches is the true number of matching datasets. When they all fit, the reply lists them. When they do not, the reply summarizes every match by portal (count and top titles per portal, auto_grouped: true), lists the best-ranked rows that fit, and writes every match to a CSV file on this machine (export.path, export.rows; also a resource_link). " +
+      "One call gives the whole answer. total_matches is the true number of matching datasets. When they all fit, the reply lists them. When they do not, the reply counts every match by portal (auto_grouped: true; top titles when room; groups_size_note says what was cut), lists the best-ranked rows that fit, and writes every match to a CSV (export.path, export.rows; also a resource_link). " +
       "Use group_by to summarize by entity, county or platform_family instead. " +
       "Rows are compact (id, name, portal, type, update date, link, formats); detail: 'full' adds description, API endpoint, views, column count and, for Socrata, the domain + 4x4 to hand to the `socrata` MCP. " +
       `Replies aim for about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
@@ -576,34 +576,31 @@ function answerSources(body: unknown, o: { lead?: (Cited | null)[]; also?: Cited
  * official record." or "BetaNYC produced this. It is not an official record."). */
 const saysOf = (c: Cited) =>
   c.cite.match(/^(BetaNYC modified this data: .*?This copy should not be considered the official record\.|BetaNYC produced this\. It is not an official record\.)/)?.[1] ?? c.cite;
+/** What every source in a data_sources group says: about_data's words, then, for portal catalogs,
+ * where the official record is, and for portals with no entry of their own, that note. */
+const groupSays = (s: Cited) =>
+  saysOf(s) +
+  (s.portal_id ? " Each portal below is the official record." : "") +
+  (s.about_data_topic === ANY_CATALOG ? ` This server's about_data has no entry of its own for these portals yet; topic ${ANY_CATALOG} says what BetaNYC does to every catalog.` : "");
 /**
  * Adds the answer's sources. `data_source` is the main one in full (with `cite`). When there is
- * more than one, `data_sources` lists every one, grouped by what it says, each with its
- * about_data_topic, name, publisher, link and date: an answer counting 60 portals stays short.
- * A failure gets none.
+ * more than one, `data_sources` lists every one, grouped by what it says (said once per group),
+ * one line each with only what differs: "<about_data topic>: <name> (<publisher>), <link>".
+ * A portal is one source however many rows it has (keyed on its portal id). A failure gets none.
  */
 function withSources(body: unknown, sources: Cited[]): unknown {
   if (!body || typeof body !== "object" || failureOf(body) !== null || !sources.length) return body;
-  const seen = new Set<string>();
-  const all = sources.filter((s) => {
-    const key = `${s.about_data_topic}|${s.source}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-  if (all.length === 1) return { ...(body as object), data_source: all[0] };
-  const groups = new Map<string, Record<string, unknown>[]>();
-  for (const s of all) {
-    const says = saysOf(s);
-    const item: Record<string, unknown> = { about_data_topic: s.about_data_topic, source: s.source, publisher: s.publisher, source_url: s.source_url, as_of: s.as_of };
-    if (s.portal_id) item.portal_id = s.portal_id;
-    if (s.about_data_note) item.about_data_note = s.about_data_note;
-    groups.set(says, [...(groups.get(says) ?? []), item]);
+  const groups = new Map<string, Map<string, string>>();
+  for (const s of sources) {
+    const g = groups.get(groupSays(s)) ?? new Map<string, string>();
+    groups.set(groupSays(s), g);
+    g.set(s.portal_id ?? `${s.about_data_topic}|${s.source}`, `${s.about_data_topic}: ${builtFrom(s.source, s.publisher)}, ${s.source_url}`);
   }
-  return { ...(body as object), data_source: all[0], data_sources: [...groups].map(([says, items]) => ({ says, sources: items })) };
+  const out = { ...(body as object), data_source: sources[0] };
+  return [...groups.values()].reduce((n, g) => n + g.size, 0) === 1 ? out : { ...out, data_sources: [...groups].map(([says, g]) => ({ says, sources: [...g.values()] })) };
 }
 const withSource = (body: unknown, s: Cited) => withSources(body, [s]);
-const SOURCES_MARGIN_BYTES = 400;
+const SOURCES_MARGIN_BYTES = 150;
 /** How many bytes a search answer's sources take, for the portals it counted: the search keeps
  * its rows and groups to what is left of its size budget (datasets.ts, setSourcesBytes). */
 setSourcesBytes((counted) => {

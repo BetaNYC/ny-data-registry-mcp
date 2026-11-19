@@ -20,10 +20,22 @@ const call = async (name, args) => {
   assert.notEqual(r.isError, true, `${name}: ${r.content[0].text}`);
   return JSON.parse(r.content[0].text);
 };
-/** Every source an answer names, each with what it says about being official. */
+const { builtFrom } = await import("../dist/betanyc-tools.js");
+const DS = JSON.parse((await import("node:fs")).readFileSync(new URL("../DATA-SOURCES.json", import.meta.url), "utf8")).sources;
+const PORTALS = sql.prepare("SELECT id, name, entity FROM portals").all();
+/** The portal a source line ("<topic>: <name (publisher)>, <link>") names: by its catalog topic,
+ * or, for a portal with no entry of its own (topic portal-catalogs), by its name and publisher. */
+function portalOf(line) {
+  const topic = line.slice(0, line.indexOf(": "));
+  if (topic === "portal-catalogs") return PORTALS.find((p) => line.startsWith(`portal-catalogs: ${builtFrom(p.name, p.entity)}, https://`))?.id;
+  const key = DS.find((d) => d.id === topic)?.freshness?.key ?? "";
+  return key.startsWith("portal_harvested:") ? key.slice("portal_harvested:".length) : undefined;
+}
+/** Every source an answer names: a block in full (data_source, registry_source) or a line in
+ * data_sources, each with what it says about being official and the portal it names, if any. */
 const sources = (b) => [
-  ...[b.data_source, b.registry_source].filter(Boolean).map((s) => ({ ...s, says: s.cite })),
-  ...(b.data_sources ?? []).flatMap((g) => g.sources.map((s) => ({ ...s, says: g.says }))),
+  ...[b.data_source, b.registry_source].filter(Boolean).map((s) => ({ ...s, says: s.cite, line: `${s.about_data_topic}: ${builtFrom(s.source, s.publisher)}, ${s.source_url}` })),
+  ...(b.data_sources ?? []).flatMap((g) => g.sources.map((line) => ({ line, says: g.says, portal_id: portalOf(line), about_data_topic: line.slice(0, line.indexOf(": ")) }))),
 ];
 const MODIFIED = /^BetaNYC modified this data: /;
 /** The portals an answer covers with "BetaNYC modified this data". */
@@ -87,6 +99,9 @@ test("a portal with no DATA-SOURCES.json entry: every dataset tool says BetaNYC 
   const ad = await callTool("about_data", { topic: "portal-catalogs" });
   assert.notEqual(ad.isError, true);
   assert.match(ad.content[0].text, /BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data\./);
+  // Round 3: its official record is each portal's own catalog, never this repository's README.
+  assert.match(ad.content[0].text, /Official record: Each portal's own catalog, at the portal's address \(The government or institution that runs the portal\), https:\/\/betanyc\.github\.io\//);
+  assert.doesNotMatch(ad.content[0].text, /Official record: [^\n]*github\.com\/BetaNYC\/ny-data-registry-mcp/);
   const calls = [
     ["get_dataset_columns", { dataset: `${UNKNOWN_PORTAL.id}:old-0001` }],
     ["get_dataset_columns", { dataset: `${UNKNOWN_PORTAL.id}:old-0001`, standard: "dcat-us" }],
@@ -109,12 +124,11 @@ test("a portal with no DATA-SOURCES.json entry: every dataset tool says BetaNYC 
     const mine = sources(b).filter((s) => s.portal_id === UNKNOWN_PORTAL.id);
     assert.ok(mine.length, `${where}: no source for the portal`);
     for (const s of mine) {
+      assert.ok(s.line.startsWith(`portal-catalogs: ${UNKNOWN_PORTAL.name} (${UNKNOWN_PORTAL.publisher}), ${UNKNOWN_PORTAL.url}`), `${where}: ${s.line}`);
       assert.match(s.says, MODIFIED, where);
       assert.equal(s.about_data_topic, "portal-catalogs", where);
-      assert.equal(s.source, UNKNOWN_PORTAL.name, where);
-      assert.equal(s.publisher, UNKNOWN_PORTAL.publisher, where);
-      assert.ok(s.source_url.startsWith(UNKNOWN_PORTAL.url), `${where}: ${s.source_url}`);
-      assert.match(s.about_data_note, /about_data has no entry of its own for Old Agency Open Data yet\. about_data topic portal-catalogs says what BetaNYC does to every portal's catalog\./, where);
+      // In full, the block's own note; in data_sources, its group says it once for every such portal.
+      assert.match(s.about_data_note ?? s.says, s.about_data_note ? /about_data has no entry of its own for Old Agency Open Data yet\. about_data topic portal-catalogs says what BetaNYC does to every portal's catalog\./ : /This server's about_data has no entry of its own for these portals yet; topic portal-catalogs says what BetaNYC does to every catalog\./, where);
     }
     assert.deepEqual(producedPortals(b), [], where);
     // Every dataset row in the answer ("<portal>:<native id>") has a "modified" source for its

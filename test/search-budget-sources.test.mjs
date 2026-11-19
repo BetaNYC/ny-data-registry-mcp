@@ -29,7 +29,15 @@ const index = await buildFixtureIndex(tempIndexPath());
     }
   };
   add("budgetsome", 18);
-  add("budgetmany", 45);
+  add("budgetsixty", 60);
+  // Two portals with the same name and publisher (round 3): each is its own source.
+  for (const i of [0, 1]) {
+    const host = `data.twin-${i}.ny.gov`;
+    const p = portalRecord({ ...nyc, source_id: `budgettwin-portal-${i}`, portal_name: "Twin Open Data", entity: "Twin Agency", url: `https://${host}/` });
+    upsertPortal(db, p);
+    writePortalDatasets(db, p, [mapSocrataAsset({ resource: { id: `twin-${i}`, name: `budgettwin dataset ${i}`, type: "dataset" }, classification: {} }, host)], run, true);
+    setPortalHarvest(db, p.id, { adapter: "socrata", status: "ok", note: null, socrata_domain: host });
+  }
   db.close();
 }
 process.env.NY_DATA_INDEX = index;
@@ -42,32 +50,60 @@ const answer = async (args) => {
   const text = r.content[0].text;
   return { b: JSON.parse(text), bytes: Buffer.byteLength(text, "utf8") };
 };
-const portalsNamed = (b) => new Set([b.data_source, ...(b.data_sources ?? []).flatMap((g) => g.sources)].map((s) => s.portal_id).filter(Boolean));
+/** The portals of this fixture an answer names: a "topic: name (publisher), link" line each,
+ * under a group that says "BetaNYC modified this data". */
+const portalsNamed = (b, word) => {
+  const lines = (b.data_sources ?? []).filter((g) => /^BetaNYC modified this data: /.test(g.says)).flatMap((g) => g.sources);
+  const named = new Set();
+  for (let i = 0; i < 80; i++) {
+    const want = `portal-catalogs: ${word} test portal number ${i} (${word} test agency ${i}), https://data.${word}-${i}.ny.gov/`;
+    if (lines.includes(want)) named.add(i);
+  }
+  return named;
+};
 const note = (b) => b.groups_size_note ?? b.size_note ?? "";
+const linesBytes = (b) => Buffer.byteLength(JSON.stringify({ data_sources: b.data_sources }, null, 2));
 
 test("a search's sources fit inside its 20,000-byte budget: rows and groups are cut to leave room", async () => {
   for (const args of [{ query: "budgetsome", group_by: "portal" }, { query: "budgetsome", limit: 50 }, { query: "budgetsome" }]) {
     const { b, bytes } = await answer(args);
-    assert.equal(portalsNamed(b).size, 18, JSON.stringify(args));
-    assert.ok(note(b), `${JSON.stringify(args)}: something was cut`);
+    assert.equal(portalsNamed(b, "budgetsome").size, 18, JSON.stringify(args));
     assert.ok(bytes <= RESPONSE_BUDGET_BYTES, `${JSON.stringify(args)}: ${bytes} bytes`);
-    assert.match(note(b), new RegExp(`under ${RESPONSE_BUDGET_BYTES} bytes`), JSON.stringify(args));
   }
 });
 
-test("when the sources alone are most of the budget, the note gives the larger limit and the reply keeps to it", async () => {
-  for (const args of [{ query: "budgetmany", group_by: "portal" }, { query: "budgetmany", limit: 50 }]) {
+// Round 3 (2026-11-19): the published index has about 60 portals. A grouped search shows every
+// group's count (the counts are the answer, as in 0.3.0) and names all 60 portals, one short
+// line each, within its 20,000-byte budget.
+test("60 portals: every group's count, every portal named with label, publisher and link, within budget", async () => {
+  for (const args of [{ query: "budgetsixty", group_by: "portal" }, { query: "budgetsixty" }, { query: "budgetsixty", limit: 50 }, { query: "budgetsixty", limit: 50, detail: "full" }]) {
+    const where = JSON.stringify(args);
     const { b, bytes } = await answer(args);
-    assert.equal(portalsNamed(b).size, 45, JSON.stringify(args));
-    const limit = Number(note(b).match(/under (\d+) bytes/)?.[1]);
-    assert.ok(limit > RESPONSE_BUDGET_BYTES, `${JSON.stringify(args)}: ${note(b)}`);
-    assert.ok(bytes <= limit, `${JSON.stringify(args)}: ${bytes} bytes, note says under ${limit}`);
+    assert.equal(b.total_matches, 360, where);
+    assert.equal(portalsNamed(b, "budgetsixty").size, 60, where);
+    assert.ok(linesBytes(b) / 60 < 140, `${where}: ${Math.round(linesBytes(b) / 60)} bytes per portal`);
+    assert.equal(b.group_count, 60, where);
+    assert.ok(b.groups.every((g) => g.matches === 6), where);
+    if (args.detail === "full") {
+      // Full rows are large: when a group truly cannot fit, the answer says how many, which, and
+      // the call that lists one.
+      const out = 60 - b.groups.length;
+      if (out) {
+        assert.equal(b.groups_omitted_for_size, out, where);
+        assert.match(b.groups_size_note, new RegExp(`^${out} smallest group\\(s\\), ${out * 6} matches \\(budgetsixty-portal-`), where);
+        assert.match(b.groups_size_note, /search_datasets with the same arguments and portal: "budgetsixty-portal-\d+" lists one; export\.path has every match\./, where);
+      }
+    } else {
+      assert.equal(b.groups.length, 60, `${where}: ${b.groups.length} groups shown; ${note(b)}`);
+      assert.equal(b.groups_omitted_for_size, undefined, where);
+    }
+    assert.ok(bytes <= RESPONSE_BUDGET_BYTES, `${where}: ${bytes} bytes`);
+    if (!args.group_by) assert.ok(b.results.length >= 1, `${where}: no rows`);
   }
-  // The best-ranked rows are the answer: the smallest groups go before the rows do.
-  for (const args of [{ query: "budgetmany" }, { query: "budgetmany", limit: 50 }]) {
-    const { b } = await answer(args);
-    assert.ok(b.auto_grouped, JSON.stringify(args));
-    assert.ok(b.results.length >= 3, `${JSON.stringify(args)}: ${b.results.length} rows`);
-    assert.match(b.groups_size_note, /smallest group\(s\)/, JSON.stringify(args));
-  }
+});
+
+test("two portals with the same name and publisher are two sources, keyed on their portal ids", async () => {
+  const { b } = await answer({ query: "budgettwin" });
+  const lines = b.data_sources.flatMap((g) => g.sources);
+  for (const i of [0, 1]) assert.ok(lines.includes(`portal-catalogs: Twin Open Data (Twin Agency), https://data.twin-${i}.ny.gov/`), `twin ${i}: ${lines.join(" | ")}`);
 });

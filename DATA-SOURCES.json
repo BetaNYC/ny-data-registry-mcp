@@ -231,12 +231,12 @@
       "id": "portal-catalogs",
       "title": "Any portal's dataset catalog, as the harvest copies it",
       "what": "What BetaNYC's nightly harvest does to the catalog of every New York portal it reads. An answer cites this when a dataset comes from a portal that has no source of its own in this list yet: the index is rebuilt every night, and this list changes only with a new release of the server. The answer names the portal and its publisher; that portal is the official record.",
-      "source_name": "New York open data portal catalogs",
+      "source_name": "Each portal's own catalog, at the portal's address",
       "publisher": {
-        "name": "The government or institution that runs each portal",
+        "name": "The government or institution that runs the portal",
         "url": null
       },
-      "source_url": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+      "source_url": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses",
       "official": true,
       "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source.",
       "changes": {
