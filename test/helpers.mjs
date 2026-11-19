@@ -19,7 +19,10 @@ export function tempIndexPath() {
 }
 
 /** Build a small index from the recorded fixtures, through the real mappers and writer. */
-export async function buildFixtureIndex(path, { lastHarvest = "2026-11-05T00:00:00Z" } = {}) {
+/** A portal that DATA-SOURCES.json has no entry for (buildFixtureIndex with unknownPortal). */
+export const UNKNOWN_PORTAL = { id: "nys-old-renamed-portal", name: "Old Agency Open Data", publisher: "NYS Old Agency", host: "data.old-agency.ny.gov", url: "https://data.old-agency.ny.gov/" };
+
+export async function buildFixtureIndex(path, { lastHarvest = "2026-11-05T00:00:00Z", unknownPortal = false } = {}) {
   const { openDb, writePortalDatasets } = await import("../dist/db.js");
   const { mapSocrataAsset } = await import("../dist/harvest/socrata.js");
   const { mapArcgisItem, mergeDcat, filterItems } = await import("../dist/harvest/arcgis.js");
@@ -74,6 +77,18 @@ export async function buildFixtureIndex(path, { lastHarvest = "2026-11-05T00:00:
   });
   writePortalDatasets(db, nyc, [mk("test-0001", "SYNTHETIC 311 test rows", ["unique_key", "bbl", "borough", "incident_zip", "community_board"]), mk("test-0002", "SYNTHETIC pluto test rows", ["bbl", "borocode", "cd", "zipcode", "name"])], run, true);
   setPortalHarvest(db, nyc.id, { adapter: "socrata", status: "ok", note: null, socrata_domain: "data.cityofnewyork.us" });
+
+  // A portal DATA-SOURCES.json has no entry for, as when the registry renames or adds a portal
+  // after a release (the index is rebuilt nightly; DATA-SOURCES.json changes only with a release).
+  if (unknownPortal) {
+    const old = portalRecord({ ...src("new-york-city"), source_id: UNKNOWN_PORTAL.id, portal_name: UNKNOWN_PORTAL.name, entity: UNKNOWN_PORTAL.publisher, url: UNKNOWN_PORTAL.url });
+    upsertPortal(db, old);
+    const mkOld = (id, name, cols, tags) => ({
+      ...mapSocrataAsset({ resource: { id, name, type: "dataset", columns_field_name: cols, columns_name: cols, columns_datatype: cols.map(() => "Text") }, classification: { domain_tags: tags } }, UNKNOWN_PORTAL.host),
+    });
+    writePortalDatasets(db, old, [mkOld("old-0001", "Wetland parcels survey", ["bbl", "wetland_class"], ["environment"]), mkOld("old-0002", "Wetland permits", ["permit_no", "zipcode"], ["environment"])], run, true);
+    setPortalHarvest(db, old.id, { adapter: "socrata", status: "ok", note: null, socrata_domain: UNKNOWN_PORTAL.host });
+  }
 
   // As the harvest does at the end of every run (issue #18).
   const { buildTopics } = await import("../dist/topics.js");

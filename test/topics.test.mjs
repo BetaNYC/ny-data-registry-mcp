@@ -240,3 +240,43 @@ test("rollback: a snapshot made before the crosswalk existed is still a target, 
   assert.deepEqual(cmds.at(-1).args, ["release", "delete-asset", "index-latest", T.CROSSWALK_NAME, "--yes"], "removed last");
   assert.ok(!cmds.some((c) => c.args.includes(join("/r", T.CROSSWALK_NAME))));
 });
+
+// Round 3 (2026-11-19): `topics --index X` ignored --index and rebuilt the default index (it
+// changed a real one during review). It now works on X, or refuses an option it does not know.
+test("cli topics: --index is honored, the default index is not touched, unknown options are refused", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const { existsSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
+  const target = await buildFixtureIndex(tempIndexPath());
+  const clear = () => {
+    const d = new DatabaseSync(target);
+    d.exec("DELETE FROM dataset_topics");
+    d.close();
+  };
+  const rows = () => {
+    const d = new DatabaseSync(target, { readOnly: true });
+    const n = d.prepare("SELECT COUNT(*) AS n FROM dataset_topics").get().n;
+    d.close();
+    return n;
+  };
+  const home = mkdtempSync(join(tmpdir(), "nydr-topicshome-"));
+  const defaultIndex = join(home, "default", "ny-data-index.sqlite");
+  const env = { ...process.env, HOME: home, USERPROFILE: home, NY_DATA_INDEX: defaultIndex, NY_DATA_OFFLINE: "1", NY_DATA_REGISTRY_REFRESH: "0", NY_DATA_INDEX_AUTO_DOWNLOAD: "0" };
+  const cli = (...args) => spawnSync(process.execPath, [fileURLToPath(new URL("../dist/cli.js", import.meta.url)), "topics", ...args], { env, encoding: "utf8", timeout: 60_000 });
+
+  clear();
+  const bad = cli("--index", target, "--bogus", "1");
+  assert.equal(bad.status, 2, bad.stderr);
+  assert.match(bad.stderr, /unknown option\(s\) for topics: --bogus 1/);
+  assert.equal(rows(), 0, "a refused call changes nothing");
+
+  const ok = cli("--index", target);
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.ok(rows() > 0, "the index named by --index is rebuilt");
+  assert.equal(existsSync(defaultIndex), false, "the default index is never created or touched");
+
+  const missing = cli("--index", join(home, "nope.sqlite"));
+  assert.equal(missing.status, 1);
+  // Node 22.16 prints its own "(node:…) ExperimentalWarning: SQLite …" line first; that is not ours.
+  assert.match(missing.stderr, /^no index at .*nope\.sqlite; run download or harvest first/m);
+});

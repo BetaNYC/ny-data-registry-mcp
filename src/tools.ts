@@ -5,11 +5,11 @@ import { readFileSync } from "node:fs";
 import { FAMILIES } from "./families.js";
 import { CANDIDATES_MAX, findSources, howToQuery, listSourcesForPlace, PLACE_LIST_DEFAULT, PLACE_LIST_MAX, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { COLUMNS_DEFAULT, COLUMNS_MAX, datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
-import { awaitIndex, downloadState, INDEX_RELEASES_PAGE } from "./fetchindex.js";
+import { COLUMNS_DEFAULT, COLUMNS_MAX, COUNTED, countedOf, datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, setSourcesBytes, toolJson, whatsNew } from "./datasets.js";
+import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
-import { annotateTools, BETANYC_INSTRUCTIONS, provenance, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
+import { annotateTools, BETANYC_INSTRUCTIONS, builtFrom, provenance, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED, officialKind, whatWasDone } from "./betanyc-tools.js";
 import { registry } from "./registry.js";
 import { govBodies } from "./govbodies.js";
 import { hideLocalPaths, hideLocalPathsDeep, REGISTRY_PAGE, VERSION } from "./paths.js";
@@ -38,7 +38,8 @@ export const SERVER_INSTRUCTIONS =
   // Said once here, not in each tool description (#45).
   "Source rows (find_sources, list_sources_for_place, how_to_query, check_source) and dataset rows carry registry_id when the row has one: the id of the row's government body in BetaNYC/ny-gov-web-registry, for joining the two. " +
   "Source rows also carry runs_it, the government body that runs the site (name, government_level, classification, website), looked up by registry_id in that list; null when the row has no id, found: false when the list lacks it. runs_it_source says which copy of the list answered. " +
-  "Every registry and index answer carries data_source: the source, its publisher, a link and how current it is, with a cite line to quote. " +
+  "Every registry and index answer carries data_source: the source, its publisher, a link and how current it is, a cite line to quote, and its about_data_topic. " +
+  "Rows from several sources list each in data_sources. " +
   BETANYC_INSTRUCTIONS;
 
 /** The last harvest of the installed index, or "not fetched yet" before the first download. */
@@ -98,24 +99,33 @@ function govBodiesAsOf(): string | null {
   return g.origin === "bundled" ? g.snapshot_date : g.fetched_at;
 }
 
+const DATA_SOURCES_PATH = new URL("../DATA-SOURCES.json", import.meta.url);
+const DATA_SOURCES_TEXT = readFileSync(DATA_SOURCES_PATH, "utf8");
+
+/** How current each source is, by its DATA-SOURCES.json freshness key. about_data and the
+ * data_source of every answer read the same hooks. */
+function freshnessHooks(text: string): Record<string, () => string | typeof FRESHNESS_NOT_FETCHED | null> {
+  return {
+    ...portalHooks(text),
+    registry_generated: () => registry().generated || null,
+    gov_bodies_snapshot: govBodiesAsOf,
+    index_harvested: indexHarvestedAt,
+    bundled_files: () => null,
+  };
+}
+const FRESHNESS_HOOKS = freshnessHooks(DATA_SOURCES_TEXT);
+
 /** `dataSourcesText` is for tests. Throws at startup if DATA-SOURCES.json does not describe this server. */
 export function betanycTools(opts: { dataSourcesText?: string } = {}) {
-  const dataSourcesPath = new URL("../DATA-SOURCES.json", import.meta.url);
-  const text = opts.dataSourcesText ?? readFileSync(dataSourcesPath, "utf8");
+  const text = opts.dataSourcesText ?? DATA_SOURCES_TEXT;
   return createBetanycTools({
     serverName: "ny-data-registry-mcp",
     version: VERSION,
     repoUrl: "https://github.com/BetaNYC/ny-data-registry-mcp",
     whatsChangedPath: new URL("../WHATS-CHANGED.md", import.meta.url),
-    dataSourcesPath,
+    dataSourcesPath: DATA_SOURCES_PATH,
     dataSourcesText: text,
-    freshness: {
-      ...portalHooks(text),
-      registry_generated: () => registry().generated || null,
-      gov_bodies_snapshot: govBodiesAsOf,
-      index_harvested: indexHarvestedAt,
-      bundled_files: () => null,
-    },
+    freshness: text === DATA_SOURCES_TEXT ? FRESHNESS_HOOKS : freshnessHooks(text),
   });
 }
 
@@ -222,10 +232,10 @@ const DOMAIN_TOOLS = [
     description:
       "Search dataset titles, descriptions, tags and column names across the harvested Socrata and ArcGIS portals in New York (needs the harvested index). Filter by topic, place, portal, platform family, download format (csv, geojson, shapefile, kml, api, xlsx) or last-updated date. " +
       "topic is one of 24 shared topics (list_topics), assigned from each dataset's own categories, tags and department; a dataset can have several. Give a query, a topic, or both; a topic alone lists that topic, most-viewed first. Rows carry their topic ids. " +
-      "One call gives the whole answer. total_matches is the true number of matching datasets. When they all fit, the reply lists them. When they do not, the reply summarizes every match by portal (count and top titles per portal, auto_grouped: true), lists the best-ranked rows that fit, and writes every match to a CSV file on this machine (export.path, export.rows; also a resource_link). " +
+      "One call gives the whole answer. total_matches is the true number of matching datasets. When they all fit, the reply lists them. When they do not, the reply counts every match by portal (auto_grouped: true; top titles when room; groups_size_note says what was cut), lists the best-ranked rows that fit, and writes every match to a CSV (export.path, export.rows; also a resource_link). " +
       "Use group_by to summarize by entity, county or platform_family instead. " +
       "Rows are compact (id, name, portal, type, update date, link, formats); detail: 'full' adds description, API endpoint, views, column count and, for Socrata, the domain + 4x4 to hand to the `socrata` MCP. " +
-      `Replies stay under about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
+      `Replies aim for about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
       "When the index is more than 14 days old (NY_DATA_INDEX_STALE_DAYS), the reply carries index_note saying so and how to update it.",
     inputSchema: {
       type: "object",
@@ -309,12 +319,22 @@ const DOMAIN_TOOLS = [
   },
 ];
 
+/** about_data's definition with its topic described as this server answers it. */
+function withShortAboutData<T extends { inputSchema: any }>(t: T): T {
+  const topic = t.inputSchema?.properties?.topic;
+  if (!topic) return t;
+  const description =
+    "A source id, or any tool's name for the data behind it. Any case. Default: a short list of all sources; \"all\": each in full.";
+  return { ...t, inputSchema: { ...t.inputSchema, properties: { ...t.inputSchema.properties, topic: { ...topic, description } } } };
+}
+
 export const TOOLS = annotateTools(
   [
     ...DOMAIN_TOOLS,
     // BetaNYC standard tools: what's changed in this server, who built it, and where its data
-    // comes from. They declare their own annotations.
-    ...betanyc.tools,
+    // comes from. They declare their own annotations. about_data's topic says what no topic gives
+    // here (aboutData below): a short list, not every source in full.
+    ...betanyc.tools.map((t) => (t.name === "about_data" ? withShortAboutData(t) : t)),
   ],
   Object.fromEntries(DOMAIN_TOOLS.map((t) => [t.name, LIVE_TOOLS.has(t.name)])),
 );
@@ -374,72 +394,244 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
 
 /**
  * The `data_source` block every domain answer carries (#36, #37): the source, its publisher, a
- * link and how current it is, from the shared provenance() helper, with the same names as the
- * sources in DATA-SOURCES.json. `cite` is the same as one plain line.
+ * link and how current it is, from the shared provenance() helper. `cite` is the same as one
+ * plain line.
+ *
+ * Every block is made from one DATA-SOURCES.json entry (sourceFrom), so an answer and about_data
+ * can never disagree: the same source name and publisher, and the same answer on whether it is
+ * official ("BetaNYC modified this data: <what BetaNYC did>" or "BetaNYC produced this"), worked
+ * out by the shared officialKind() from that entry. `about_data_topic` names the entry, so
+ * about_data with that topic gives the source in full. Which entry, by kind of row:
+ *   registry rows: portal-registry (BetaNYC opens each portal and records what it finds: produced)
+ *   dataset rows: the catalog-* entry of the row's portal (the portal's own catalog record, which
+ *     the harvest filtered, reshaped, joined to the registry and, for most portals, cleaned:
+ *     modified, with the portal's page as the official record); a hand-kept row: hand-kept
+ *   a check that reached a portal: portal-check (BetaNYC's record of the portal's reply: produced)
+ *   topics, join keys, coverage, standard descriptions: their own entries (produced)
  */
 type Prov = ReturnType<typeof provenance>;
-const cite = (p: Prov) => ({ ...p.provenance, cite: p.text });
-/** Where a modified copy is held: named next to the official record in a dataset's data_source. */
-const HELD_IN = { source: "NY Data Registry index", publisher: "BetaNYC", source_url: INDEX_RELEASES_PAGE };
-/** What BetaNYC did to make the registry, in the same terms as about_data (portal-registry). */
-const REGISTRY_MADE = "compiled and maintains this registry of New York data portals, checking each portal and recording what it finds";
-/** Registry answers (find_sources, list_sources_for_place, how_to_query, registry_info, and the
- * registry half of check_source): BetaNYC's NY Data Portal Registry, which BetaNYC produced, as of
- * its `generated` date. about_data gives portal-registry as produced by BetaNYC; this agrees. */
-const registrySource = () =>
-  provenance({
-    sourceName: "NY Data Portal Registry",
-    publisher: "BetaNYC",
-    sourceUrl: REGISTRY_PAGE,
-    kind: "snapshot",
-    asOf: registry().generated || null,
-    changedByBetanyc: { kind: "produced-by-betanyc", detail: REGISTRY_MADE },
-  });
-/** What BetaNYC did to build the index, in the same terms as about_data (DATA-SOURCES.json). */
-const INDEX_BUILT =
-  "built this index from the catalogs of New York's open data portals, keeping data records only, dropping records outside New York, and reshaping and joining them with its portal list. Each dataset's own page on its portal is its official record";
-/** Index answers (search_datasets, list_topics, find_joinable, whats_new, a standard description):
- * BetaNYC's NY Data Registry index, which BetaNYC produced, as of its last harvest. */
-const indexSource = () =>
-  provenance({
-    sourceName: "NY Data Registry index",
-    publisher: "BetaNYC",
-    sourceUrl: INDEX_RELEASES_PAGE,
-    kind: "snapshot",
-    asOf: (indexInfo()?.last_harvest as string | null) ?? null,
-    changedByBetanyc: { kind: "produced-by-betanyc", detail: INDEX_BUILT },
-  });
-/** What BetaNYC did to one dataset's record, as about_data says for each catalog-* source. */
-const DATASET_CHANGED =
-  "this is the NY Data Registry index's copy of the portal's catalog record (BetaNYC left some records out, reshaped it and joined it with its portal list); fields marked derived in provenance were worked out or cleaned by BetaNYC";
-/** One dataset (get_dataset_columns): BetaNYC's modified copy in the NY Data Registry index, as of
- * the harvest that last saw it, with the dataset's own portal page as the official record. Agrees
- * with about_data, which says BetaNYC modified the catalogs and the copy is not the official record. */
-function datasetSource(b: Record<string, any>): Prov {
-  try {
-    return provenance({
-      sourceName: `${b.portal} catalog`,
-      publisher: b.entity,
-      sourceUrl: b.url,
-      kind: "snapshot",
-      asOf: b.last_seen ?? null,
-      changedByBetanyc: { kind: "modified-by-betanyc", detail: DATASET_CHANGED },
-    });
-  } catch {
-    return indexSource(); // no portal name, publisher or link on the row
-  }
+type Cited = Prov["provenance"] & { cite: string; about_data_topic: string | null; about_data_note?: string; portal_id?: string };
+type DsEntry = {
+  id: string;
+  source_name: string;
+  publisher: { name: string; url?: string | null };
+  source_url: string;
+  official: boolean;
+  changes: { changed: boolean; steps: string[]; detail: string | null };
+  freshness?: { kind?: string; key?: string | null } | null;
+};
+const DS_ENTRIES: Map<string, DsEntry> = new Map(
+  (JSON.parse(DATA_SOURCES_TEXT) as { sources: DsEntry[] }).sources.map((s) => [s.id, s]),
+);
+/** registry source_id → the catalog-* entry that describes that portal's catalog. */
+const CATALOG_OF_PORTAL: Map<string, string> = new Map(
+  [...DS_ENTRIES.values()]
+    .filter((s) => typeof s.freshness?.key === "string" && s.freshness.key.startsWith(PORTAL_HARVESTED))
+    .map((s) => [s.freshness!.key!.slice(PORTAL_HARVESTED.length), s.id]),
+);
+/** The entry's own freshness, the same hook about_data reads; null when it has no usable date. */
+function entryAsOf(s: DsEntry): string | null {
+  const key = s.freshness?.kind === "hook" ? s.freshness.key : null;
+  const v = key && Object.hasOwn(FRESHNESS_HOOKS, key) ? FRESHNESS_HOOKS[key]() : null;
+  return typeof v === "string" ? v : null; // "not fetched yet" (FRESHNESS_NOT_FETCHED) is not a date
 }
-/** check_source: the portal page itself, fetched for this answer; otherwise (not checked, no
- * answer, blocked) the registry row. No asOf: for a live answer that would be the data's own
- * date (shared module 1.5.1), and a status check has none; the fetch time is the answer's time. */
-function checkSourceSource(b: Record<string, any>): Prov {
+/** The first sentence of a description, for "What BetaNYC did:" in a produced answer. */
+const firstSentence = (s: string) => s.replace(/\s+/g, " ").trim().split(/(?<=[a-z0-9)])\. (?=[A-Z])/)[0];
+/** One data_source block from DATA-SOURCES.json entry `id`. `sourceUrl` replaces the entry's link
+ * when the answer has a more exact one (one dataset's own page, the portal a check reached). */
+function sourceFrom(id: string, opts: { kind?: "live" | "snapshot"; asOf?: string | null; sourceUrl?: string | null } = {}): Cited {
+  const s = DS_ENTRIES.get(id);
+  if (!s) throw new Error(`DATA-SOURCES.json has no source ${id}`);
+  const k = officialKind(s.official, s.changes.changed, s.changes.steps);
+  const p = provenance({
+    sourceName: s.source_name,
+    publisher: s.publisher.name,
+    sourceUrl: opts.sourceUrl || s.source_url,
+    kind: opts.kind ?? "snapshot",
+    asOf: opts.asOf === undefined ? entryAsOf(s) : opts.asOf,
+    changedByBetanyc:
+      k === "published-as-is"
+        ? null
+        : { kind: k, detail: k === "modified-by-betanyc" ? whatWasDone(s.changes.steps) : firstSentence(s.changes.detail ?? s.source_name) },
+  });
+  return { ...p.provenance, cite: p.text, about_data_topic: id };
+}
+const registrySource = () => sourceFrom("portal-registry");
+/** A check that reached the portal: BetaNYC's record of the portal's reply, fetched now. Not
+ * checked, no answer, or blocked: the registry row it was compared with. */
+function checkSourceSource(b: Record<string, any>): Cited {
   if (b.checked !== true || b.request_error || b.blocked) return registrySource();
   try {
-    return provenance({ sourceName: b.source?.portal_name || b.source?.entity, publisher: b.source?.entity, sourceUrl: b.url, kind: "live" });
+    return sourceFrom("portal-check", { kind: "live", asOf: null, sourceUrl: b.url });
   } catch {
     return registrySource();
   }
 }
+/** The DATA-SOURCES.json entry that says what BetaNYC does to every portal's catalog, for a portal
+ * this release has no catalog-* entry for. */
+const ANY_CATALOG = "portal-catalogs";
+const oneLine = (s: unknown) => (typeof s === "string" ? s.replace(/[\s\p{Cc}\p{Cf}\p{Zl}\p{Zp}]+/gu, " ").trim() : "");
+const httpUrl = (s: unknown) => {
+  const u = oneLine(s).split(" ")[0];
+  return /^https?:\/\/[^/\s@]+\.[^/\s@]+/i.test(u) ? u : "";
+};
+/** A portal's name, publisher and link, from the index (what the harvest recorded) and the registry. */
+function portalFacts(portalId: string): { name: string; publisher: string; url: string } {
+  let row: { name?: string; entity?: string; base_url?: string } | undefined;
+  try {
+    row = db().prepare("SELECT name, entity, base_url FROM portals WHERE id = ?").get(portalId) as typeof row;
+  } catch {
+    row = undefined;
+  }
+  const reg = registry().sources.find((s) => s.source_id === portalId) as Record<string, any> | undefined;
+  const name = oneLine(row?.name) || oneLine(reg?.portal_name) || oneLine(reg?.entity) || portalId;
+  const publisher = oneLine(row?.entity) || oneLine(reg?.entity) || name;
+  const url = httpUrl(row?.base_url) || httpUrl(reg?.portal_url) || httpUrl(reg?.url) || REGISTRY_PAGE;
+  return { name, publisher, url };
+}
+/**
+ * One portal's catalog. A portal with a catalog-* entry gets it. A portal this release's
+ * DATA-SOURCES.json does not have (the index is rebuilt every night; the list of sources changes
+ * only with a release, so a portal the registry added or renamed since has none) still gets
+ * "BetaNYC modified this data", in the words of the portal-catalogs entry, naming the portal and
+ * its publisher as the official record, with a note that about_data has no fuller entry for it.
+ * No dataset row is ever left without a source or called "produced".
+ */
+function portalSource(portalId: string, opts: { asOf?: string | null; sourceUrl?: string | null } = {}): Cited {
+  const id = CATALOG_OF_PORTAL.get(portalId);
+  if (id) return { ...sourceFrom(id, opts), portal_id: portalId };
+  const g = DS_ENTRIES.get(ANY_CATALOG);
+  if (!g) throw new Error(`DATA-SOURCES.json has no source ${ANY_CATALOG}`);
+  const f = portalFacts(portalId);
+  const harvested = portalHarvestedAt(portalId);
+  const p = provenance({
+    sourceName: f.name,
+    publisher: f.publisher,
+    sourceUrl: httpUrl(opts.sourceUrl) || f.url,
+    kind: "snapshot",
+    asOf: opts.asOf !== undefined ? opts.asOf : typeof harvested === "string" ? harvested : null,
+    changedByBetanyc: { kind: "modified-by-betanyc", detail: whatWasDone(g.changes.steps) },
+  });
+  return {
+    ...p.provenance,
+    cite: p.text,
+    about_data_topic: ANY_CATALOG,
+    portal_id: portalId,
+    about_data_note: `This server's about_data has no entry of its own for ${f.name} yet. about_data topic ${ANY_CATALOG} says what BetaNYC does to every portal's catalog.`,
+  };
+}
+/** The source of one dataset, from its dataset_id ("<portal source_id>:<native id>"). */
+function datasetSource(datasetId: string, opts: { asOf?: string | null; sourceUrl?: string | null } = {}): Cited | null {
+  const i = datasetId.indexOf(":");
+  if (i < 1) return null;
+  if (datasetId.slice(i + 1).startsWith("hand-kept:")) return sourceFrom("hand-kept", { sourceUrl: opts.sourceUrl });
+  return portalSource(datasetId.slice(0, i), opts);
+}
+/** Parts of an answer that are not catalog content: its own source blocks and the coverage list
+ * of registry portals the index does not search. */
+const NOT_CATALOG = new Set(["data_source", "data_sources", "registry_source", "coverage"]);
+/**
+ * Every portal whose catalog an answer draws on, with how much of the answer comes from it:
+ * the portals an index function counted (countedOf: every match behind total_matches, groups,
+ * exports, whats_new totals, topic counts, the index's per-portal counts), the portal of every
+ * dataset_id, and every other portal_id (find_joinable's by_portal). Hand-kept rows are apart.
+ */
+function catalogContent(body: unknown): { portals: Map<string, number>; handKept: number } {
+  const portals = new Map<string, number>();
+  let handKept = 0;
+  const add = (id: string, n: number) => portals.set(id, (portals.get(id) ?? 0) + (Number.isFinite(n) && n > 0 ? n : 1));
+  const visit = (v: unknown): void => {
+    if (Array.isArray(v)) return v.forEach(visit);
+    if (!v || typeof v !== "object") return;
+    const o = v as Record<string, unknown>;
+    const c = countedOf(o);
+    if (c) {
+      for (const [id, n] of c.portals) add(id, n);
+      for (const n of c.handKept.values()) handKept += n;
+    }
+    if (typeof o.dataset_id === "string" && o.dataset_id.includes(":")) {
+      const [pid, ...rest] = o.dataset_id.split(":");
+      if (rest.join(":").startsWith("hand-kept:")) handKept++;
+      else add(pid, 1);
+    } else if (typeof o.portal_id === "string") add(o.portal_id, Number(o.n ?? o.matches ?? 1));
+    for (const [k, x] of Object.entries(o)) if (!NOT_CATALOG.has(k)) visit(x);
+  };
+  visit(body);
+  return { portals, handKept };
+}
+/** The sources of an answer: `lead` first, then every portal catalog it draws on (most first),
+ * the hand-kept list when it shows hand-kept rows, then `also`; `whenEmpty` when that is nothing. */
+function answerSources(body: unknown, o: { lead?: (Cited | null)[]; also?: Cited[]; whenEmpty?: Cited } = {}): Cited[] {
+  const w = catalogContent(body);
+  const list = [
+    ...(o.lead ?? []).filter((x): x is Cited => !!x),
+    ...[...w.portals].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([id]) => portalSource(id)),
+    ...(w.handKept ? [sourceFrom("hand-kept")] : []),
+    ...(o.also ?? []),
+  ];
+  return list.length ? list : o.whenEmpty ? [o.whenEmpty] : [];
+}
+/** What a source says about being official: the first sentences of its cite, the same words as
+ * about_data's ("BetaNYC modified this data: <what>. This copy should not be considered the
+ * official record." or "BetaNYC produced this. It is not an official record."). */
+const saysOf = (c: Cited) =>
+  c.cite.match(/^(BetaNYC modified this data: .*?This copy should not be considered the official record\.|BetaNYC produced this\. It is not an official record\.)/)?.[1] ?? c.cite;
+/** What every source in a data_sources group says: about_data's words, then, for portal catalogs,
+ * where the official record is, and for portals with no entry of their own, that note. */
+const groupSays = (s: Cited) =>
+  saysOf(s) +
+  (s.portal_id ? " Each portal below is the official record." : "") +
+  (s.about_data_topic === ANY_CATALOG ? ` This server's about_data has no entry of its own for these portals yet; topic ${ANY_CATALOG} says what BetaNYC does to every catalog.` : "");
+/**
+ * Adds the answer's sources. `data_source` is the main one in full (with `cite`). When there is
+ * more than one, `data_sources` lists every one, grouped by what it says (said once per group),
+ * one line each with only what differs: "<about_data topic>: <name> (<publisher>), <link>".
+ * A portal is one source however many rows it has (keyed on its portal id). A failure gets none.
+ */
+function withSources(body: unknown, sources: Cited[]): unknown {
+  if (!body || typeof body !== "object" || failureOf(body) !== null || !sources.length) return body;
+  const groups = new Map<string, Map<string, Cited>>();
+  for (const s of sources) {
+    const g = groups.get(groupSays(s)) ?? new Map<string, Cited>();
+    groups.set(groupSays(s), g);
+    g.set(s.portal_id ?? `${s.about_data_topic}|${s.source}`, s);
+  }
+  const out = { ...(body as object), data_source: sources[0] };
+  if ([...groups.values()].reduce((n, g) => n + g.size, 0) === 1) return out;
+  return {
+    ...out,
+    data_sources: [...groups].map(([says, g]) => ({
+      says,
+      how_current: howCurrent([...g.values()]),
+      sources: [...g.values()].map((s) => `${s.about_data_topic}: ${builtFrom(s.source, s.publisher)}, ${s.source_url}`),
+    })),
+  };
+}
+/** How current a group of sources is, said once: one time, or the range when its portals were
+ * read at different times (each portal's catalog has its own last read; about_data gives each).
+ * To the minute: "2026-11-05T17:58Z". */
+function howCurrent(group: Cited[]): string {
+  const minute = (d: string) => (/^\d{4}-\d\d-\d\dT\d\d:\d\d.*Z$/.test(d) ? `${d.slice(0, 16)}Z` : d);
+  const dates = group.map((s) => s.as_of).filter((d): d is string => !!d).map(minute).sort();
+  const undated = group.length - dates.length;
+  const missing = undated ? ` ${undated} with no date.` : "";
+  if (!dates.length) return "No date known (about_data with a source's topic says why).";
+  if (dates[0] === dates[dates.length - 1]) return `As of ${dates[0]}.${missing}`;
+  return `Read between ${dates[0]} and ${dates[dates.length - 1]}; about_data gives each source's date.${missing}`;
+}
+const withSource = (body: unknown, s: Cited) => withSources(body, [s]);
+const SOURCES_MARGIN_BYTES = 150;
+/** How many bytes a search answer's sources take, for the portals it counted: the search keeps
+ * its rows and groups to what is left of its size budget (datasets.ts, setSourcesBytes). */
+setSourcesBytes((counted) => {
+  const body = {};
+  Object.defineProperty(body, COUNTED, { value: counted, enumerable: false });
+  const probe = { p: 0 };
+  const sized = withSources(probe, answerSources(body, { also: [sourceFrom("coverage")] }));
+  // The answer's own rows can change which portal leads (its block is in full), so allow for a
+  // longer name and link than the one measured here.
+  return Buffer.byteLength(toolJson(sized), "utf8") - Buffer.byteLength(toolJson(probe), "utf8") + SOURCES_MARGIN_BYTES;
+});
 /** The message when an answer is a failure and nothing else: an object whose only field is a
  * string `error` (unknown dataset, source or date) or `place_error` (a place this server does
  * not know). An answer that carries a problem next to real content (check_source's
@@ -451,8 +643,6 @@ function failureOf(v: unknown): string | null {
   const m = (v as Record<string, unknown>)[keys[0]];
   return typeof m === "string" ? m : null;
 }
-const withSource = (body: unknown, p: Prov) =>
-  body && typeof body === "object" && failureOf(body) === null ? { ...(body as object), data_source: cite(p) } : body;
 
 /** Keys this package reads from env. No error text repeats them (#39). */
 const secrets = () => [process.env.SOCRATA_APP_TOKEN, process.env.GITHUB_TOKEN];
@@ -469,8 +659,131 @@ export const text = (v: unknown) => {
   return { content: [{ type: "text", text: toolJson(hideLocalPathsDeep(v)) }] as Record<string, any>[] };
 };
 
+/**
+ * about_data, kept short. The shared module (betanyc-tools.ts 1.5.2) answers with every source
+ * in full: with no topic, all 69 (about 200,000 characters of text, and the same again as
+ * structuredContent), and for an index tool such as search_datasets, 67 of them, because each of
+ * the 60 portal catalogs is its own source and each names all the index tools. This layer works on
+ * the shared answer's own structuredContent, so the words and the outputSchema stay the shared
+ * module's; it never edits betanyc-tools.ts:
+ *   no topic: a short list, one line per source (topic, source name, publisher, official answer),
+ *     with how to ask for more. `sources` is empty; `overview` has the list.
+ *   a tool name whose sources include more than one portal catalog: BetaNYC's own sources in
+ *     full, and the catalogs one line each (topic, name, publisher, link, how current, official
+ *     answer) in `portal_catalogs`.
+ *   one source id, or "all": the shared answer, unchanged (every source in full, on request).
+ * Every source stays reachable: about_data with its topic gives it in full.
+ * To drop this layer, the shared module needs the same (reported to the workspace).
+ */
+/** A portal catalog: one per portal (catalog-*), and portal-catalogs, what the harvest does to any. */
+const CATALOG = (topic: string) => topic.startsWith("catalog-") || topic === "portal-catalogs";
+type AdSource = {
+  topic: string; source: string; publisher: string; source_url: string; official: boolean;
+  changed_by_betanyc: { changed: boolean; steps: string[]; detail: string | null }; as_of: string; as_of_status: string;
+};
+const kindOf = (s: AdSource) => officialKind(s.official, s.changed_by_betanyc.changed, s.changed_by_betanyc.steps);
+/** The official answer in a few words, as the shared module words its first sentence. */
+function shortAnswer(s: AdSource): string {
+  const k = kindOf(s);
+  if (k === "produced-by-betanyc") return "BetaNYC produced this";
+  if (k === "modified-by-betanyc") return `BetaNYC modified this data: ${whatWasDone(s.changed_by_betanyc.steps)}`;
+  return "BetaNYC did not modify it";
+}
+const ABOUT_DATA_MORE =
+  "For one source in full (what it is, how it is gathered, what BetaNYC did, how current it is, what it covers, terms and credit line, where to report an error), call about_data with its topic. For the sources behind one tool, give the tool's name as topic. topic \"all\" gives every source in full, which is long.";
+
+/** The three shared tools describe this server, not data: about_data with one of their names says
+ * so (the shared module answers "no data topic or tool named …"). */
+const SERVER_TOOLS: Record<string, string> = {
+  whats_changed: "whats_changed reads this server's WHATS-CHANGED.md, its own record of changes. It uses no data source.",
+  about_betanyc: "about_betanyc says who built this server and how to reach BetaNYC. It uses no data source.",
+  about_data: "about_data reads this server's DATA-SOURCES.json, the list of its data sources. Call it with no topic for that list.",
+};
+function aboutData(args: unknown) {
+  const asked = args && typeof args === "object" && typeof (args as any).topic === "string" ? (args as any).topic.trim().toLowerCase() : "";
+  if (Object.hasOwn(SERVER_TOOLS, asked) && Object.keys(args as object).length === 1) {
+    const base = betanyc.call("about_data", {});
+    const sc = base.structuredContent as Record<string, any> | undefined;
+    if (!base.isError && sc) {
+      const note = `${SERVER_TOOLS[asked]} ${ABOUT_DATA_MORE}`;
+      return { content: [{ type: "text", text: note }], structuredContent: { ...sc, topic: asked, sources: [], note } };
+    }
+  }
+  const full = betanyc.call("about_data", args);
+  const sc = full.structuredContent as Record<string, any> | undefined;
+  if (full.isError || !sc || !Array.isArray(sc.sources) || !sc.sources.length) return full;
+  const askedAll = !!args && typeof args === "object" && typeof (args as any).topic === "string" && (args as any).topic.trim().toLowerCase() === "all";
+  const sources = sc.sources as AdSource[];
+  const parts = String(full.content[0].text).split("\n\n");
+  // [head, one block per source, contact and who built it, the note when there is one]
+  if (parts.length < sources.length + 2) return full;
+  const head = parts[0].split("\n");
+  const tail = parts.slice(sources.length + 1);
+  const officialLine = head[1];
+  const fileLine = head[head.length - 1];
+
+  if (sc.topic === null && !askedAll) {
+    const groups = new Map<string, AdSource[]>();
+    for (const s of sources) {
+      const k = kindOf(s);
+      groups.set(k, [...(groups.get(k) ?? []), s]);
+    }
+    const heading: Record<string, string> = {
+      "produced-by-betanyc": "BetaNYC produced these. They are not official records:",
+      "modified-by-betanyc": "BetaNYC modified these. Each copy should not be considered the official record; the source named is:",
+      "published-as-is": "Published as is (BetaNYC did not modify them):",
+    };
+    const lines = [
+      `Where the data in ${sc.server.name} ${sc.server.version} comes from: ${sources.length} sources, listed short (topic: source, publisher).`,
+      ABOUT_DATA_MORE,
+      officialLine,
+    ];
+    for (const k of ["produced-by-betanyc", "modified-by-betanyc", "published-as-is"]) {
+      const g = groups.get(k);
+      if (!g) continue;
+      lines.push("", heading[k], ...g.map((s) => `- ${s.topic}: ${s.source} (${s.publisher})`));
+    }
+    lines.push("", fileLine);
+    const text = [lines.join("\n"), ...tail].join("\n\n");
+    const overview = sources.map((s) => ({ topic: s.topic, source: s.source, publisher: s.publisher, official_answer: kindOf(s) }));
+    return { content: [{ type: "text", text }], structuredContent: { ...sc, sources: [], overview, more: ABOUT_DATA_MORE } };
+  }
+
+  const catalogs = sources.filter((s) => CATALOG(s.topic));
+  if (sc.topic === null || catalogs.length < 2) return full;
+  const keep = sources.map((s, i) => [s, parts[i + 1]] as const).filter(([s]) => !CATALOG(s.topic));
+  // Before the index is downloaded every catalog has the same undated state: say it once.
+  const sameState = catalogs.every((s) => s.as_of === catalogs[0].as_of) && !/^\d/.test(catalogs[0].as_of) ? catalogs[0].as_of : null;
+  const line = (s: AdSource) =>
+    `- ${s.topic}: ${s.source} (${s.publisher}), ${s.source_url}` + (sameState ? "" : /^\d/.test(s.as_of) ? `, as of ${s.as_of}` : `, how current: ${s.as_of}`);
+  const byAnswer = new Map<string, AdSource[]>();
+  for (const s of catalogs) byAnswer.set(shortAnswer(s), [...(byAnswer.get(shortAnswer(s)) ?? []), s]);
+  const text = [
+    [
+      `Where the data in ${sc.server.name} ${sc.server.version} comes from, for '${sc.topic}': ${sources.length} sources. BetaNYC's own sources in full, then ${catalogs.length} portal catalogs one line each.`,
+      officialLine,
+      fileLine,
+    ].join("\n"),
+    ...keep.map(([, block]) => block),
+    [
+      `Portal catalogs behind '${sc.topic}' (${catalogs.length}). Each is that portal's own catalog, copied by BetaNYC's nightly harvest; the portal named is the official record. For one in full (terms, credit line, caveats, where to report an error), call about_data with its topic.` + (sameState ? ` How current, for all of them: ${sameState}.` : ""),
+      ...[...byAnswer].flatMap(([answer, g]) => [`${answer}. This copy should not be considered the official record (${g.length}):`, ...g.map(line)]),
+    ].join("\n"),
+    ...tail,
+  ].join("\n\n");
+  const portal_catalogs = catalogs.map((s) => ({
+    topic: s.topic, source: s.source, publisher: s.publisher, source_url: s.source_url,
+    official_answer: kindOf(s), as_of: s.as_of,
+  }));
+  return {
+    content: [{ type: "text", text }],
+    structuredContent: { ...sc, sources: keep.map(([s]) => s), portal_catalogs, more: ABOUT_DATA_MORE },
+  };
+}
+
 export async function callTool(name: string, args: unknown) {
   // The shared tools answer in plain text plus structuredContent, and need no index.
+  if (name === "about_data") return hideLocalPathsDeep(aboutData(args));
   if (betanyc.handles(name)) return hideLocalPathsDeep(betanyc.call(name, args));
   try {
     if (INDEX_TOOLS.has(name)) await requireIndex();
@@ -491,17 +804,25 @@ export async function callTool(name: string, args: unknown) {
         if (!a.source_id && !a.registry_id && !a.url) throw new Error("give one of source_id, registry_id or url");
         const r = (await checkSource(a)) as Record<string, any>;
         const out = withSource(r, checkSourceSource(r)) as Record<string, any>;
-        // A live check cites the portal it reached (data_source). The registry row it was compared
-        // with is BetaNYC's, and is cited on its own (registry_source), so the two never blur.
-        if (out?.data_source && out.data_source.source_url !== REGISTRY_PAGE) out.registry_source = cite(registrySource());
+        // A live check cites BetaNYC's record of the portal's reply (data_source, portal-check). The
+        // registry row it was compared with is cited on its own (registry_source), so the two never blur.
+        if (out?.data_source?.about_data_topic === "portal-check") out.registry_source = registrySource();
         return text(out);
       }
       case "registry_info":
         parseToolArgs("registry_info", args);
-        return text(withSource({ ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() }, registrySource()));
+      {
+        // The registry, then the catalog of every portal whose datasets the index counts (index.datasets, portals_detail).
+        const r = { ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() };
+        return text(withSources(r, answerSources(r, { lead: [registrySource()] })));
+      }
       case "search_datasets": {
         const r = searchDatasets(parseToolArgs("search_datasets", args)) as Record<string, any>;
-        const out = text(withSource(r, indexSource()));
+        // The catalog of every portal with a match (rows, groups, total_matches and the export
+        // count them all), the hand-kept list for its rows, and the coverage list the answer
+        // carries (registry portals the index does not search); the coverage list alone when
+        // nothing matched.
+        const out = text(withSources(r, answerSources(r, { also: r.coverage ? [sourceFrom("coverage")] : [], whenEmpty: sourceFrom("coverage") })));
         // MCP resource_link content (spec 2025-06-18 and later, "Resource Links" under Tool Result).
         // The JSON text block above stays the answer; this lets a client open or attach the file.
         if (r.export?.uri) {
@@ -518,22 +839,33 @@ export async function callTool(name: string, args: unknown) {
         return out;
       }
       case "list_topics":
-        return text(withSource(listTopics(parseToolArgs("list_topics", args)), indexSource()));
+      {
+        // BetaNYC's topics, then the catalog of every portal whose datasets the counts include.
+        const r = listTopics(parseToolArgs("list_topics", args));
+        return text(withSources(r, answerSources(r, { lead: [sourceFrom("topics")] })));
+      }
       case "get_dataset_columns": {
         const a = parseToolArgs("get_dataset_columns", args);
-        if (a.standard) return text(withSource(datasetStandard(a.dataset, a.standard), indexSource()));
-        const r = getDatasetColumns(a.dataset, a.limit, a.offset) as Record<string, any>;
-        const out = withSource(r, datasetSource(r)) as Record<string, any>;
-        if (out?.data_source?.changed_by_betanyc) out.data_source = { ...out.data_source, held_in: HELD_IN };
-        return text(out);
+        // One dataset: its portal's catalog, with the dataset's own page as the official record, as
+        // of the harvest that last saw it. A description in a standard also cites the mapping.
+        const r = getDatasetColumns(a.dataset, a.standard ? 1 : a.limit, a.standard ? 0 : a.offset) as Record<string, any>;
+        const own = typeof r.dataset_id === "string" ? datasetSource(r.dataset_id, { asOf: r.last_seen ?? null, sourceUrl: r.url }) : null;
+        if (a.standard) {
+          const std = datasetStandard(a.dataset, a.standard);
+          return text(withSources(std, own ? answerSources(std, { lead: [own], also: [sourceFrom("standard-descriptions")] }) : []));
+        }
+        return text(withSources(r, own ? answerSources(r, { lead: [own] }) : []));
       }
       case "find_joinable": {
         const a = parseToolArgs("find_joinable", args);
-        return text(withSource(findJoinable(a.dataset, a.column, a.limit_per_key), indexSource()));
+        const r = findJoinable(a.dataset, a.column, a.limit_per_key) as Record<string, any>;
+        const own = typeof r.dataset?.dataset_id === "string" ? datasetSource(r.dataset.dataset_id) : null;
+        return text(withSources(r, answerSources(r, { lead: [own], also: [sourceFrom("join-keys")] })));
       }
       case "whats_new": {
         const a = parseToolArgs("whats_new", args);
-        return text(withSource(whatsNew(a.since, a.portal, a.limit), indexSource()));
+        const r = whatsNew(a.since, a.portal, a.limit);
+        return text(withSources(r, answerSources(r, { whenEmpty: sourceFrom("coverage") })));
       }
       default:
         return fail(`Unknown tool: ${echo(name)}. The tools are: ${TOOLS.map((t) => t.name).join(", ")}.`);

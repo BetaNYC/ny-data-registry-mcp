@@ -81,6 +81,53 @@
       ]
     },
     {
+      "id": "portal-check",
+      "title": "A portal check (check_source)",
+      "what": "What check_source found when it asked one portal address once, at your request: the HTTP status, where it redirects, how long it took, and whether that agrees with the portal list.",
+      "source_name": "NY Data Registry portal check",
+      "publisher": {
+        "name": "BetaNYC",
+        "url": "https://beta.nyc/"
+      },
+      "source_url": "https://github.com/BetaNYC/ny-data-registry-mcp#what-it-does",
+      "official": false,
+      "how_gathered": "The server makes one request to the address in the portal list when you call check_source. It never retries and never follows a redirect. Nothing is kept.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "merged"
+        ],
+        "detail": "BetaNYC's server records the portal's reply (status, redirect, time) and compares it with the portal list's row for that portal."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "live"
+      },
+      "update_frequency": "continual",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "The one portal you ask about",
+        "known_gaps": [
+          "One request shows one moment: a portal that does not answer now may answer a minute later, and the reverse."
+        ]
+      },
+      "terms": {
+        "license_name": "MIT",
+        "license_url": "https://spdx.org/licenses/MIT.html",
+        "terms_url": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "check_source"
+      ],
+      "caveats": [
+        "The status and redirect are the portal's own reply, passed on unchanged. The verdict that compares them with the portal list is BetaNYC's."
+      ]
+    },
+    {
       "id": "government-bodies",
       "title": "Who runs each data site",
       "what": "For rows with a registry_id, the government body that runs the site: its name, level of government, kind of body and website (runs_it).",
@@ -181,6 +228,63 @@
       ]
     },
     {
+      "id": "portal-catalogs",
+      "title": "Any portal's dataset catalog, as the harvest copies it",
+      "what": "What BetaNYC's nightly harvest does to the catalog of every New York portal it reads. An answer cites this when a dataset comes from a portal that has no source of its own in this list yet: the index is rebuilt every night, and this list changes only with a new release of the server. The answer names the portal and its publisher; that portal is the official record.",
+      "source_name": "Each portal's own catalog, at the portal's address",
+      "publisher": {
+        "name": "The government or institution that runs the portal",
+        "url": null
+      },
+      "source_url": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html#portal-addresses",
+      "official": true,
+      "how_gathered": "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source.",
+      "changes": {
+        "changed": true,
+        "steps": [
+          "cleaned",
+          "filtered",
+          "reshaped",
+          "merged"
+        ],
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row. On most platforms (ArcGIS, ArcGIS Server, GeoBlacklight, InvenioRDM) it also removes HTML from descriptions; Socrata values are kept as the portal gives them."
+      },
+      "verify_at": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+      "freshness": {
+        "kind": "hook",
+        "key": "index_harvested"
+      },
+      "update_frequency": "daily",
+      "coverage": {
+        "start": null,
+        "end": null,
+        "geography": "New York State",
+        "known_gaps": [
+          "Records whose map extent is wholly outside New York are dropped."
+        ]
+      },
+      "terms": {
+        "terms_url": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html",
+        "credit_line": "Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry."
+      },
+      "report_errors": {
+        "upstream_url": "https://github.com/BetaNYC/ny-data-registry-mcp/issues"
+      },
+      "tools": [
+        "search_datasets",
+        "get_dataset_columns",
+        "find_joinable",
+        "whats_new",
+        "list_topics",
+        "registry_info"
+      ],
+      "caveats": [
+        "Each dataset's own page on its portal, the link in each result, is the official record of that dataset.",
+        "Each portal sets its own terms of use; check them on the portal.",
+        "This is a catalog of dataset descriptions, not the data itself."
+      ]
+    },
+    {
       "id": "catalog-health-data-ny",
       "title": "Dataset catalog: Health Data NY",
       "what": "Titles, descriptions, tags, columns, formats and dates of the datasets in Health Data NY, run by New York State Department of Health. It is a Socrata portal (Socrata is a platform made by Tyler Technologies), read through the Socrata Discovery API.",
@@ -254,6 +358,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -370,6 +475,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -429,6 +535,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -489,6 +596,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -548,6 +656,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -607,6 +716,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -666,6 +776,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -725,6 +836,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -784,6 +896,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -843,6 +956,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -902,6 +1016,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -961,6 +1076,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1019,6 +1135,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1077,6 +1194,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1135,6 +1253,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1195,6 +1314,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1253,6 +1373,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1312,6 +1433,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1371,6 +1493,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1429,6 +1552,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1487,6 +1611,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1545,6 +1670,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1603,6 +1729,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1660,6 +1787,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1718,6 +1846,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1777,6 +1906,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -1837,6 +1967,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2012,6 +2143,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2070,6 +2202,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2130,6 +2263,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2189,6 +2323,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2247,6 +2382,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2306,6 +2442,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2365,6 +2502,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2423,6 +2561,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2481,6 +2620,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2539,6 +2679,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2597,6 +2738,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2654,6 +2796,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2713,6 +2856,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2771,6 +2915,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2829,6 +2974,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -2948,6 +3094,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3006,6 +3153,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3064,6 +3212,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3122,6 +3271,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3181,6 +3331,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3239,6 +3390,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3297,6 +3449,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3354,6 +3507,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3412,6 +3566,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3470,6 +3625,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3587,6 +3743,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3646,6 +3803,7 @@
       "changes": {
         "changed": true,
         "steps": [
+          "cleaned",
           "filtered",
           "reshaped",
           "merged"
@@ -3831,7 +3989,8 @@
       },
       "tools": [
         "search_datasets",
-        "registry_info"
+        "registry_info",
+        "whats_new"
       ]
     },
     {

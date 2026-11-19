@@ -120,4 +120,6 @@ test("WHATS-CHANGED.md ships in the npm package", () => {
   const files = (Array.isArray(packed) ? packed[0] : Object.values(packed)[0]).files.map((f) => f.path);
   assert.ok(files.includes("WHATS-CHANGED.md"), files.join(", "));
   assert.ok(files.includes("dist/betanyc-tools.js"));
+  // The release tooling (harvest publishing, gate, rollback) runs from the repo, never from the package.
+  assert.deepEqual(files.filter((f) => f.startsWith("dist/publish/")), []);
 });
