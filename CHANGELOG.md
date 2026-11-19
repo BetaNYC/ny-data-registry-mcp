@@ -140,7 +140,8 @@ Dataset search matches every word of the query.
   rows and group titles are cut to leave room for them; when a search matches so many portals
   that their sources take most of it, the reply keeps 8,000 bytes of rows and groups and its size
   note gives the larger limit it kept to (on the 2026-11-05 index, a 30-portal search such as
-  "parcels" is about 20.7 KB). The tool description says replies "aim for" about 20 KB. Test:
+  "parcels" is about 20.8 KB). The best-ranked rows are kept first: when even untitled groups do
+  not fit, the smallest groups are left out, not the rows (the export has every match). The tool description says replies "aim for" about 20 KB. Test:
   `test/search-budget-sources.test.mjs`.
 - A portal with no entry of its own in `DATA-SOURCES.json` (the index is rebuilt every night,
   the list of sources only with a release, so a portal the registry adds or renames after a

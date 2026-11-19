@@ -63,4 +63,11 @@ test("when the sources alone are most of the budget, the note gives the larger l
     assert.ok(limit > RESPONSE_BUDGET_BYTES, `${JSON.stringify(args)}: ${note(b)}`);
     assert.ok(bytes <= limit, `${JSON.stringify(args)}: ${bytes} bytes, note says under ${limit}`);
   }
+  // The best-ranked rows are the answer: the smallest groups go before the rows do.
+  for (const args of [{ query: "budgetmany" }, { query: "budgetmany", limit: 50 }]) {
+    const { b } = await answer(args);
+    assert.ok(b.auto_grouped, JSON.stringify(args));
+    assert.ok(b.results.length >= 3, `${JSON.stringify(args)}: ${b.results.length} rows`);
+    assert.match(b.groups_size_note, /smallest group\(s\)/, JSON.stringify(args));
+  }
 });

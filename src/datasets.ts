@@ -724,12 +724,10 @@ function fitSummary(resp: Record<string, unknown>, results: unknown[], groups: G
     if (t < 3) resp.groups_size_note = `Titles per group cut to ${t} to keep the answer under ${answerLimit} bytes.`;
     return;
   }
-  let n = floor;
-  while (n > 0 && !set(0, n)) n--;
-  if (set(0, n)) {
-    resp.groups_size_note = `Titles per group cut to 0 to keep the answer under ${answerLimit} bytes.`;
-    return;
-  }
+  // Even with no titles the groups do not fit (a search's sources take room too: one per portal
+  // with a match). The best-ranked rows are the answer, so keep them and leave out the smallest
+  // groups instead; the export CSV and data_sources still cover every match.
+  set(0, floor);
   fitGroups(resp, groups, null);
 }
 
