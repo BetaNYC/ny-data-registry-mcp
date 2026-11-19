@@ -15,6 +15,8 @@ import { assertEveryToolAnnotated, toolListSize } from "../dist/betanyc-tools.js
 // limit and offset parameters #38 added.
 // 2026-11-19, budget unchanged: 26,334 with shared module 1.5.1, how_to_query's limit and offset,
 // and check_source's one-request, matched-by-host wording (review fixes, epic #33).
+// 2026-11-19, budget unchanged: 26,370 after check_source's description says it lists the rows
+// instead of fetching when no row clearly matches a url (review round 2, PR #51).
 const BUDGET_CHARS = 26_500;
 
 test("tool definitions plus server instructions stay within the size budget", () => {

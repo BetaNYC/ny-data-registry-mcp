@@ -1,5 +1,5 @@
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 
@@ -20,7 +20,7 @@ export function indexPath(): string {
   return process.env.NY_DATA_INDEX || join(cacheDir(), "ny-data-index.sqlite");
 }
 
-export const VERSION = "0.3.0";
+export const VERSION = "0.4.0";
 
 /** Descriptive User-Agent. No email address, by design. */
 export const USER_AGENT = `ny-data-registry-mcp/${VERSION} (BetaNYC read-only open data catalog index; +https://beta.nyc)`;
@@ -34,4 +34,26 @@ export const REGISTRY_PAGE =
 /** Where search_datasets writes its full-result CSV files. Only files this package names are ever pruned there. */
 export function exportDir(): string {
   return process.env.NY_DATA_EXPORT_DIR || join(cacheDir(), "exports");
+}
+
+/**
+ * `text` with this machine's own folders taken out: the index file, the cache and export
+ * folders, the index's folder and the home folder, longest first. For error text that a tool
+ * shows (a failed cache write names the file). NoIndexError names the index path on purpose
+ * and does not go through this.
+ */
+export function hideLocalPaths(text: string): string {
+  const home = homedir();
+  const swaps: [string, string][] = [
+    [indexPath(), "[index file]"],
+    [exportDir(), "[export folder]"],
+    [cacheDir(), "[cache folder]"],
+    [dirname(indexPath()), "[index folder]"],
+    [home, "~"],
+  ];
+  let out = text;
+  for (const [path, label] of swaps.filter(([p]) => p && p.length > 1).sort((a, b) => b[0].length - a[0].length)) {
+    out = out.split(path).join(label);
+  }
+  return out;
 }

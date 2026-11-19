@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { echo } from "./echo.js";
 import { basename } from "node:path";
 import { readFileSync } from "node:fs";
 import { FAMILIES } from "./families.js";
@@ -200,7 +201,7 @@ const DOMAIN_TOOLS = [
   {
     name: "check_source",
     description:
-      "Live check of one source's portal URL: exactly one request (no retry), redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. A url is matched to registry rows by host and never fetched itself; if several rows share the host, the best match is checked. Never calls key-required or account-gated sources, and reports a bot block rather than working around it.",
+      "Live check of one source's portal URL: exactly one request (no retry), redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. A url is never fetched itself: it picks a registry row by host and path, and when no row clearly matches, the rows on that host are listed and nothing is fetched. Never calls key-required or account-gated sources, and reports a bot block rather than working around it.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -365,7 +366,7 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
     throw new Error(parsed.error.issues.map((i) => `${i.path.join(".") || "(args)"}: ${i.message}`).join("; "));
   }
   throw new Error(
-    `${tool} does not accept ${rejected.map((k) => `'${k}'`).join(", ")}. ` +
+    `${tool} does not accept ${rejected.slice(0, 5).map((k) => `'${echo(k)}'`).join(", ")}${rejected.length > 5 ? ` and ${rejected.length - 5} more` : ""}. ` +
       `The parameters it accepts are: ${Object.keys(shape).join(", ") || "(none)"}. ` +
       `Unknown parameters are rejected rather than ignored, because ignoring one would return results that look right but answer a different question.`
   );
@@ -378,14 +379,40 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
  */
 type Prov = ReturnType<typeof provenance>;
 const cite = (p: Prov) => ({ ...p.provenance, cite: p.text });
+/** Where a modified copy is held: named next to the official record in a dataset's data_source. */
+const HELD_IN = { source: "NY Data Registry index", publisher: "BetaNYC", source_url: INDEX_RELEASES_PAGE };
 const registrySource = () =>
   provenance({ sourceName: "NY Data Portal Registry", publisher: "BetaNYC", sourceUrl: REGISTRY_PAGE, kind: "snapshot", asOf: registry().generated || null });
+/** What BetaNYC did to build the index, in the same terms as about_data (DATA-SOURCES.json). */
+const INDEX_BUILT =
+  "built this index from the catalogs of New York's open data portals, keeping data records only, dropping records outside New York, and reshaping and joining them with its portal list. Each dataset's own page on its portal is its official record";
+/** Index answers (search_datasets, list_topics, find_joinable, whats_new, a standard description):
+ * BetaNYC's NY Data Registry index, which BetaNYC produced, as of its last harvest. */
 const indexSource = () =>
-  provenance({ sourceName: "NY Data Registry index", publisher: "BetaNYC", sourceUrl: INDEX_RELEASES_PAGE, kind: "snapshot", asOf: (indexInfo()?.last_harvest as string | null) ?? null });
-/** One dataset: its portal's catalog, the dataset's own page, as of the harvest that last saw it. */
+  provenance({
+    sourceName: "NY Data Registry index",
+    publisher: "BetaNYC",
+    sourceUrl: INDEX_RELEASES_PAGE,
+    kind: "snapshot",
+    asOf: (indexInfo()?.last_harvest as string | null) ?? null,
+    changedByBetanyc: { kind: "produced-by-betanyc", detail: INDEX_BUILT },
+  });
+/** What BetaNYC did to one dataset's record, as about_data says for each catalog-* source. */
+const DATASET_CHANGED =
+  "this is the NY Data Registry index's copy of the portal's catalog record (BetaNYC left some records out, reshaped it and joined it with its portal list); fields marked derived in provenance were worked out or cleaned by BetaNYC";
+/** One dataset (get_dataset_columns): BetaNYC's modified copy in the NY Data Registry index, as of
+ * the harvest that last saw it, with the dataset's own portal page as the official record. Agrees
+ * with about_data, which says BetaNYC modified the catalogs and the copy is not the official record. */
 function datasetSource(b: Record<string, any>): Prov {
   try {
-    return provenance({ sourceName: `${b.portal} catalog`, publisher: b.entity, sourceUrl: b.url, kind: "snapshot", asOf: b.last_seen ?? null });
+    return provenance({
+      sourceName: `${b.portal} catalog`,
+      publisher: b.entity,
+      sourceUrl: b.url,
+      kind: "snapshot",
+      asOf: b.last_seen ?? null,
+      changedByBetanyc: { kind: "modified-by-betanyc", detail: DATASET_CHANGED },
+    });
   } catch {
     return indexSource(); // no portal name, publisher or link on the row
   }
@@ -477,7 +504,9 @@ export async function callTool(name: string, args: unknown) {
         const a = parseToolArgs("get_dataset_columns", args);
         if (a.standard) return text(withSource(datasetStandard(a.dataset, a.standard), indexSource()));
         const r = getDatasetColumns(a.dataset, a.limit, a.offset) as Record<string, any>;
-        return text(withSource(r, datasetSource(r)));
+        const out = withSource(r, datasetSource(r)) as Record<string, any>;
+        if (out?.data_source?.changed_by_betanyc) out.data_source = { ...out.data_source, held_in: HELD_IN };
+        return text(out);
       }
       case "find_joinable": {
         const a = parseToolArgs("find_joinable", args);
@@ -488,7 +517,7 @@ export async function callTool(name: string, args: unknown) {
         return text(withSource(whatsNew(a.since, a.portal, a.limit), indexSource()));
       }
       default:
-        return fail(`Unknown tool: ${name}. The tools are: ${TOOLS.map((t) => t.name).join(", ")}.`);
+        return fail(`Unknown tool: ${echo(name)}. The tools are: ${TOOLS.map((t) => t.name).join(", ")}.`);
     }
   } catch (err) {
     return fail(err instanceof Error ? err.message : String(err));

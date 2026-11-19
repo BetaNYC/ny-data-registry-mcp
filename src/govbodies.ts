@@ -10,7 +10,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { cacheDir, readDataJson, USER_AGENT } from "./paths.js";
+import { cacheDir, readDataJson, USER_AGENT, hideLocalPaths } from "./paths.js";
 import { fetchWithRetry } from "./http.js";
 
 export const GOV_REGISTRY_URL = "https://raw.githubusercontent.com/BetaNYC/ny-gov-web-registry/main/data/registry.json";
@@ -155,7 +155,8 @@ export async function refreshGovBodies(timeoutMs = 5000): Promise<LoadedGovBodie
     }
     throw new Error(`HTTP ${res.status}`);
   } catch (e) {
-    const err = e instanceof Error ? e.message : String(e);
+    // A failed cache write names the file: keep this machine's folders out of registry_info.
+    const err = hideLocalPaths(e instanceof Error ? e.message : String(e));
     loaded = cached ? toLoaded(cached, "cache", meta.fetched_at ?? null, err) : { ...bundled, refresh_error: err };
     return loaded;
   }

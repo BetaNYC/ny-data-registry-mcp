@@ -182,3 +182,76 @@ test("G: a redirect is reported, not followed: exactly one request, redirect: ma
     }
   );
 });
+
+// ─── Review round 2, F6: pin what the round-1 tests let through ─────────────
+
+test("F6: a registry_id shared by several rows gives a list and sends no request", async () => {
+  const rid = "new-york-state-office-of-information-technology-services";
+  const rows = registry().sources.filter((s) => s.registry_id === rid);
+  assert.ok(rows.length > 1);
+  await withStub(
+    () => new Response("<html></html>", { status: 200 }),
+    async (calls) => {
+      const b = await answer({ registry_id: rid });
+      assert.equal(b.ambiguous, true);
+      assert.equal(b.total, rows.length);
+      assert.deepEqual(b.candidates.map((c) => c.source_id), rows.map((s) => s.source_id));
+      assert.equal(b.checked, undefined);
+      assert.equal(calls.length, 0);
+    }
+  );
+});
+
+test("F6: an answer is an error only when the error is its one and only field", async () => {
+  const { text } = await import("../dist/tools.js");
+  assert.equal(text({ error: "no such thing" }).isError, true);
+  assert.equal(text({ place_error: "no such place" }).isError, true);
+  assert.match(text({ error: "no such thing" }).content[0].text, /^Error: no such thing/);
+  assert.notEqual(text({ error: "x", verdict: "DRIFT" }).isError, true);
+  assert.notEqual(text({ place_error: "x", results: [] }).isError, true);
+  assert.notEqual(text({ error: 5 }).isError, true, "a non-string error is not a message");
+  assert.notEqual(text({ request_error: "x" }).isError, true);
+  assert.notEqual(text([{ error: "x" }]).isError, true);
+});
+
+test("F6: the check's one request has a 20-second timeout", async () => {
+  const { CHECK_TIMEOUT_MS } = await import("../dist/check.js");
+  assert.equal(CHECK_TIMEOUT_MS, 20_000);
+  const real = AbortSignal.timeout;
+  const seen = [];
+  AbortSignal.timeout = (ms) => {
+    seen.push(ms);
+    return real.call(AbortSignal, ms);
+  };
+  try {
+    await withStub(
+      () => new Response("<html></html>", { status: 200 }),
+      async (calls) => {
+        await answer({ source_id: LIVE });
+        assert.equal(calls.length, 1);
+        assert.deepEqual(seen, [20_000]);
+      }
+    );
+  } finally {
+    AbortSignal.timeout = real;
+  }
+});
+
+test("F6: candidate lists stop at 25 by default and 100 at most", async () => {
+  const { candidatePage, CANDIDATES_DEFAULT, CANDIDATES_MAX } = await import("../dist/sources.js");
+  assert.equal(CANDIDATES_DEFAULT, 25);
+  assert.equal(CANDIDATES_MAX, 100);
+  const rows = registry().sources.slice(0, 30);
+  const p = candidatePage(rows);
+  assert.equal(p.candidates.length, 25);
+  assert.equal(p.total, 30);
+  assert.equal(p.next_offset, 25);
+  const rest = candidatePage(rows, 25, 25);
+  assert.equal(rest.candidates.length, 5);
+  assert.equal(rest.next_offset, null);
+  assert.equal(candidatePage(rows.slice(0, 3)).showing, "All 3 matching rows.");
+  // check_source by registry_id caps its list the same way (no default-25 escape hatch there).
+  const big = JSON.parse((await callTool("how_to_query", { entity: "county", limit: 100 })).content[0].text);
+  assert.equal(big.candidates.length, big.total);
+  assert.ok(big.total > 25 && big.total <= 100);
+});

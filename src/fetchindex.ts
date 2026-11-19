@@ -24,7 +24,7 @@ import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createGunzip } from "node:zlib";
 import { DatabaseSync } from "node:sqlite";
-import { indexPath, USER_AGENT } from "./paths.js";
+import { indexPath, USER_AGENT, hideLocalPaths } from "./paths.js";
 import { fetchWithRetry } from "./http.js";
 import { SCHEMA_VERSION } from "./db.js";
 
@@ -417,7 +417,7 @@ export function ensureIndex(): Promise<DownloadState> {
     })
     .catch((e) => {
       lastFailureAt = Date.now();
-      state = { ...state, status: "failed", finished_at: new Date().toISOString(), error: e instanceof Error ? e.message : String(e) };
+      state = { ...state, status: "failed", finished_at: new Date().toISOString(), error: hideLocalPaths(e instanceof Error ? e.message : String(e)) };
       return downloadState();
     })
     .finally(() => {

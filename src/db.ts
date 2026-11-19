@@ -329,8 +329,16 @@ export function purgePortal(db: DatabaseSync, portalId: string): number {
   return ids.length;
 }
 
+/** HTML tags and &nbsp;/&amp; removed and runs of spaces squeezed. A value it changes is BetaNYC's
+ * cleaned copy, so its field's provenance is "derived" (see cleanedLabel), not "portal". */
 export function stripHtml(s: string): string {
   return s.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+}
+
+/** The provenance label for a value stripHtml cleaned: "portal" when cleaning left it as the
+ * portal gave it, "derived" when it changed it (tags, entities or spacing), null when empty. */
+export function cleanedLabel(raw: string | null | undefined, cleaned: string | null): "portal" | "derived" {
+  return cleaned !== null && (raw ?? "") !== cleaned ? "derived" : "portal";
 }
 
 /** Portals in the index (with or without datasets) whose id is not in `registryIds`, with their live dataset counts. */

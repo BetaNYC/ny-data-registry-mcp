@@ -22,12 +22,29 @@ Dataset search matches every word of the query.
   when several match. **How to update:** compare `counts` (or `columns_shown.total`, or `total`)
   with the rows you got, and ask for the rest with `limit` (up to 100 rows, 500 columns) and,
   for columns and `how_to_query`, `offset`.
+- **Candidate lists come in pages.** When several registry rows match, `how_to_query` and
+  `check_source` no longer return every row in `candidates`: they return one page (25 by
+  default) with `total`, `showing` and `next_offset`. **How to update:** read `total`; for more,
+  call `how_to_query` again with `offset` (and `limit` up to 100).
+- **`check_source` by `url` checks a row only when one clearly matches.** It picks the row whose
+  portal or API address is the same page, a path the URL is under, or the only one with a query
+  parameter the URL has. On a host several governments share (an ArcGIS server, `github.com`)
+  with no such match, even when only one row is on that host, it returns the `ambiguous` list
+  and fetches nothing; before 0.4.0, one row on a host was always checked. With several rows on
+  the host and a clear match, `url_matches` gives the count. **How to update:** on `ambiguous`,
+  call again with a `source_id` from `candidates`.
+- **`cite` for BetaNYC's own data says so first.** Index answers (`search_datasets`,
+  `list_topics`, `find_joinable`, `whats_new`, a standard description) start "BetaNYC produced
+  this. It is not an official record."; `get_dataset_columns` starts "BetaNYC modified this
+  data: …" and ends with the official record. `data_source` gains `changed_by_betanyc` (and,
+  for one dataset, `held_in`). **How to update:** a client that parsed `cite` as
+  "Source: … Link: …" reads `source_url` (the official record) instead.
 
 ### Changed
 
 - The `registry_id` and `runs_it` notes, repeated in five tool descriptions, are said once in the
   server instructions, with a line about `data_source`. The tool-list budget drops to 26,500
-  characters (25,947 measured; 26,334 with the review fixes below), and a test fails if any
+  characters (25,947 measured; 26,370 with the review fixes below), and a test fails if any
   sentence repeats across descriptions (#45).
 - `test/stdout.test.mjs`: starts the server, calls every tool over raw stdio, and fails on any
   stdout line that is not a JSON-RPC message (#44).
@@ -51,8 +68,9 @@ Dataset search matches every word of the query.
 - `find_sources`, `find_joinable` (per key) and `whats_new` say when a list was cut and how to
   get the rest; `whats_new` adds `data_updated_total` (#38).
 - Failures are MCP errors (`isError: true`) with a plain sentence and what to try, through the
-  shared `toolError` (stack lines dropped, upstream bodies cut to 500 characters, keys from env
-  redacted). Before, an unknown dataset, source or place, or a bad `whats_new` date, came back
+  shared `toolError` (stack-frame lines dropped from the message and the message capped at 1,000
+  characters since shared module 1.5.2, keys from env redacted; no tool passes on a response
+  body from an outside server). Before, an unknown dataset, source or place, or a bad `whats_new` date, came back
   as an ordinary answer with an `error` or `place_error` field (#43). Test: `test/errors.test.mjs`.
   Only an answer that is an error and nothing else is turned into one: a `check_source` answer
   for a portal that did not answer keeps its verdict and `matches_registry` (a dead row that
@@ -66,12 +84,41 @@ Dataset search matches every word of the query.
   3 requests and 15 s.
 - `how_to_query`: when several rows match, at most 25 by default (`limit` up to 100, `offset`),
   with `total`, `showing` and `next_offset`. `{entity: "county"}` was 68 rows in 67 KB.
-  `check_source` by `url`: when several rows share the host, it checks only the best match (same
-  page, then path, then the rarest shared query parameter) and `url_matches` gives the count and
-  the other rows' ids; still one request. A `url` with no http(s) host (`127.0.0.1` without a
-  scheme, `file:///etc/passwd`) now matches no row: before, it matched every row whose
-  `api_endpoint` is not a URL. Tests lock in that `check_source` never fetches the address a
-  caller gives and reports a redirect without following it.
+  `check_source` by `url` scores each row on its portal URL and its API address (same page and
+  query, then the longest path the URL is under, then query parameters no other row on the host
+  has) and checks a row only when one scores strictly above every other; otherwise it lists them
+  and fetches nothing (see Breaking). Status and registry order never pick a row: an earlier
+  draft of this change fell back to "live first, then registry order" and checked another
+  government's portal for 14 of the 339 registry addresses. Now each of the 339 checks its own
+  row (337) or lists it among others (2). Test: `test/lookup-safety.test.mjs`. A `url` with no
+  http(s) host (`127.0.0.1` without a scheme, `file:///etc/passwd`, `foo://…`) matches no row:
+  before, a hostless string matched every row whose `api_endpoint` is not a URL. Tests lock in
+  that `check_source` never fetches the address a caller gives and reports a redirect without
+  following it.
+- What a caller typed is repeated in an answer or error on one line of at most 80 characters
+  (`src/echo.ts`): source ids, registry ids, entity names, URLs, places, topics, dataset ids,
+  column names, parameter names and tool names. `check_source`'s `request_error` and `verdict`
+  carry one line of at most 300 characters (`errorSummary`), not the network error's whole cause
+  message; `redirect_to` is cut at 500 characters, with `redirect_note` when it was. Refresh and
+  download errors in `registry_info` (a failed cache write names the file) show `[cache folder]`
+  or `~` instead of this machine's folders (`hideLocalPaths`). The missing-index error still
+  names the index path, on purpose.
+- Registry values that are not a usable http(s) URL are treated as absent for matching and
+  fetching (`portal_url` and `api_url` on each loaded row), and shown unchanged: 19 rows hold "—"
+  for a blank `api_endpoint`, 4 rows have no portal URL, and one portal URL has a note after it
+  (only the URL part is fetched). The registry data is not edited here; the rows are listed for
+  its owner in #52.
+- `get_dataset_columns`: `data_source` says the record is BetaNYC's modified copy in the NY Data
+  Registry index (`changed_by_betanyc`: modified, `held_in`), with the dataset's own portal page
+  as the official record, as `about_data` says for the portal catalogs. Index answers say BetaNYC
+  produced the index and it is not an official record.
+- Per-field `provenance` in harvested records: a field the harvest cleaned or chose is
+  `derived`, not `portal`. ArcGIS Server, GeoBlacklight and InvenioRDM descriptions with HTML
+  removed or spaces squeezed; the ArcGIS Server publisher, taken from `copyrightText`; an ArcGIS
+  item's description filled from its `snippet`, and a license with HTML removed. Only the labels
+  changed, not the values. The published index was built before this, so records keep the old
+  labels until the next nightly harvest. `DATA-SOURCES.json` says the same for the 54 catalogs
+  this applies to (all but the Socrata ones), and `data.json` is rebuilt from it.
 - `src/http.ts`: error text built from a response body has every request-header value removed
   (`redactHeaders`), so an echoed `X-App-Token` or GitHub token cannot reach a public harvest
   issue (#39).
@@ -81,15 +128,17 @@ Dataset search matches every word of the query.
 - `test/tool-size.test.mjs`: the tool list plus server instructions must stay at or under a
   budget (#41): 27,000 characters when it was added (26,545 on 2026-11-18), lowered to 26,500 by
   #45 (above).
-- `src/betanyc-tools.ts`: BetaNYC's shared module 1.5.1 (was 1.4.0), and
+- `src/betanyc-tools.ts`: BetaNYC's shared module 1.5.2 (was 1.4.0), and
   `scripts/whats_changed.py` 1.4.1 with its `scripts/mcp_shared/data-sources.schema.json`
   (were 1.4.0), copied unchanged from betanyc-ai-workspace (#1702; the module from commit
-  17938f2: raw file sha256 `567838e0cf659690f3e07885fdfedefa461274e1f51477084f3b48f4e683a72d`;
-  the stamp hash on its line 2, which leaves that line out, `e1e15642…`). 1.5.1 checks that
+  bbc1671: raw file sha256 `bcc117e77c16479cca3f5cc96cf66984e821f12599cb6f4533d05dbcd18b2b33`,
+  125,208 bytes; the stamp hash on its line 2, which leaves that line out, `eb29cbfb…`). 1.5.2
+  drops stack-frame lines from a `toolError` message and caps it at 1,000 characters, adds
+  `errorSummary` (one safe line from a caught error) and lets `provenance()` say BetaNYC
+  modified or produced the data (`changedByBetanyc`) in `about_data`'s own words. 1.5.1 checks that
   every tool has `readOnlyHint: true`, a boolean `openWorldHint` and a title, labels a live
   answer's `asOf` as the data's own date (so `check_source` no longer passes its fetch time as
-  one), and in `toolError` keeps the caller's own message whole and redacts more encoded forms
-  of a key.
+  one), and in `toolError` redacts more encoded forms of a key.
 - `search_datasets`: a dataset must match every word of the query (the word, its stem or one of
   its synonyms). Before, any one word was enough, so "tax parcels" in Erie County also counted
   opioid excise tax reports: 208 matches, now 113. When no dataset has every word, the search

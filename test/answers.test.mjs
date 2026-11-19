@@ -48,7 +48,9 @@ test("every domain tool's answer carries data_source: source, publisher, link an
     assert.match(s.source_url, /^https:\/\//, name);
     assert.notEqual(s.as_of_kind, "unknown", `${name}: no usable as-of`);
     assert.ok(s.as_of, name);
-    assert.match(s.cite, /^Source: .* As of .* Link: https:\/\//, name);
+    // Data passed on as published: "Source: … Link: …". Data BetaNYC built or changed says so
+    // first, as about_data does (shared module 1.5.2, changedByBetanyc).
+    assert.match(s.cite, /^(Source: .* As of .* Link: |BetaNYC modified this data: .* As of .* Official record: .*|BetaNYC produced this\. It is not an official record\. .* As of .* Built from: .*)https:\/\//, name);
   }
   assert.deepEqual([...domain], [], "every domain tool is checked");
 });
@@ -125,4 +127,28 @@ test("find_sources, find_joinable and whats_new say when a list was cut and how 
   assert.equal(wn.data_updated_per_portal.length, 1);
   assert.ok(wn.data_updated_total > 1);
   assert.match(wn.showing, /index_change_detail 1 of \d+, data_updated_per_portal 1 of \d+\. Raise limit/);
+});
+
+// F8 (review round 2): answers agree with about_data. The index is BetaNYC's own product; one
+// dataset's record is BetaNYC's modified copy, with the portal page as the official record.
+test("index answers say BetaNYC built the index; a dataset's record says BetaNYC modified it", async () => {
+  for (const [name, args] of [["search_datasets", { query: "zoning" }], ["list_topics", {}], ["find_joinable", { dataset: "test-0001" }], ["whats_new", { since: "2000-01-01" }], ["get_dataset_columns", { dataset: WIDE, standard: "dcat-us" }]]) {
+    const s = (await call(name, args)).data_source;
+    assert.equal(s.source, "NY Data Registry index", name);
+    assert.equal(s.publisher, "BetaNYC", name);
+    assert.equal(s.changed_by_betanyc?.kind, "produced-by-betanyc", name);
+    assert.match(s.cite, /^BetaNYC produced this\. It is not an official record\. What BetaNYC did: built this index/, name);
+  }
+  const ds = await call("get_dataset_columns", { dataset: WIDE });
+  const s = ds.data_source;
+  assert.equal(s.changed_by_betanyc.kind, "modified-by-betanyc");
+  assert.match(s.changed_by_betanyc.detail, /NY Data Registry index's copy of the portal's catalog record/);
+  assert.match(s.cite, /^BetaNYC modified this data: .*This copy should not be considered the official record\. .*Official record: .*catalog/);
+  assert.equal(s.source_url, ds.url, "the portal's own page is the official record");
+  assert.equal(s.publisher, ds.entity);
+  assert.deepEqual(s.held_in, { source: "NY Data Registry index", publisher: "BetaNYC", source_url: "https://github.com/BetaNYC/ny-data-registry-mcp/releases" });
+  // about_data says the same for the portal catalogs this record comes from.
+  const { betanycTools } = await import("../dist/tools.js");
+  const ad = betanycTools().call("about_data", { topic: "get_dataset_columns" }).content[0].text;
+  assert.match(ad, /BetaNYC modified this data: .*This copy should not be considered the official record/);
 });

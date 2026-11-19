@@ -22,7 +22,7 @@
  */
 import { politeJson, BlockedError, setHostFloorMs } from "../http.js";
 import { isLonLatBox } from "../places.js";
-import { stripHtml, type HarvestedColumn, type HarvestedDataset } from "../db.js";
+import { cleanedLabel, stripHtml, type HarvestedColumn, type HarvestedDataset } from "../db.js";
 
 export interface ServerConfig {
   /** Total requests to one host per read (listing, services and layers together). */
@@ -209,7 +209,9 @@ const ITEM_TYPE: Record<string, string> = { MapServer: "Map Service", FeatureSer
 /** Map one service's JSON to a dataset. The title is the service's own (documentInfo.Title), else its name. */
 export function mapServerService(ref: ServiceRef, doc: ServiceDoc): HarvestedDataset {
   const title = doc.documentInfo?.Title?.trim() || ref.name.split("/").pop()!;
-  const desc = stripHtml(doc.serviceDescription || doc.description || "") || null;
+  const rawDesc = doc.serviceDescription || doc.description || "";
+  const desc = stripHtml(rawDesc) || null;
+  const publisher = stripHtml(doc.copyrightText ?? "") || null;
   const keywords = (doc.documentInfo?.Keywords ?? "")
     .split(/[,;]/)
     .map((k) => k.trim())
@@ -234,7 +236,7 @@ export function mapServerService(ref: ServiceRef, doc: ServiceDoc): HarvestedDat
     formats: [{ format: "ArcGIS GeoServices REST API", media_type: "application/json", url: ref.url, provenance: "portal" }],
     extent: envelopeToLonLat(doc.fullExtent ?? doc.extent),
     license: null,
-    publisher: stripHtml(doc.copyrightText ?? "") || null,
+    publisher,
     row_count: null,
     geometry_type: null,
     owner: null,
@@ -243,7 +245,9 @@ export function mapServerService(ref: ServiceRef, doc: ServiceDoc): HarvestedDat
     columns_status: (doc.layers?.length || doc.tables?.length) ? "not-fetched" : "none",
     provenance: {
       name: doc.documentInfo?.Title?.trim() ? "portal" : "derived",
-      description: "portal", tags: "portal", categories: "derived", extent: "portal", publisher: "portal",
+      // Cleaned by stripHtml (tags removed, spaces squeezed): derived when that changed the value.
+      // The publisher is the service's copyrightText, a credit line, not a named publisher field.
+      description: cleanedLabel(rawDesc, desc), tags: "portal", categories: "derived", extent: "portal", publisher: publisher === null ? "portal" : "derived",
       api_endpoint: "portal", formats: "portal", permalink: "derived", place: "derived", type: "derived",
     },
   };

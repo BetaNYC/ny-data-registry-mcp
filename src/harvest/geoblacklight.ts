@@ -21,7 +21,7 @@
 import { gunzipSync } from "node:zlib";
 import { politeFetch, redactHeaders } from "../http.js";
 import { bboxCenterInNY, bboxIntersectsNY, isLonLatBox } from "../places.js";
-import { stripHtml, type Distribution, type HarvestedDataset } from "../db.js";
+import { cleanedLabel, stripHtml, type Distribution, type HarvestedDataset } from "../db.js";
 
 export interface OgmRepo {
   /** "OpenGeoMetadata/edu.cornell" */
@@ -150,10 +150,11 @@ export function mapOgmRecord(r: OgmRecord): HarvestedDataset {
   const landing = refs["http://schema.org/url"]?.[0] ?? (ident && /^https?:\/\//.test(ident) ? ident : null);
   const modified = first(g ? x.layer_modified_dt : x.gbl_mdModified_dt);
   const description = g ? first(x.dc_description_s) : list(x.dct_description_sm).join("\n\n") || null;
+  const cleaned = description ? stripHtml(description) : null;
   return {
     native_id: r.id,
     name: first(g ? x.dc_title_s : x.dct_title_s),
-    description: description ? stripHtml(description) : null,
+    description: cleaned,
     department: null,
     categories: list(g ? x.dct_isPartOf_sm : x.dct_isPartOf_sm),
     tags: [...new Set([...list(g ? x.dc_subject_sm : x.dct_subject_sm), ...list(x.dcat_keyword_sm), ...list(x.dct_spatial_sm)])],
@@ -177,7 +178,7 @@ export function mapOgmRecord(r: OgmRecord): HarvestedDataset {
     columns: [],
     columns_status: "none",
     provenance: {
-      name: "portal", description: "portal", tags: "portal", categories: "portal", updated_at: "portal", type: "portal",
+      name: "portal", description: cleanedLabel(description, cleaned), tags: "portal", categories: "portal", updated_at: "portal", type: "portal",
       permalink: "portal", formats: "portal", extent: "portal", publisher: "portal", license: "portal", place: "derived",
     },
   };

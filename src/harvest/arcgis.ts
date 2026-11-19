@@ -19,6 +19,7 @@
  * The harvester stores metadata only (titles, descriptions, field names, links). It
  * never downloads data, and it excludes Esri-owned content (see docs/terms.md).
  */
+import { cleanedLabel } from "../db.js";
 import { politeJson, BlockedError } from "../http.js";
 import { bboxCenterInNY, bboxIntersectsNY, isLonLatBox } from "../places.js";
 import type { Distribution, HarvestedColumn, HarvestedDataset } from "../db.js";
@@ -102,8 +103,12 @@ export function mapArcgisItem(it: ArcgisItem, opts: { permalink: string | null }
     columns: null,
     columns_status: svc && it.type && SERVICE_TYPES.has(it.type) ? "not-fetched" : "none",
     provenance: {
-      name: "portal", description: "portal", department: "portal", tags: "portal", categories: "portal", updated_at: "portal",
-      created_at: "portal", views: "portal", extent: "portal", license: "portal", publisher: "portal", api_endpoint: "portal",
+      // No description: the item's one-line summary (snippet) stands in, which BetaNYC chose.
+      // A license with HTML has its tags removed. Both are then BetaNYC's, so "derived".
+      name: "portal", description: it.description ? "portal" : it.snippet ? "derived" : "portal", department: "portal", tags: "portal", categories: "portal", updated_at: "portal",
+      created_at: "portal", views: "portal", extent: "portal",
+      license: cleanedLabel(it.licenseInfo, it.licenseInfo ? it.licenseInfo.replace(/<[^>]+>/g, " ").trim() || null : null),
+      publisher: "portal", api_endpoint: "portal",
       formats: "portal", permalink: "derived", place: "derived",
     },
   };

@@ -22,7 +22,7 @@ import { createHash } from "node:crypto";
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { SCHEMA_VERSION } from "./db.js";
-import { indexPath, USER_AGENT } from "./paths.js";
+import { indexPath, USER_AGENT, hideLocalPaths } from "./paths.js";
 import { fetchWithRetry } from "./http.js";
 import { closeDb, db } from "./datasets.js";
 import {
@@ -260,7 +260,7 @@ export async function checkForUpdate(
       m = await fetchManifest(url);
     } catch (e) {
       // A young index has nothing to download unless there is a rollback; a failed read is not a failed update.
-      if (young) return res("not-due", `${notDue} (could not read index.json to check for a rollback)`, { ...base, error: e instanceof Error ? e.message : String(e) });
+      if (young) return res("not-due", `${notDue} (could not read index.json to check for a rollback)`, { ...base, error: hideLocalPaths(e instanceof Error ? e.message : String(e)) });
       throw e;
     }
     setSeenRollback(m?.rolled_back ?? null);
@@ -319,7 +319,7 @@ export async function checkForUpdate(
     if (rollingBack) return res("rolled-back", `replaced the installed index (harvested ${local}) with the index harvested ${r.last_harvest}${rb}, checksums verified${r.note ? `; ${r.note}` : ""}`, done);
     return res("updated", `updated to the index harvested ${r.last_harvest}, checksums verified${r.note ? `; ${r.note}` : ""}`, done);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = hideLocalPaths(e instanceof Error ? e.message : String(e));
     return res("failed", `update failed, the installed index is unchanged: ${msg}`, { error: msg });
   }
 }

@@ -21,8 +21,8 @@ const NAMES = TOOLS.map((t) => t.name);
 const ask = (args = {}) => betanycTools().call("about_data", args);
 const one = (topic) => ask({ topic }).structuredContent.sources.find((s) => s.topic === topic);
 
-test("the shared module is 1.5.1, and the server passes on its instructions", () => {
-  assert.equal(SHARED_MODULE_VERSION, "1.5.1");
+test("the shared module is 1.5.2, and the server passes on its instructions", () => {
+  assert.equal(SHARED_MODULE_VERSION, "1.5.2");
   assert.ok(SERVER_INSTRUCTIONS.endsWith(BETANYC_INSTRUCTIONS));
 });
 

@@ -1,12 +1,13 @@
 /**
  * Phase 2: answers from the harvested index.
  */
+import { echo } from "./echo.js";
 import type { DatabaseSync } from "node:sqlite";
 import { statSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { slugFor, writeExport } from "./exportcsv.js";
 import { openDb, indexExists, stripHtml } from "./db.js";
-import { indexPath } from "./paths.js";
+import { indexPath, hideLocalPaths } from "./paths.js";
 import { installPendingIndex } from "./fetchindex.js";
 import { staleNote } from "./indexage.js";
 import { expandConcepts, expandTerms, placeMatches, tokenize } from "./sources.js";
@@ -91,7 +92,7 @@ export function indexInfo(): Record<string, unknown> | null {
     const byPortal = d.prepare("SELECT id, harvest_status, dataset_count, last_harvested FROM portals WHERE harvest_status IS NOT NULL ORDER BY id").all();
     return { path: indexPath(), bytes: statSync(indexPath()).size, last_harvest: meta.last_harvest ?? null, registry_generated_at_harvest: meta.registry_generated ?? null, ...n, portals_detail: byPortal };
   } catch (e) {
-    return { path: indexPath(), built: false, note: e instanceof Error ? e.message : String(e) };
+    return { path: indexPath(), built: false, note: hideLocalPaths(e instanceof Error ? e.message : String(e)) };
   }
 }
 
@@ -270,7 +271,7 @@ export const NO_TOPICS_NOTE =
 
 function topicArg(v: string): TopicDef {
   const t = resolveTopic(v);
-  if (!t) throw new Error(`'${v}' is not one of the 24 topics. Use a topic id or name from list_topics: ${topicRules().topics.map((x) => x.id).join(", ")}.`);
+  if (!t) throw new Error(`'${echo(v)}' is not one of the 24 topics. Use a topic id or name from list_topics: ${topicRules().topics.map((x) => x.id).join(", ")}.`);
   return t;
 }
 
@@ -373,7 +374,7 @@ export function searchDatasets(a: SearchArgs) {
   if (a.place) {
     const p = resolvePlace(a.place);
     resolved = p;
-    if (!p) return { place_error: `'${a.place}' is not a New York place this server knows. Give a county, city, NYC borough or region, such as 'Erie County' or 'Brooklyn', or leave place out` };
+    if (!p) return { place_error: `'${echo(a.place)}' is not a New York place this server knows. Give a county, city, NYC borough or region, such as 'Erie County' or 'Brooklyn', or leave place out` };
     if (p.kind === "state") where.push("p.place_scope = 'statewide'");
     else if (p.kind === "region") {
       where.push("(p.region = ? OR p.place_scope = 'statewide')");
@@ -748,7 +749,7 @@ export const COLUMNS_MAX = 500;
 
 export function getDatasetColumns(ref: string, limit = COLUMNS_DEFAULT, offset = 0) {
   const r = findDataset(ref);
-  if (!r) return { error: `no dataset '${ref}' in the index. Use search_datasets to find its dataset_id.` };
+  if (!r) return { error: `no dataset '${echo(ref)}' in the index. Use search_datasets to find its dataset_id.` };
   const total = (db().prepare("SELECT COUNT(*) AS n FROM dataset_columns WHERE dataset_id = ?").get(r.id) as { n: number }).n;
   const cols = db().prepare("SELECT name, field, type, description, layer, key_label FROM dataset_columns WHERE dataset_id = ? ORDER BY id LIMIT ? OFFSET ?").all(r.id, limit, offset);
   const next = offset + cols.length < total ? offset + cols.length : null;
@@ -787,7 +788,7 @@ export function getDatasetColumns(ref: string, limit = COLUMNS_DEFAULT, offset =
  */
 export function datasetStandard(ref: string, standard: Standard) {
   const r = findDataset(ref);
-  if (!r) return { error: `no dataset '${ref}' in the index. Use search_datasets to find its dataset_id.` };
+  if (!r) return { error: `no dataset '${echo(ref)}' in the index. Use search_datasets to find its dataset_id.` };
   const d = db();
   const rec = loadRecords(d, [r.id])[0];
   const built = standard === "croissant" ? toCroissant(rec, { harvestedAt: indexHarvestTime(d) }) : toDcatUs(rec);
@@ -818,12 +819,12 @@ export function datasetStandard(ref: string, standard: Standard) {
 
 export function findJoinable(ref: string, column?: string, limitPerKey = 10) {
   const r = findDataset(ref);
-  if (!r) return { error: `no dataset '${ref}' in the index. Use search_datasets to find its dataset_id.` };
+  if (!r) return { error: `no dataset '${echo(ref)}' in the index. Use search_datasets to find its dataset_id.` };
   const d = db();
   let keys = d.prepare("SELECT key_label, group_concat(DISTINCT field) AS field FROM dataset_columns WHERE dataset_id = ? AND key_label IS NOT NULL GROUP BY key_label").all(r.id) as { key_label: string; field: string }[];
   if (column) {
     keys = keys.filter((k) => k.field.toLowerCase().split(",").includes(column.toLowerCase()) || k.key_label.toLowerCase() === column.toLowerCase());
-    if (!keys.length) return { error: `column '${column}' is not a recognized join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP)` };
+    if (!keys.length) return { error: `column '${echo(column)}' is not a recognized join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP)` };
   }
   // NYC-only keys (BBL, BIN, borough, community district, council district) are meaningless
   // outside the city: Buffalo's council_district is a different council. Keep NYC and
