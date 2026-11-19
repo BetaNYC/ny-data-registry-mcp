@@ -590,14 +590,34 @@ const groupSays = (s: Cited) =>
  */
 function withSources(body: unknown, sources: Cited[]): unknown {
   if (!body || typeof body !== "object" || failureOf(body) !== null || !sources.length) return body;
-  const groups = new Map<string, Map<string, string>>();
+  const groups = new Map<string, Map<string, Cited>>();
   for (const s of sources) {
-    const g = groups.get(groupSays(s)) ?? new Map<string, string>();
+    const g = groups.get(groupSays(s)) ?? new Map<string, Cited>();
     groups.set(groupSays(s), g);
-    g.set(s.portal_id ?? `${s.about_data_topic}|${s.source}`, `${s.about_data_topic}: ${builtFrom(s.source, s.publisher)}, ${s.source_url}`);
+    g.set(s.portal_id ?? `${s.about_data_topic}|${s.source}`, s);
   }
   const out = { ...(body as object), data_source: sources[0] };
-  return [...groups.values()].reduce((n, g) => n + g.size, 0) === 1 ? out : { ...out, data_sources: [...groups].map(([says, g]) => ({ says, sources: [...g.values()] })) };
+  if ([...groups.values()].reduce((n, g) => n + g.size, 0) === 1) return out;
+  return {
+    ...out,
+    data_sources: [...groups].map(([says, g]) => ({
+      says,
+      how_current: howCurrent([...g.values()]),
+      sources: [...g.values()].map((s) => `${s.about_data_topic}: ${builtFrom(s.source, s.publisher)}, ${s.source_url}`),
+    })),
+  };
+}
+/** How current a group of sources is, said once: one time, or the range when its portals were
+ * read at different times (each portal's catalog has its own last read; about_data gives each).
+ * To the minute: "2026-11-05T17:58Z". */
+function howCurrent(group: Cited[]): string {
+  const minute = (d: string) => (/^\d{4}-\d\d-\d\dT\d\d:\d\d.*Z$/.test(d) ? `${d.slice(0, 16)}Z` : d);
+  const dates = group.map((s) => s.as_of).filter((d): d is string => !!d).map(minute).sort();
+  const undated = group.length - dates.length;
+  const missing = undated ? ` ${undated} with no date.` : "";
+  if (!dates.length) return "No date known (about_data with a source's topic says why).";
+  if (dates[0] === dates[dates.length - 1]) return `As of ${dates[0]}.${missing}`;
+  return `Read between ${dates[0]} and ${dates[dates.length - 1]}; about_data gives each source's date.${missing}`;
 }
 const withSource = (body: unknown, s: Cited) => withSources(body, [s]);
 const SOURCES_MARGIN_BYTES = 150;

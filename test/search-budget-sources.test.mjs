@@ -30,6 +30,15 @@ const index = await buildFixtureIndex(tempIndexPath());
   };
   add("budgetsome", 18);
   add("budgetsixty", 60);
+  // 60 portals over real registry rows: varied counties (boroughs, statewide), entities and
+  // platforms, for the calls a left-out group's note prints (round 4).
+  registry().sources.filter((r) => r.url).slice(0, 60).forEach((r, i) => {
+    const host = `data.grp-${i}.ny.gov`;
+    const p = portalRecord({ ...r, source_id: `grp-portal-${i}`, url: `https://${host}/` });
+    upsertPortal(db, p);
+    writePortalDatasets(db, p, [0, 1].map((k) => mapSocrataAsset({ resource: { id: `g${i}-${k}`, name: `grpword dataset ${k}`, type: "dataset" }, classification: {} }, host)), run, true);
+    setPortalHarvest(db, p.id, { adapter: "socrata", status: "ok", note: null, socrata_domain: host });
+  });
   // Two portals with the same name and publisher (round 3): each is its own source.
   for (const i of [0, 1]) {
     const host = `data.twin-${i}.ny.gov`;
@@ -62,7 +71,6 @@ const portalsNamed = (b, word) => {
   return named;
 };
 const note = (b) => b.groups_size_note ?? b.size_note ?? "";
-const linesBytes = (b) => Buffer.byteLength(JSON.stringify({ data_sources: b.data_sources }, null, 2));
 
 test("a search's sources fit inside its 20,000-byte budget: rows and groups are cut to leave room", async () => {
   for (const args of [{ query: "budgetsome", group_by: "portal" }, { query: "budgetsome", limit: 50 }, { query: "budgetsome" }]) {
@@ -81,7 +89,11 @@ test("60 portals: every group's count, every portal named with label, publisher 
     const { b, bytes } = await answer(args);
     assert.equal(b.total_matches, 360, where);
     assert.equal(portalsNamed(b, "budgetsixty").size, 60, where);
-    assert.ok(linesBytes(b) / 60 < 140, `${where}: ${Math.round(linesBytes(b) / 60)} bytes per portal`);
+    // One line per portal, as printed (indent, quotes and comma included); the group's own words
+    // and how_current are said once per group and count in the whole answer's size below.
+    const perPortal = b.data_sources.flatMap((g) => g.sources).filter((l) => l.includes("budgetsixty")).reduce((n, l) => n + Buffer.byteLength(JSON.stringify(l)) + 10, 0) / 60;
+    assert.ok(perPortal < 130, `${where}: ${Math.round(perPortal)} bytes per portal`);
+    assert.ok(b.data_sources.every((g) => g.how_current), `${where}: how current`);
     assert.equal(b.group_count, 60, where);
     assert.ok(b.groups.every((g) => g.matches === 6), where);
     if (args.detail === "full") {
@@ -106,4 +118,31 @@ test("two portals with the same name and publisher are two sources, keyed on the
   const { b } = await answer({ query: "budgettwin" });
   const lines = b.data_sources.flatMap((g) => g.sources);
   for (const i of [0, 1]) assert.ok(lines.includes(`portal-catalogs: Twin Open Data (Twin Agency), https://data.twin-${i}.ny.gov/`), `twin ${i}: ${lines.join(" | ")}`);
+});
+
+// Round 4: a left-out group's note prints a call only when that call lists exactly that group.
+test("the call a left-out group's note prints lists exactly that group, for every group_by", async () => {
+  const { groupCall } = await import("../dist/datasets.js");
+  let ran = 0;
+  for (const by of ["portal", "entity", "county", "platform_family"]) {
+    const { b } = await answer({ query: "grpword", group_by: by, top_per_group: 0 });
+    assert.equal(b.groups.length, b.group_count, `${by}: every group shown`);
+    for (const g of b.groups) {
+      const call = groupCall(by, g.key);
+      if (!call) {
+        // No filter selects exactly one entity or county; an unknown platform is no valid value.
+        assert.ok(by === "entity" || by === "county" || g.key === "unknown", `${by} ${g.key}: no call`);
+        continue;
+      }
+      const r = await callTool("search_datasets", { query: "grpword", [call[0]]: call[1] });
+      assert.notEqual(r.isError, true, `${by} ${g.key}: ${r.content[0].text}`);
+      assert.equal(JSON.parse(r.content[0].text).total_matches, g.matches, `${by} ${g.key}: ${call[0]}: ${call[1]}`);
+      ran++;
+    }
+  }
+  assert.ok(ran >= 60, `${ran} calls run`);
+  // A key from a filter that is not exact gets no call: the note points to the export instead.
+  assert.equal(groupCall("entity", "Warren County"), null);
+  assert.equal(groupCall("county", "Kings"), null);
+  assert.equal(groupCall("platform_family", "unknown"), null);
 });

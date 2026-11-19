@@ -11,6 +11,7 @@ import { indexPath, hideLocalPaths } from "./paths.js";
 import { installPendingIndex } from "./fetchindex.js";
 import { staleNote } from "./indexage.js";
 import { expandConcepts, expandTerms, placeMatches, tokenize } from "./sources.js";
+import { FAMILIES } from "./families.js";
 import { resolvePlace, places, type ResolvedPlace } from "./places.js";
 import { registry, registryIdFor, sourceIdsForRegistryId, type Source } from "./registry.js";
 import { hasTopics, resolveTopic, topicRules, coveragePercent, CROSSWALK_NAME, type TopicDef } from "./topics.js";
@@ -683,10 +684,13 @@ function groupNote(by: GroupBy): string {
 /** Group mode: shorten the title lists first, then drop the smallest groups (counted, never silently). */
 /** Groups left out so far (never printed), so a second fitting pass counts them all. */
 const LEFT_OUT = Symbol("groups left out");
-/** The call that lists one left-out group, by what the search was grouped by. */
-const GROUP_FILTER: Record<string, (k: string) => [string, string]> = {
-  portal: (k) => ["portal", k], entity: (k) => ["portal", k], county: (k) => ["place", `${k} County`], platform_family: (k) => ["platform_family", k],
-};
+/** The filter that lists exactly one left-out group, where one exists: a portal id, or a platform
+ * family. No filter selects exactly one entity or county (portal also matches part of a name;
+ * place adds statewide portals), so for those the note points to the export. */
+export function groupCall(by: string, key: string): [string, string] | null {
+  if (by === "portal") return ["portal", key];
+  return by === "platform_family" && (FAMILIES as readonly string[]).includes(key) ? ["platform_family", key] : null;
+}
 /**
  * Fits groups into the budget. Every group's count is the answer, so it goes last: first the
  * titles, then each group's entity, registry_id and empty title list, then rows (to one), and only
@@ -708,11 +712,12 @@ function fitGroups(resp: Record<string, unknown>, groups: GroupRow[], results: u
   const out: GroupRow[] = ((resp as Record<symbol, GroupRow[]>)[LEFT_OUT] ??= []);
   while (groups.length > 1 && byteSize(resp) > fitBudget) out.push(groups.pop()!);
   if (out.length) {
-    const [arg, value] = GROUP_FILTER[String(resp.group_by)](out[0].key);
+    const call = groupCall(String(resp.group_by), out[0].key);
     resp.groups_omitted_for_size = out.length;
     resp.groups_size_note =
       `${out.length} smallest group(s), ${out.reduce((a, g) => a + g.matches, 0)} matches (${out.slice(0, 3).map((g) => g.key).join(", ")}${out.length > 3 ? ", …" : ""}), were left out to keep the answer under ${answerLimit} bytes. ` +
-      `search_datasets with the same arguments and ${arg}: ${JSON.stringify(value)} lists one${resp.export ? "; export.path has every match" : ""}.`;
+      (call ? `search_datasets with the same arguments and ${call[0]}: ${JSON.stringify(call[1])} lists one${resp.export ? "; " : "."}` : `No single filter lists one ${resp.group_by} group${resp.export ? "; " : "; narrow the query to see them."}`) +
+      (resp.export ? "export.path has every match." : "");
   }
 }
 

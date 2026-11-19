@@ -145,8 +145,10 @@ Dataset search matches every word of the query.
   `test/answer-sources.test.mjs`. A search's size budget (about 20 KB) now covers its sources.
   Every group's count is kept, as in 0.3.0: to fit, a reply cuts group titles, then each
   group's `entity`, `registry_id` and title list (its portal and count stay), then rows down to
-  one, and only then the smallest groups, with `groups_size_note` saying how many, which, and
-  the call that lists one. With 60 portals (about the published index's size) a grouped search
+  one, and only then the smallest groups, with `groups_size_note` saying how many and which,
+  and the call that lists one when a filter selects exactly that group (`portal`, or a known
+  `platform_family`); for an entity or a county none does (`portal` also matches part of a name,
+  `place` adds statewide portals), so the note says so and points to the export. With 60 portals (about the published index's size) a grouped search
   shows all 60 counts and names all 60 portals within 20,000 bytes. When a search matches so
   many portals that their sources take most of the budget, the reply keeps 8,000 bytes of rows
   and groups and its size note gives the larger limit it kept to. The tool description says
@@ -228,7 +230,9 @@ Dataset search matches every word of the query.
   an answer draws on more than one source, `data_sources` lists every one, grouped by what it
   says (`says`, once per group), one short line each with only what differs: `"<about_data
   topic>: <name> (<publisher>), <link>"`, about 120 to 140 bytes per portal (a portal is one
-  line however many rows it has, keyed on its portal id).
+  line however many rows it has, keyed on its portal id). Each group says once how current it is
+  (`how_current`): one time, to the minute, or the range of its portals' last reads, since each
+  portal's catalog is read on its own schedule.
 - `about_data`, the third BetaNYC standard tool (betanyc-ai-workspace #1672): where each kind
   of data comes from, from `DATA-SOURCES.json`. 70 sources: one for each of the 60 portals the
   harvest reads, published by the government or institution that runs it (the platform, such as

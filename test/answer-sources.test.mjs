@@ -10,6 +10,12 @@ import { DatabaseSync } from "node:sqlite";
 import { tempIndexPath, buildFixtureIndex, UNKNOWN_PORTAL } from "./helpers.mjs";
 
 const index = await buildFixtureIndex(tempIndexPath(), { unknownPortal: true });
+{
+  // One portal read days earlier, as when a portal is read weekly: answers give a range.
+  const w = new DatabaseSync(index);
+  w.prepare("UPDATE portals SET last_harvested = '2026-11-01T03:17:00.000Z' WHERE id = 'putnam-county'").run();
+  w.close();
+}
 process.env.NY_DATA_INDEX = index;
 const { callTool } = await import("../dist/tools.js");
 const sql = new DatabaseSync(index, { readOnly: true });
@@ -140,4 +146,25 @@ test("a portal with no DATA-SOURCES.json entry: every dataset tool says BetaNYC 
   const one = (await call("get_dataset_columns", { dataset: `${UNKNOWN_PORTAL.id}:old-0001` })).data_source;
   assert.equal(one.portal_id, UNKNOWN_PORTAL.id);
   assert.match(one.cite, /^BetaNYC modified this data: .*Official record: Old Agency Open Data \(NYS Old Agency\), https:\/\/data\.old-agency\.ny\.gov\//);
+});
+
+// Round 4: a multi-portal answer says how current its data is, once per group: one date, or the
+// range of its portals' last reads (each portal's catalog is read on its own schedule).
+test("every data_sources group says how current it is: one date, or the range of its portals' reads", async () => {
+  const lastRead = new Map(sql.prepare("SELECT id, last_harvested FROM portals").all().map((p) => [p.id, p.last_harvested]));
+  let ranges = 0;
+  for (const [name, args] of [["search_datasets", { topic: "environment", group_by: "portal" }], ["whats_new", { since: "2000-01-01" }], ["registry_info", {}], ["list_topics", {}], ["find_joinable", { dataset: "test-0001" }]]) {
+    const b = await call(name, args);
+    assert.ok(b.data_sources?.length, `${name}: several sources`);
+    for (const g of b.data_sources) {
+      assert.match(g.how_current, /^(As of \d{4}-\d\d-\d\d\S*\.|Read between \d{4}-\S+ and \d{4}-\S+; about_data gives each source's date\.|No date known \(about_data with a source's topic says why\)\.)/, `${name}: ${g.how_current}`);
+      if (!MODIFIED.test(g.says)) continue;
+      const minute = (d) => `${d.slice(0, 16)}Z`;
+      const reads = g.sources.map(portalOf).map((id) => lastRead.get(id)).filter(Boolean).map(minute).sort();
+      const want = reads[0] === reads[reads.length - 1] ? `As of ${reads[0]}.` : `Read between ${reads[0]} and ${reads[reads.length - 1]};`;
+      assert.ok(g.how_current.startsWith(want), `${name}: ${g.how_current} (want ${want})`);
+      if (g.sources.some((l) => portalOf(l) === "putnam-county") && g.sources.length > 1) ranges++;
+    }
+  }
+  assert.ok(ranges > 0, "a group whose portals were read on different days gives the range");
 });
