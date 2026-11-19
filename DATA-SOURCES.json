@@ -258,7 +258,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://data.gis.ny.gov/",
       "freshness": {
@@ -374,7 +374,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://adirondack-park-agency-adirondack.hub.arcgis.com/",
       "freshness": {
@@ -433,7 +433,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://gisservices.dec.ny.gov/arcgis/rest/services",
       "freshness": {
@@ -493,7 +493,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://environmentalbondact.ny.gov/",
       "freshness": {
@@ -552,7 +552,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services",
       "freshness": {
@@ -611,7 +611,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://opdgig.dos.ny.gov/",
       "freshness": {
@@ -670,7 +670,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://gis.dot.ny.gov/hostingny/rest/services",
       "freshness": {
@@ -729,7 +729,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://elevation.its.ny.gov/arcgis/rest/services",
       "freshness": {
@@ -788,7 +788,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://nysgeohub.ny.gov/arcgis/rest/services",
       "freshness": {
@@ -847,7 +847,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://gisservices.its.ny.gov/arcgis/rest/services",
       "freshness": {
@@ -906,7 +906,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://orthos.its.ny.gov/arcgis/rest/services",
       "freshness": {
@@ -965,7 +965,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://services.arcgis.com/1xFZPtKn1wKC6POA/arcgis/rest/services",
       "freshness": {
@@ -1023,7 +1023,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://albany-county-ny-open-data-albcountygis.hub.arcgis.com/",
       "freshness": {
@@ -1081,7 +1081,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://geodata-cc-ny.opendata.arcgis.com/",
       "freshness": {
@@ -1139,7 +1139,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://gis.gcgovny.com/arcgis/rest/services",
       "freshness": {
@@ -1199,7 +1199,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://warren-county-gis-warrencountyny.hub.arcgis.com/",
       "freshness": {
@@ -1257,7 +1257,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://gis.washingtoncountyny.gov/arcgis/rest/services",
       "freshness": {
@@ -1316,7 +1316,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://ccgis2.cayugacounty.us/arcgis/rest/services",
       "freshness": {
@@ -1375,7 +1375,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://data.syr.gov/",
       "freshness": {
@@ -1433,7 +1433,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://www.cityofutica.com/maps/gis-maps/index",
       "freshness": {
@@ -1491,7 +1491,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/",
       "freshness": {
@@ -1549,7 +1549,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://data-oswegogis.hub.arcgis.com/",
       "freshness": {
@@ -1607,7 +1607,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://opendata-dcny.hub.arcgis.com/",
       "freshness": {
@@ -1664,7 +1664,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://gis.orangecountygov.com/portal/apps/sites/#/ocgis",
       "freshness": {
@@ -1722,7 +1722,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/",
       "freshness": {
@@ -1781,7 +1781,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://gis.ulstercountyny.gov/server/rest/services",
       "freshness": {
@@ -1841,7 +1841,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://gis.cmvny.com/server/rest/services",
       "freshness": {
@@ -2016,7 +2016,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services",
       "freshness": {
@@ -2074,7 +2074,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://nycmaps.nyc.gov/",
       "freshness": {
@@ -2134,7 +2134,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://data-pcny.opendata.arcgis.com/",
       "freshness": {
@@ -2193,7 +2193,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://opendata.suffolkcountyny.gov/",
       "freshness": {
@@ -2251,7 +2251,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://gis.westchestercountyny.gov/",
       "freshness": {
@@ -2310,7 +2310,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://maps.watertown-ny.gov/portal/home/",
       "freshness": {
@@ -2369,7 +2369,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://essex-gis.co.essex.ny.us/arcgis/rest/services",
       "freshness": {
@@ -2427,7 +2427,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://gis.broomecountyny.gov/arcgis/rest/services",
       "freshness": {
@@ -2485,7 +2485,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://data-ithacany.opendata.arcgis.com/",
       "freshness": {
@@ -2543,7 +2543,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://otsego-county-gis-otsegocountyny.hub.arcgis.com/",
       "freshness": {
@@ -2601,7 +2601,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://steubencounty-scnygis.opendata.arcgis.com/",
       "freshness": {
@@ -2658,7 +2658,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://tioga-county-one-map-tiogacountyny.hub.arcgis.com/",
       "freshness": {
@@ -2717,7 +2717,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://tcdata-tompkinscounty.opendata.arcgis.com/",
       "freshness": {
@@ -2775,7 +2775,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://cattaraugus-county-gis-hub-cattco.hub.arcgis.com/",
       "freshness": {
@@ -2833,7 +2833,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       },
       "verify_at": "https://maps.chautauquacounty.com/server/rest/services",
       "freshness": {
@@ -2952,7 +2952,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://data.cityofrochester.gov/",
       "freshness": {
@@ -3010,7 +3010,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://gis-data-cogeneseeny.hub.arcgis.com/",
       "freshness": {
@@ -3068,7 +3068,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://gis.livingstoncountyny.gov/portal/home/index.html",
       "freshness": {
@@ -3126,7 +3126,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://maps.monroecounty.gov/portal/apps/sites/#/mcgis",
       "freshness": {
@@ -3185,7 +3185,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com/",
       "freshness": {
@@ -3243,7 +3243,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://gis.co.wayne.ny.us/portal/apps/sites/#/wcgis/search?collection=Dataset",
       "freshness": {
@@ -3301,7 +3301,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://www.wyomingcountyny.gov/645/Geographic-Information-Systems-GIS",
       "freshness": {
@@ -3358,7 +3358,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://gisportal.yatescounty.org/portal/home/",
       "freshness": {
@@ -3416,7 +3416,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://suny-cortland-geo-spatial-information-hub-suncortlandadmin.hub.arcgis.com/",
       "freshness": {
@@ -3474,7 +3474,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://data-syruniv.opendata.arcgis.com/",
       "freshness": {
@@ -3591,7 +3591,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Descriptions have HTML tags removed and spaces squeezed; each record's provenance marks the description derived when that changed it."
       },
       "verify_at": "https://cugir.library.cornell.edu/",
       "freshness": {
@@ -3650,7 +3650,7 @@
           "reshaped",
           "merged"
         ],
-        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles, descriptions and other values are kept as the portal gives them."
+        "detail": "BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       },
       "verify_at": "https://rochester-area-data-urochester.hub.arcgis.com/",
       "freshness": {

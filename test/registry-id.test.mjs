@@ -16,7 +16,7 @@ const { registry, setRegistry, buildSources, assignSourceIds, cleanRegistryId, r
 const { findSources, listSourcesForPlace, howToQuery, registryInfo, sourceSummary } = await import("../dist/sources.js");
 const { checkSource } = await import("../dist/check.js");
 const { searchDatasets, getDatasetColumns, findJoinable, whatsNew } = await import("../dist/datasets.js");
-const { TOOLS, callTool } = await import("../dist/tools.js");
+const { TOOLS, SERVER_INSTRUCTIONS, callTool } = await import("../dist/tools.js");
 
 const bundled = JSON.parse(readFileSync(new URL("../data/ny-data-portal-registry.json", import.meta.url), "utf8"));
 
@@ -183,11 +183,11 @@ test("ids added to the registry show on dataset rows without a new harvest", () 
   assert.equal(nycDatasets().results[0].registry_id, before);
 });
 
-test("through the MCP tools: registry_id in replies, and every description says what it joins to", async () => {
+test("through the MCP tools: registry_id in replies, and the server instructions say once what it joins to", async () => {
   assert.equal(body(await callTool("how_to_query", { registry_id: "test-gov-nyc" })).source.source_id, "new-york-city");
   assert.equal(body(await callTool("find_sources", { query: "health" })).results.find((x) => x.source_id === "nys-department-of-health").registry_id, "test-gov-doh");
   assert.equal(body(await callTool("search_datasets", { query: "synthetic", portal: "test-gov-nyc", export: "never" })).results[0].registry_id, "test-gov-nyc");
-  for (const name of ["find_sources", "list_sources_for_place", "how_to_query", "check_source", "search_datasets"]) {
-    assert.match(TOOLS.find((t) => t.name === name).description, /registry_id.*BetaNYC\/ny-gov-web-registry/, name);
-  }
+  // Said once in the instructions, not repeated in five descriptions (#45).
+  assert.match(SERVER_INSTRUCTIONS, /registry_id.*BetaNYC\/ny-gov-web-registry/);
+  for (const t of TOOLS) assert.doesNotMatch(t.description, /BetaNYC\/ny-gov-web-registry, for joining the two/, t.name);
 });

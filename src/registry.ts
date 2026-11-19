@@ -5,7 +5,8 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { cacheDir, readDataJson, REGISTRY_PAGE, REGISTRY_URL, USER_AGENT } from "./paths.js";
+import { cacheDir, readDataJson, REGISTRY_PAGE, REGISTRY_URL, USER_AGENT, hideLocalPaths } from "./paths.js";
+import { fetchWithRetry } from "./http.js";
 import { familyFor, FAMILIES, type FamilyResult } from "./families.js";
 import { placeForRow, type RowPlace } from "./places.js";
 
@@ -45,7 +46,31 @@ export interface Source extends RegistryRow {
   platform_family_note: string | null;
   place: RowPlace;
   page_url: string;
+  /** `url` when it is a usable http(s) URL (its first word: some rows add a note after it),
+   * else null. What this server matches and fetches; `url` itself is shown as the registry has it. */
+  portal_url: string | null;
+  /** The same for `api_endpoint` ("—", a dash used as a blank, gives null). */
+  api_url: string | null;
   derived: string[];
+}
+
+/**
+ * The first word of a registry value when it is an http(s) URL with a named host and no username
+ * or password, else null. Rows sometimes hold "—" for a blank, or a note after the URL
+ * ('https://511ny.org/help/24 (title: "Requesting Access")'); the registry is never rewritten,
+ * but only a usable URL is matched or fetched.
+ */
+export function usableUrl(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const first = v.trim().split(/\s/)[0];
+  if (!first) return null;
+  try {
+    const u = new URL(first);
+    if ((u.protocol !== "http:" && u.protocol !== "https:") || !u.hostname || u.username || u.password) return null;
+    return first;
+  } catch {
+    return null;
+  }
 }
 
 export interface LoadedRegistry {
@@ -118,7 +143,9 @@ export function buildSources(doc: RegistryDoc): Source[] {
       platform_family_note: fam.note,
       place: placeForRow(row),
       page_url,
-      derived: ["source_id", "platform_family", "place", "page_url"],
+      portal_url: usableUrl(row.url),
+      api_url: usableUrl(row.api_endpoint),
+      derived: ["source_id", "platform_family", "place", "page_url", "portal_url", "api_url"],
     };
   });
 }
@@ -206,7 +233,7 @@ export async function refreshRegistry(timeoutMs = 5000): Promise<LoadedRegistry>
   try {
     const headers: Record<string, string> = { "User-Agent": USER_AGENT };
     if (cached && meta.etag) headers["If-None-Match"] = meta.etag;
-    const res = await fetch(REGISTRY_URL, { headers, signal: AbortSignal.timeout(timeoutMs) });
+    const res = await fetchWithRetry(REGISTRY_URL, { headers, signal: AbortSignal.timeout(timeoutMs) }, Date.now() + timeoutMs);
     if (res.status === 304 && cached) {
       meta.fetched_at = new Date().toISOString();
       writeFileSync(f.meta, JSON.stringify(meta));
@@ -225,7 +252,8 @@ export async function refreshRegistry(timeoutMs = 5000): Promise<LoadedRegistry>
     }
     throw new Error(`HTTP ${res.status}`);
   } catch (e) {
-    const err = e instanceof Error ? e.message : String(e);
+    // A failed cache write names the file: keep this machine's folders out of registry_info.
+    const err = hideLocalPaths(e instanceof Error ? e.message : String(e));
     loaded = cached ? { ...pick(bundled, cached, "pages-cache", meta.fetched_at ?? null), refresh_error: err } : { ...bundled, refresh_error: err };
     return loaded;
   }

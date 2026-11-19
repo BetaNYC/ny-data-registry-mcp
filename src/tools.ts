@@ -1,17 +1,18 @@
 import { z } from "zod";
+import { echo } from "./echo.js";
 import { basename } from "node:path";
 import { readFileSync } from "node:fs";
 import { FAMILIES } from "./families.js";
-import { findSources, howToQuery, listSourcesForPlace, registryInfo } from "./sources.js";
+import { CANDIDATES_MAX, findSources, howToQuery, listSourcesForPlace, PLACE_LIST_DEFAULT, PLACE_LIST_MAX, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
-import { awaitIndex, downloadState } from "./fetchindex.js";
+import { COLUMNS_DEFAULT, COLUMNS_MAX, datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
+import { awaitIndex, downloadState, INDEX_RELEASES_PAGE } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
-import { BETANYC_INSTRUCTIONS, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
+import { annotateTools, BETANYC_INSTRUCTIONS, provenance, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED } from "./betanyc-tools.js";
 import { registry } from "./registry.js";
 import { govBodies } from "./govbodies.js";
-import { VERSION } from "./paths.js";
+import { REGISTRY_PAGE, VERSION } from "./paths.js";
 import { topicRules } from "./topics.js";
 import { STANDARDS } from "./standards/build.js";
 
@@ -34,6 +35,10 @@ import { STANDARDS } from "./standards/build.js";
 export const SERVER_INSTRUCTIONS =
   "New York open data portals and their datasets, from BetaNYC's registry and a nightly index of the portals' catalogs. " +
   "It describes datasets; it does not hold the data itself. " +
+  // Said once here, not in each tool description (#45).
+  "Source rows (find_sources, list_sources_for_place, how_to_query, check_source) and dataset rows carry registry_id when the row has one: the id of the row's government body in BetaNYC/ny-gov-web-registry, for joining the two. " +
+  "Source rows also carry runs_it, the government body that runs the site (name, government_level, classification, website), looked up by registry_id in that list; null when the row has no id, found: false when the list lacks it. runs_it_source says which copy of the list answered. " +
+  "Every registry and index answer carries data_source: the source, its publisher, a link and how current it is, with a cite line to quote. " +
   BETANYC_INSTRUCTIONS;
 
 /** The last harvest of the installed index, or "not fetched yet" before the first download. */
@@ -133,17 +138,19 @@ async function requireIndex(): Promise<void> {
 
 const FAMILY_ENUM = [...FAMILIES];
 const TOPIC_IDS = topicRules().topics.map((t) => t.id) as [string, ...string[]];
-/** One sentence, shared by every tool whose reply names a data site. */
-const REGISTRY_ID_NOTE = "registry_id, when a row has one, is the id of the row's government body in BetaNYC/ny-gov-web-registry, for joining the two.";
-/** For the tools whose source rows carry runs_it. */
-const RUNS_IT_NOTE = "runs_it names the government body that runs the site (name, government_level, classification, website), looked up by registry_id in that list; null when the row has no id, found: false when the list lacks it. runs_it_source says which copy of the list answered.";
 const STATUS_ENUM = ["live", "no-portal", "UNCONFIRMED", "dead", "any"] as const;
 
-export const TOOLS = [
+/**
+ * Every tool only reads. openWorldHint (MCP ToolAnnotations): true only for check_source, which
+ * makes one live request to a portal; the rest answer from the registry and the downloaded index.
+ */
+const LIVE_TOOLS = new Set(["check_source"]);
+
+const DOMAIN_TOOLS = [
   {
     name: "find_sources",
     description:
-      "Find New York open data portals and sources (state, county, city, agency, library, nonprofit) in BetaNYC's registry by topic, name or place. Returns each source's portal URL, platform family, API type, dataset count, status and last-verified date. Searches portal names and notes, not dataset titles (use search_datasets for datasets). Default status filter is 'live'. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
+      "Find New York open data portals and sources (state, county, city, agency, library, nonprofit) in BetaNYC's registry by topic, name or place. Returns each source's portal URL, platform family, API type, dataset count, status and last-verified date. Searches portal names and notes, not dataset titles (use search_datasets for datasets). Default status filter is 'live'.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -163,13 +170,14 @@ export const TOOLS = [
   {
     name: "list_sources_for_place",
     description:
-      "Everything the registry knows for one New York place (county, one of the 62 cities, an NYC borough, or a region): its own portal(s), sources for cities inside it, regional sources, and statewide sources that cover it. Says plainly whether the place has a portal, was checked and has none ('no-portal-exists'), or is not in the registry ('not-in-registry', which means unchecked, not absent). " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
+      "Everything the registry knows for one New York place (county, one of the 62 cities, an NYC borough, or a region): its own portal(s), sources for cities inside it, regional sources, and statewide sources that cover it. Says plainly whether the place has a portal, was checked and has none ('no-portal-exists'), or is not in the registry ('not-in-registry', which means unchecked, not absent).",
     inputSchema: {
       type: "object",
       additionalProperties: false,
       properties: {
         place: { type: "string", description: "e.g. 'Erie County', 'Syracuse', 'Queens', 'NYC', 'North Country'" },
         include_statewide: { type: "boolean", description: "List the statewide sources too (default true)" },
+        limit: { type: "integer", minimum: 1, maximum: PLACE_LIST_MAX, description: `Most rows in each list (own, within, regional, statewide). Default ${PLACE_LIST_DEFAULT}` },
       },
       required: ["place"],
     },
@@ -177,7 +185,7 @@ export const TOOLS = [
   {
     name: "how_to_query",
     description:
-      "How to get data from one registry source: its endpoint (copied verbatim, never guessed), API type, whether a key is needed and which env var holds it, an example request, and which MCP server to hand off to (the `socrata` MCP with the right domain, or the matching @betanyc MCP). Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
+      "How to get data from one registry source: its endpoint (copied verbatim, never guessed), API type, whether a key is needed and which env var holds it, an example request, and which MCP server to hand off to (the `socrata` MCP with the right domain, or the matching @betanyc MCP). Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -185,13 +193,15 @@ export const TOOLS = [
         source_id: { type: "string", description: "From find_sources / list_sources_for_place results" },
         registry_id: { type: "string", description: "Government body id from BetaNYC/ny-gov-web-registry. Several sources can share one; then the reply lists them" },
         entity: { type: "string", description: "Entity name, e.g. 'NYS Department of Health'" },
+        limit: { type: "integer", minimum: 1, maximum: CANDIDATES_MAX, description: "When several rows match: most to list. Default 25" },
+        offset: { type: "integer", minimum: 0, description: "When several rows match: skip this many (next_offset)" },
       },
     },
   },
   {
     name: "check_source",
     description:
-      "Live check of one source's portal URL: one polite request, redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. Never calls key-required or account-gated sources, and reports a bot block rather than working around it. " + REGISTRY_ID_NOTE + " " + RUNS_IT_NOTE,
+      "Live check of one source's portal URL: exactly one request (no retry), redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. A url is never fetched itself: it picks a registry row by host and path, and when no row clearly matches, the rows on that host are listed and nothing is fetched. Never calls key-required or account-gated sources, and reports a bot block rather than working around it.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -216,8 +226,7 @@ export const TOOLS = [
       "Use group_by to summarize by entity, county or platform_family instead. " +
       "Rows are compact (id, name, portal, type, update date, link, formats); detail: 'full' adds description, API endpoint, views, column count and, for Socrata, the domain + 4x4 to hand to the `socrata` MCP. " +
       `Replies stay under about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
-      "When the index is more than 14 days old (NY_DATA_INDEX_STALE_DAYS), the reply carries index_note saying so and how to update it. " +
-      REGISTRY_ID_NOTE,
+      "When the index is more than 14 days old (NY_DATA_INDEX_STALE_DAYS), the reply carries index_note saying so and how to update it.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -260,6 +269,8 @@ export const TOOLS = [
       properties: {
         dataset: { type: "string", description: "dataset_id from search_datasets, a Socrata 4x4, an ArcGIS item id, or the dataset URL" },
         standard: { type: "string", enum: [...STANDARDS], description: "Return the description as Croissant 1.1 ('croissant') or DCAT-US 3.0 ('dcat-us') instead of the column list" },
+        limit: { type: "integer", minimum: 1, maximum: COLUMNS_MAX, description: `Most columns to list. Default ${COLUMNS_DEFAULT}` },
+        offset: { type: "integer", minimum: 0, description: "Skip this many columns (columns_shown.next_offset)" },
       },
       required: ["dataset"],
     },
@@ -274,13 +285,14 @@ export const TOOLS = [
       properties: {
         dataset: { type: "string", description: "dataset_id, Socrata 4x4, ArcGIS item id or URL" },
         column: { type: "string", description: "Limit to one key (a field name in the dataset, or a key label like 'BBL')" },
-        limit_per_key: { type: "integer", minimum: 1, maximum: 50 },
+        limit_per_key: { type: "integer", minimum: 1, maximum: 50, description: "Datasets listed per key. Default 10" },
       },
       required: ["dataset"],
     },
   },
   {
     name: "whats_new",
+    annotations: { title: "What's new on the portals" },
     description:
       "Datasets added, changed or removed in the index since a date, and datasets whose portal says they were updated since then. Optional portal filter. " +
       "For changes to this server itself (new tools, fixes, corrections), use whats_changed instead.",
@@ -290,14 +302,22 @@ export const TOOLS = [
       properties: {
         since: { type: "string", description: "YYYY-MM-DD" },
         portal: { type: "string", description: "source_id, registry_id (every site of that government) or part of a portal name" },
-        limit: { type: "integer", minimum: 1, maximum: 200 },
+        limit: { type: "integer", minimum: 1, maximum: 200, description: "Most rows in each list. Default 50" },
       },
       required: ["since"],
     },
   },
-  // BetaNYC standard tools: what's changed in this server, who built it, and where its data comes from.
-  ...betanyc.tools,
 ];
+
+export const TOOLS = annotateTools(
+  [
+    ...DOMAIN_TOOLS,
+    // BetaNYC standard tools: what's changed in this server, who built it, and where its data
+    // comes from. They declare their own annotations.
+    ...betanyc.tools,
+  ],
+  Object.fromEntries(DOMAIN_TOOLS.map((t) => [t.name, LIVE_TOOLS.has(t.name)])),
+);
 
 const family = z.enum(FAMILIES);
 const ARG_SHAPES = {
@@ -311,8 +331,8 @@ const ARG_SHAPES = {
     status: z.enum(STATUS_ENUM).optional(),
     limit: z.number().int().min(1).max(50).optional(),
   },
-  list_sources_for_place: { place: z.string().min(1), include_statewide: z.boolean().optional() },
-  how_to_query: { source_id: z.string().optional(), registry_id: z.string().optional(), entity: z.string().optional() },
+  list_sources_for_place: { place: z.string().min(1), include_statewide: z.boolean().optional(), limit: z.number().int().min(1).max(PLACE_LIST_MAX).optional() },
+  how_to_query: { source_id: z.string().optional(), registry_id: z.string().optional(), entity: z.string().optional(), limit: z.number().int().min(1).max(CANDIDATES_MAX).optional(), offset: z.number().int().min(0).optional() },
   check_source: { source_id: z.string().optional(), registry_id: z.string().optional(), url: z.string().optional() },
   registry_info: {},
   search_datasets: {
@@ -331,7 +351,7 @@ const ARG_SHAPES = {
     export: z.enum(EXPORT_MODE).optional(),
   },
   list_topics: { portal: z.string().optional() },
-  get_dataset_columns: { dataset: z.string().min(1), standard: z.enum(STANDARDS).optional() },
+  get_dataset_columns: { dataset: z.string().min(1), standard: z.enum(STANDARDS).optional(), limit: z.number().int().min(1).max(COLUMNS_MAX).optional(), offset: z.number().int().min(0).optional() },
   find_joinable: { dataset: z.string().min(1), column: z.string().optional(), limit_per_key: z.number().int().min(1).max(50).optional() },
   whats_new: { since: z.string(), portal: z.string().optional(), limit: z.number().int().min(1).max(200).optional() },
 };
@@ -346,13 +366,93 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
     throw new Error(parsed.error.issues.map((i) => `${i.path.join(".") || "(args)"}: ${i.message}`).join("; "));
   }
   throw new Error(
-    `${tool} does not accept ${rejected.map((k) => `'${k}'`).join(", ")}. ` +
+    `${tool} does not accept ${rejected.slice(0, 5).map((k) => `'${echo(k)}'`).join(", ")}${rejected.length > 5 ? ` and ${rejected.length - 5} more` : ""}. ` +
       `The parameters it accepts are: ${Object.keys(shape).join(", ") || "(none)"}. ` +
       `Unknown parameters are rejected rather than ignored, because ignoring one would return results that look right but answer a different question.`
   );
 }
 
-const text = (v: unknown) => ({ content: [{ type: "text", text: toolJson(v) }] });
+/**
+ * The `data_source` block every domain answer carries (#36, #37): the source, its publisher, a
+ * link and how current it is, from the shared provenance() helper, with the same names as the
+ * sources in DATA-SOURCES.json. `cite` is the same as one plain line.
+ */
+type Prov = ReturnType<typeof provenance>;
+const cite = (p: Prov) => ({ ...p.provenance, cite: p.text });
+/** Where a modified copy is held: named next to the official record in a dataset's data_source. */
+const HELD_IN = { source: "NY Data Registry index", publisher: "BetaNYC", source_url: INDEX_RELEASES_PAGE };
+const registrySource = () =>
+  provenance({ sourceName: "NY Data Portal Registry", publisher: "BetaNYC", sourceUrl: REGISTRY_PAGE, kind: "snapshot", asOf: registry().generated || null });
+/** What BetaNYC did to build the index, in the same terms as about_data (DATA-SOURCES.json). */
+const INDEX_BUILT =
+  "built this index from the catalogs of New York's open data portals, keeping data records only, dropping records outside New York, and reshaping and joining them with its portal list. Each dataset's own page on its portal is its official record";
+/** Index answers (search_datasets, list_topics, find_joinable, whats_new, a standard description):
+ * BetaNYC's NY Data Registry index, which BetaNYC produced, as of its last harvest. */
+const indexSource = () =>
+  provenance({
+    sourceName: "NY Data Registry index",
+    publisher: "BetaNYC",
+    sourceUrl: INDEX_RELEASES_PAGE,
+    kind: "snapshot",
+    asOf: (indexInfo()?.last_harvest as string | null) ?? null,
+    changedByBetanyc: { kind: "produced-by-betanyc", detail: INDEX_BUILT },
+  });
+/** What BetaNYC did to one dataset's record, as about_data says for each catalog-* source. */
+const DATASET_CHANGED =
+  "this is the NY Data Registry index's copy of the portal's catalog record (BetaNYC left some records out, reshaped it and joined it with its portal list); fields marked derived in provenance were worked out or cleaned by BetaNYC";
+/** One dataset (get_dataset_columns): BetaNYC's modified copy in the NY Data Registry index, as of
+ * the harvest that last saw it, with the dataset's own portal page as the official record. Agrees
+ * with about_data, which says BetaNYC modified the catalogs and the copy is not the official record. */
+function datasetSource(b: Record<string, any>): Prov {
+  try {
+    return provenance({
+      sourceName: `${b.portal} catalog`,
+      publisher: b.entity,
+      sourceUrl: b.url,
+      kind: "snapshot",
+      asOf: b.last_seen ?? null,
+      changedByBetanyc: { kind: "modified-by-betanyc", detail: DATASET_CHANGED },
+    });
+  } catch {
+    return indexSource(); // no portal name, publisher or link on the row
+  }
+}
+/** check_source: the portal page itself, fetched for this answer; otherwise (not checked, no
+ * answer, blocked) the registry row. No asOf: for a live answer that would be the data's own
+ * date (shared module 1.5.1), and a status check has none; the fetch time is the answer's time. */
+function checkSourceSource(b: Record<string, any>): Prov {
+  if (b.checked !== true || b.request_error || b.blocked) return registrySource();
+  try {
+    return provenance({ sourceName: b.source?.portal_name || b.source?.entity, publisher: b.source?.entity, sourceUrl: b.url, kind: "live" });
+  } catch {
+    return registrySource();
+  }
+}
+/** The message when an answer is a failure and nothing else: an object whose only field is a
+ * string `error` (unknown dataset, source or date) or `place_error` (a place this server does
+ * not know). An answer that carries a problem next to real content (check_source's
+ * request_error, with its verdict) is an answer, not a failure. */
+function failureOf(v: unknown): string | null {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null;
+  const keys = Object.keys(v);
+  if (keys.length !== 1 || (keys[0] !== "error" && keys[0] !== "place_error")) return null;
+  const m = (v as Record<string, unknown>)[keys[0]];
+  return typeof m === "string" ? m : null;
+}
+const withSource = (body: unknown, p: Prov) =>
+  body && typeof body === "object" && failureOf(body) === null ? { ...(body as object), data_source: cite(p) } : body;
+
+/** Keys this package reads from env. No error text repeats them (#39). */
+const secrets = () => [process.env.SOCRATA_APP_TOKEN, process.env.GITHUB_TOKEN];
+/** An isError result: a plain sentence, stack lines dropped, keys redacted (#43). */
+const fail = (message: string) => toolError(message, { secrets: secrets() });
+
+/** The JSON answer, or an isError result when the answer is a failure and nothing else (failureOf). */
+export const text = (v: unknown) => {
+  const err = failureOf(v);
+  if (err !== null) return fail(err);
+  return { content: [{ type: "text", text: toolJson(v) }] as Record<string, any>[] };
+};
 
 export async function callTool(name: string, args: unknown) {
   // The shared tools answer in plain text plus structuredContent, and need no index.
@@ -361,27 +461,28 @@ export async function callTool(name: string, args: unknown) {
     if (INDEX_TOOLS.has(name)) await requireIndex();
     switch (name) {
       case "find_sources":
-        return text(findSources(parseToolArgs("find_sources", args)));
+        return text(withSource(findSources(parseToolArgs("find_sources", args)), registrySource()));
       case "list_sources_for_place": {
         const a = parseToolArgs("list_sources_for_place", args);
-        return text(listSourcesForPlace(a.place, a.include_statewide ?? true));
+        return text(withSource(listSourcesForPlace(a.place, a.include_statewide ?? true, a.limit), registrySource()));
       }
       case "how_to_query": {
         const a = parseToolArgs("how_to_query", args);
         if (!a.source_id && !a.registry_id && !a.entity) throw new Error("give one of source_id, registry_id or entity");
-        return text(howToQuery(a));
+        return text(withSource(howToQuery(a), registrySource()));
       }
       case "check_source": {
         const a = parseToolArgs("check_source", args);
         if (!a.source_id && !a.registry_id && !a.url) throw new Error("give one of source_id, registry_id or url");
-        return text(await checkSource(a));
+        const r = await checkSource(a);
+        return text(withSource(r, checkSourceSource(r as Record<string, any>)));
       }
       case "registry_info":
         parseToolArgs("registry_info", args);
-        return text({ ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() });
+        return text(withSource({ ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() }, registrySource()));
       case "search_datasets": {
         const r = searchDatasets(parseToolArgs("search_datasets", args)) as Record<string, any>;
-        const out = text(r);
+        const out = text(withSource(r, indexSource()));
         // MCP resource_link content (spec 2025-06-18 and later, "Resource Links" under Tool Result).
         // The JSON text block above stays the answer; this lets a client open or attach the file.
         if (r.export?.uri) {
@@ -398,24 +499,27 @@ export async function callTool(name: string, args: unknown) {
         return out;
       }
       case "list_topics":
-        return text(listTopics(parseToolArgs("list_topics", args)));
+        return text(withSource(listTopics(parseToolArgs("list_topics", args)), indexSource()));
       case "get_dataset_columns": {
         const a = parseToolArgs("get_dataset_columns", args);
-        return text(a.standard ? datasetStandard(a.dataset, a.standard) : getDatasetColumns(a.dataset));
+        if (a.standard) return text(withSource(datasetStandard(a.dataset, a.standard), indexSource()));
+        const r = getDatasetColumns(a.dataset, a.limit, a.offset) as Record<string, any>;
+        const out = withSource(r, datasetSource(r)) as Record<string, any>;
+        if (out?.data_source?.changed_by_betanyc) out.data_source = { ...out.data_source, held_in: HELD_IN };
+        return text(out);
       }
       case "find_joinable": {
         const a = parseToolArgs("find_joinable", args);
-        return text(findJoinable(a.dataset, a.column, a.limit_per_key));
+        return text(withSource(findJoinable(a.dataset, a.column, a.limit_per_key), indexSource()));
       }
       case "whats_new": {
         const a = parseToolArgs("whats_new", args);
-        return text(whatsNew(a.since, a.portal, a.limit));
+        return text(withSource(whatsNew(a.since, a.portal, a.limit), indexSource()));
       }
       default:
-        return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
+        return fail(`Unknown tool: ${echo(name)}. The tools are: ${TOOLS.map((t) => t.name).join(", ")}.`);
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
+    return fail(err instanceof Error ? err.message : String(err));
   }
 }

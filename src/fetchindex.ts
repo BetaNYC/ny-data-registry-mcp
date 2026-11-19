@@ -24,7 +24,8 @@ import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createGunzip } from "node:zlib";
 import { DatabaseSync } from "node:sqlite";
-import { indexPath, USER_AGENT } from "./paths.js";
+import { indexPath, USER_AGENT, hideLocalPaths } from "./paths.js";
+import { fetchWithRetry } from "./http.js";
 import { SCHEMA_VERSION } from "./db.js";
 
 export const DEFAULT_INDEX_URL =
@@ -35,6 +36,8 @@ export const INDEX_RELEASES_PAGE = "https://github.com/BetaNYC/ny-data-registry-
 export const SQLITE_NAME = "ny-data-index.sqlite";
 const MAX_COMPRESSED_BYTES = 500 * 1024 * 1024;
 const MAX_UNZIPPED_BYTES = 2 * 1024 * 1024 * 1024;
+// Longer than the 30 s request norm on purpose: the index is about 19 MB gzipped and is streamed
+// within this one deadline, on whatever connection the user has. A failed try waits 10 minutes.
 const DOWNLOAD_TIMEOUT_MS = 10 * 60 * 1000;
 const STALE_LOCK_MS = 15 * 60 * 1000;
 
@@ -80,8 +83,8 @@ export function downloadState(): DownloadState {
 
 export class DownloadError extends Error {}
 
-async function fetchOk(url: string, signal: AbortSignal): Promise<Response> {
-  const res = await fetch(url, { headers: { "User-Agent": USER_AGENT }, redirect: "follow", signal });
+async function fetchOk(url: string, signal: AbortSignal, deadline: number): Promise<Response> {
+  const res = await fetchWithRetry(url, { headers: { "User-Agent": USER_AGENT }, redirect: "follow", signal }, deadline);
   if (!res.ok) throw new DownloadError(`HTTP ${res.status} for ${url}`);
   return res;
 }
@@ -321,6 +324,7 @@ export async function downloadIndex(
     return { path, bytes: statSync(path).size, skipped: true };
   }
   const signal = AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS);
+  const deadline = Date.now() + DOWNLOAD_TIMEOUT_MS;
   const gzName = basename(new URL(url).pathname);
   try {
     let wantGz: string | undefined;
@@ -329,13 +333,13 @@ export async function downloadIndex(
       wantGz = opts.expect.gz_sha256.toLowerCase();
       wantDb = opts.expect.sqlite_sha256.toLowerCase();
     } else {
-      const sums = parseSums(await (await fetchOk(url.replace(/[^/]+$/, "SHA256SUMS"), signal)).text());
+      const sums = parseSums(await (await fetchOk(url.replace(/[^/]+$/, "SHA256SUMS"), signal, deadline)).text());
       wantGz = sums.get(gzName);
       wantDb = sums.get(SQLITE_NAME);
       if (!wantGz || !wantDb) throw new DownloadError(`SHA256SUMS does not list both ${gzName} and ${SQLITE_NAME}; refusing an unverified index`);
     }
 
-    const res = await fetchOk(url, signal);
+    const res = await fetchOk(url, signal, deadline);
     if (!res.body) throw new DownloadError(`empty response for ${url}`);
     const gz = meter(MAX_COMPRESSED_BYTES, "the download");
     const raw = meter(MAX_UNZIPPED_BYTES, "the unzipped index");
@@ -413,7 +417,7 @@ export function ensureIndex(): Promise<DownloadState> {
     })
     .catch((e) => {
       lastFailureAt = Date.now();
-      state = { ...state, status: "failed", finished_at: new Date().toISOString(), error: e instanceof Error ? e.message : String(e) };
+      state = { ...state, status: "failed", finished_at: new Date().toISOString(), error: hideLocalPaths(e instanceof Error ? e.message : String(e)) };
       return downloadState();
     })
     .finally(() => {

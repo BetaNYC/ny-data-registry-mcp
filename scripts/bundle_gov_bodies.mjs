@@ -7,6 +7,7 @@
 //   node scripts/bundle_gov_bodies.mjs [--from <local registry.json>] [--commit <sha>]
 //
 // Without --from it reads the published file once. It never writes to the master list.
+// Then record the new checksum: (cd data && shasum -a 256 gov-bodies.json ny-data-portal-registry.json > BUNDLED.sha256)
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 

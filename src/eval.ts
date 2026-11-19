@@ -99,6 +99,19 @@ export function nonLivePortalViolation(datasetId: string, src: Source, cfg: Harv
   return null;
 }
 
+/**
+ * Lists in an answer that were cut to one page (list_sources_for_place's own, within, regional
+ * and statewide against its `counts`), so the invariants saw only part of them. A question that
+ * needs every row asks for more with `limit`; this says when that was not enough.
+ */
+export function cutLists(body: any): string[] {
+  const counts = body?.counts;
+  if (!counts || typeof counts !== "object") return [];
+  return ["own", "within", "regional", "statewide"]
+    .filter((k) => Array.isArray(body[k]) && typeof counts[k] === "number" && body[k].length < counts[k])
+    .map((k) => `${k} ${body[k].length} of ${counts[k]}`);
+}
+
 /** Invariants on every returned item. */
 function invariants(tool: string, body: any, cfg: HarvestConfig): string[] {
   const v: string[] = [];
@@ -143,6 +156,8 @@ export async function runEval(): Promise<{ markdown: string; passed: boolean; sc
       if (!c.ok) ok = false;
       why.push(`${step.tool}: ${c.why}`);
       violations.push(...invariants(step.tool, body, cfg));
+      const cut = cutLists(body);
+      if (cut.length) why.push(`${step.tool}: invariants saw only ${cut.join(", ")}; raise limit`);
     }
     if (ok) pass++;
     rows.push(`| ${q.id} | ${q.q.replace(/\|/g, "/")} | ${ok ? "PASS" : "**MISS**"} | ${why.join("; ").replace(/\|/g, "/").slice(0, 400)} |`);

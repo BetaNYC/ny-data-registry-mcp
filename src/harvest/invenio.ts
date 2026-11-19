@@ -21,7 +21,7 @@
  */
 import { politeJson, BlockedError } from "../http.js";
 import { bboxIntersectsNY, isLonLatBox } from "../places.js";
-import { stripHtml, type HarvestedDataset } from "../db.js";
+import { cleanedLabel, stripHtml, type HarvestedDataset } from "../db.js";
 
 export interface InvenioTarget {
   /** "https://ultraviolet.library.nyu.edu" */
@@ -88,10 +88,11 @@ export function newYorkVerdict(r: InvenioRecord): { verdict: NyVerdict; box: [nu
 export function mapInvenioRecord(r: InvenioRecord, box: [number, number, number, number] | null): HarvestedDataset {
   const m = r.metadata ?? {};
   const right = m.rights?.[0];
+  const description = m.description ? stripHtml(m.description) : null;
   return {
     native_id: r.id,
     name: m.title ?? null,
-    description: m.description ? stripHtml(m.description) : null,
+    description,
     department: null,
     categories: m.resource_type?.title?.en ? [m.resource_type.title.en] : [],
     tags: (m.subjects ?? []).map((s) => s.subject).filter((s): s is string => !!s),
@@ -115,7 +116,7 @@ export function mapInvenioRecord(r: InvenioRecord, box: [number, number, number,
     columns: [],
     columns_status: "none",
     provenance: {
-      name: "portal", description: "portal", tags: "portal", categories: "portal", updated_at: "portal", created_at: "portal",
+      name: "portal", description: cleanedLabel(m.description, description), tags: "portal", categories: "portal", updated_at: "portal", created_at: "portal",
       type: "portal", permalink: "portal", api_endpoint: "portal", formats: "derived", extent: "portal", license: "portal", publisher: "portal", place: "derived",
     },
   };

@@ -7,6 +7,12 @@ This page lists the changes to ny-data-registry-mcp that a reader would notice: 
 
 To report a bug in this server or ask for a new feature, [open an issue on GitHub](https://github.com/BetaNYC/ny-data-registry-mcp/issues).
 
+## Unreleased: Tools say they only read, and answers name their source and date
+
+- **Tags:** MCP
+- **What changed:** Every tool now tells your AI app that it only reads, and every answer names where its data comes from, gives a link and says how current it is. Long lists stop at a sensible size and say how to see the rest, such as a place's sources (25 per list unless you ask for more) and a dataset's columns (100 at a time). When something goes wrong, such as a dataset or place the server does not know, the answer is marked as an error and says what to try next. A check on a portal asks it once, and when the portal does not answer, the reply still says whether that matches BetaNYC's list. When you give a web address to check, the server checks a portal only when the address clearly belongs to one; when several governments share that website, it lists them and asks you to pick. Answers about datasets now say plainly that they come from BetaNYC's copy of each portal's catalog, which is not the official record, and name the portal page that is.
+- **MCP version:** [ny-data-registry-mcp 0.4.0](CHANGELOG.md)
+
 ## 2026-11-13: Dataset search gives the whole answer in one call
 
 - **Tags:** MCP
