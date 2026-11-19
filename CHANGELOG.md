@@ -33,9 +33,11 @@ Dataset search matches every word of the query.
   and fetches nothing; before 0.4.0, one row on a host was always checked. With several rows on
   the host and a clear match, `url_matches` gives the count. **How to update:** on `ambiguous`,
   call again with a `source_id` from `candidates`.
-- **`cite` for BetaNYC's own data says so first.** Index answers (`search_datasets`,
-  `list_topics`, `find_joinable`, `whats_new`, a standard description) start "BetaNYC produced
-  this. It is not an official record."; `get_dataset_columns` starts "BetaNYC modified this
+- **`cite` for BetaNYC's own data says so first.** Registry answers (`find_sources`,
+  `list_sources_for_place`, `how_to_query`, `registry_info`, and `check_source`'s
+  `registry_source`) and index answers (`search_datasets`, `list_topics`, `find_joinable`,
+  `whats_new`, a standard description) start "BetaNYC produced this. It is not an official
+  record."; `get_dataset_columns` starts "BetaNYC modified this
   data: …" and ends with the official record. `data_source` gains `changed_by_betanyc` (and,
   for one dataset, `held_in`). **How to update:** a client that parsed `cite` as
   "Source: … Link: …" reads `source_url` (the official record) instead.
@@ -100,9 +102,19 @@ Dataset search matches every word of the query.
   column names, parameter names and tool names. `check_source`'s `request_error` and `verdict`
   carry one line of at most 300 characters (`errorSummary`), not the network error's whole cause
   message; `redirect_to` is cut at 500 characters, with `redirect_note` when it was. Refresh and
-  download errors in `registry_info` (a failed cache write names the file) show `[cache folder]`
-  or `~` instead of this machine's folders (`hideLocalPaths`). The missing-index error still
-  names the index path, on purpose.
+  download errors in `registry_info` (a failed cache write names the file) do not show this
+  machine's folders (`hideLocalPaths`).
+- No tool answer carries a personal folder (post-merge check, epic #33). Every string in every
+  tool answer and error, the three shared tools' included, shows the home folder as `~` and the
+  temp folder as `<temp>` (`hideLocalPaths`, now on macOS, Linux and Windows: either slash, the
+  real path, and any letter case on Windows; whole folders only). Before, with no index, the five
+  index tools' error named the full cache path, home folder and account name included, and
+  `registry_info` returned it in `index.path` and `index_download.path`; now they read
+  `~/.cache/betanyc/ny-data-registry/ny-data-index.sqlite`. `search_datasets`'s `export.path`
+  and `export.uri` read the same way; its `resource_link` keeps the real `file://` address, which
+  the client opens. The command line keeps full paths. `ny-data-registry eval` with no index now
+  prints that message and exits 1, with no stack trace. Tests:
+  `test/no-personal-paths.test.mjs`, which runs the tools with a fake home folder.
 - Registry values that are not a usable http(s) URL are treated as absent for matching and
   fetching (`portal_url` and `api_url` on each loaded row), and shown unchanged: 19 rows hold "—"
   for a blank `api_endpoint`, 4 rows have no portal URL, and one portal URL has a note after it
@@ -111,7 +123,12 @@ Dataset search matches every word of the query.
 - `get_dataset_columns`: `data_source` says the record is BetaNYC's modified copy in the NY Data
   Registry index (`changed_by_betanyc`: modified, `held_in`), with the dataset's own portal page
   as the official record, as `about_data` says for the portal catalogs. Index answers say BetaNYC
-  produced the index and it is not an official record.
+  produced the index and it is not an official record. Registry answers (`find_sources`,
+  `list_sources_for_place`, `how_to_query`, `registry_info`) say BetaNYC produced the registry
+  ("compiled and maintains this registry of New York data portals"), as `about_data` says.
+  `check_source` cites a portal it reached in `data_source` and the registry row it compared that
+  with in a separate `registry_source`. A test walks every tool and checks its answer against
+  `about_data` for that tool.
 - Per-field `provenance` in harvested records: a field the harvest cleaned or chose is
   `derived`, not `portal`. ArcGIS Server, GeoBlacklight and InvenioRDM descriptions with HTML
   removed or spaces squeezed; the ArcGIS Server publisher, taken from `copyrightText`; an ArcGIS
