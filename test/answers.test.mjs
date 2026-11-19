@@ -55,16 +55,23 @@ test("every domain tool's answer carries data_source: source, publisher, link an
   assert.deepEqual([...domain], [], "every domain tool is checked");
 });
 
-test("registry answers cite the registry's date; index answers the index's last harvest; a dataset its own page", async () => {
+test("registry answers cite the registry's date; dataset rows their portal's catalog; a dataset its own page", async () => {
   const reg = (await call("find_sources", { query: "health" })).data_source;
   assert.equal(reg.source, "NY Data Portal Registry");
   assert.equal(reg.as_of_kind, "snapshot");
-  const idx = (await call("whats_new", { since: "2000-01-01" })).data_source;
-  assert.equal(idx.source, "NY Data Registry index");
-  assert.equal(idx.as_of, "2026-11-05T00:00:00Z");
+  // whats_new lists rows from several portals: one source per portal catalog, as of that portal's
+  // last good read in the index (the same date about_data gives for that catalog).
+  const wn = await call("whats_new", { since: "2000-01-01" });
+  assert.ok(wn.data_sources.length > 1, "rows from several portals name each portal's catalog");
+  assert.deepEqual(wn.data_source, wn.data_sources[0]);
+  const portals = new Set(wn.index_change_detail.map((r) => r.dataset_id.split(":")[0]));
+  assert.equal(wn.data_sources.length, portals.size);
+  for (const s of wn.data_sources) assert.match(s.about_data_topic, /^catalog-/);
   const ds = await call("get_dataset_columns", { dataset: WIDE });
-  assert.equal(ds.data_source.source_url, ds.url);
-  assert.equal(ds.data_source.publisher, ds.entity);
+  assert.equal(ds.data_source.source_url, ds.url, "the dataset's own page is the official record");
+  assert.equal(ds.data_source.source, "Cortland County GIS Portal");
+  assert.equal(ds.data_source.about_data_topic, "catalog-cortland-county");
+  assert.equal(ds.data_source.as_of, ds.last_seen);
 });
 
 test("check_source that reached the portal cites the portal, fetched for this answer", async () => {
@@ -129,56 +136,109 @@ test("find_sources, find_joinable and whats_new say when a list was cut and how 
   assert.match(wn.showing, /index_change_detail 1 of \d+, data_updated_per_portal 1 of \d+\. Raise limit/);
 });
 
-// F8 (review round 2): answers agree with about_data. The index is BetaNYC's own product; one
-// dataset's record is BetaNYC's modified copy, with the portal page as the official record.
-test("index answers say BetaNYC built the index; a dataset's record says BetaNYC modified it", async () => {
-  for (const [name, args] of [["search_datasets", { query: "zoning" }], ["list_topics", {}], ["find_joinable", { dataset: "test-0001" }], ["whats_new", { since: "2000-01-01" }], ["get_dataset_columns", { dataset: WIDE, standard: "dcat-us" }]]) {
-    const s = (await call(name, args)).data_source;
-    assert.equal(s.source, "NY Data Registry index", name);
-    assert.equal(s.publisher, "BetaNYC", name);
-    assert.equal(s.changed_by_betanyc?.kind, "produced-by-betanyc", name);
-    assert.match(s.cite, /^BetaNYC produced this\. It is not an official record\. What BetaNYC did: built this index/, name);
+// Review of 0.4.0 (2026-11-19): a dataset row is a portal's own catalog record that BetaNYC's
+// harvest changed (left records out, reshaped, joined to the registry, and for most portals
+// cleaned), so every answer made of dataset rows says "BetaNYC modified this data" and names that
+// portal's catalog, as about_data does. "Produced" is only for BetaNYC's own lists.
+test("dataset rows say BetaNYC modified this data and name their portal's catalog, never 'NY Data Registry index'", async () => {
+  for (const [name, args] of [["search_datasets", { query: "zoning" }], ["find_joinable", { dataset: "test-0001" }], ["whats_new", { since: "2000-01-01" }], ["get_dataset_columns", { dataset: WIDE }], ["get_dataset_columns", { dataset: WIDE, standard: "dcat-us" }]]) {
+    const b = await call(name, args);
+    const s = b.data_source;
+    assert.match(s.about_data_topic, /^catalog-/, name);
+    assert.equal(s.changed_by_betanyc.kind, "modified-by-betanyc", name);
+    assert.match(s.cite, /^BetaNYC modified this data: .*This copy should not be considered the official record\. .*Official record: /, name);
+    assert.notEqual(s.source, "NY Data Registry index", name);
   }
-  const ds = await call("get_dataset_columns", { dataset: WIDE });
-  const s = ds.data_source;
-  assert.equal(s.changed_by_betanyc.kind, "modified-by-betanyc");
-  assert.match(s.changed_by_betanyc.detail, /NY Data Registry index's copy of the portal's catalog record/);
-  assert.match(s.cite, /^BetaNYC modified this data: .*This copy should not be considered the official record\. .*Official record: .*catalog/);
-  assert.equal(s.source_url, ds.url, "the portal's own page is the official record");
-  assert.equal(s.publisher, ds.entity);
-  assert.deepEqual(s.held_in, { source: "NY Data Registry index", publisher: "BetaNYC", source_url: "https://github.com/BetaNYC/ny-data-registry-mcp/releases" });
-  // about_data says the same for the portal catalogs this record comes from.
-  const { betanycTools } = await import("../dist/tools.js");
-  const ad = betanycTools().call("about_data", { topic: "get_dataset_columns" }).content[0].text;
-  assert.match(ad, /BetaNYC modified this data: .*This copy should not be considered the official record/);
+  // BetaNYC's own work in an answer is named apart, as produced: the join-key list, the topic
+  // rules, the standard mapping, and the coverage list when no row matched.
+  assert.ok((await call("find_joinable", { dataset: "test-0001" })).data_sources.some((s) => s.about_data_topic === "join-keys" && s.changed_by_betanyc.kind === "produced-by-betanyc"));
+  assert.equal((await call("list_topics", {})).data_source.about_data_topic, "topics");
+  assert.ok((await call("get_dataset_columns", { dataset: WIDE, standard: "dcat-us" })).data_sources.some((s) => s.about_data_topic === "standard-descriptions"));
+  const none = await call("search_datasets", { query: "zzqqxxnomatch" });
+  assert.equal(none.results.length, 0);
+  assert.equal(none.data_source.about_data_topic, "coverage");
+  // Socrata portals are not cleaned; ArcGIS portals strip HTML, so their label says "cleaned it".
+  assert.match((await call("get_dataset_columns", { dataset: "test-0001" })).data_source.cite, /^BetaNYC modified this data: left some records out, reshaped it, and joined it with other data\./);
+  assert.match((await call("get_dataset_columns", { dataset: WIDE })).data_source.cite, /^BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data\./);
 });
 
-// Post-merge (epic #33): every tool's answer says what about_data says for that tool. Where
-// about_data gives a source BetaNYC modified or produced, the answer says BetaNYC modified or
-// produced it, with a kind about_data also gives.
-test("each tool's answer agrees with about_data on whether BetaNYC modified or produced its data", async () => {
-  const { betanycTools } = await import("../dist/tools.js");
-  const { officialKind } = await import("../dist/betanyc-tools.js");
-  const argsFor = Object.fromEntries(CALLS.map(([n, a]) => [n, a]));
-  let walked = 0;
-  for (const t of TOOLS) {
-    const ad = betanycTools().call("about_data", { topic: t.name });
-    if (ad.isError) {
-      assert.ok(["whats_changed", "about_betanyc", "about_data"].includes(t.name), `${t.name}: ${ad.content[0].text}`);
-      continue; // the three shared tools describe this server, not data
+// Every source a tool answer names (data_source, each of data_sources, registry_source) is a
+// source about_data gives for that tool, with the same name and publisher and the same answer on
+// whether it is official, in the same words: the cite starts with about_data's own first
+// sentences for that source ("BetaNYC modified this data: <what BetaNYC did>. This copy should
+// not be considered the official record." or "BetaNYC produced this. It is not an official
+// record.") and names the source the same way after "Official record:" or "Built from:".
+// The live check found search_datasets saying "BetaNYC produced this" under a name about_data
+// did not give for that tool; problemsWith() reports exactly that (checked below).
+const { officialKind, officialWording, builtFrom } = await import("../dist/betanyc-tools.js");
+async function aboutDataSource(topic) {
+  const r = await callTool("about_data", { topic });
+  if (r.isError) return null;
+  return r.structuredContent.sources.length === 1 && r.structuredContent.sources[0].topic === topic ? r.structuredContent.sources[0] : null;
+}
+async function toolTopics(tool) {
+  const r = await callTool("about_data", { topic: tool });
+  if (r.isError) return new Set();
+  return new Set([...r.structuredContent.sources, ...(r.structuredContent.portal_catalogs ?? [])].map((s) => s.topic));
+}
+async function problemsWith(tool, s) {
+  const where = `${tool}: ${s.source}`;
+  if (!s.about_data_topic) return [`${where}: no about_data_topic`];
+  const ad = await aboutDataSource(s.about_data_topic);
+  if (!ad) return [`${where}: about_data has no source ${s.about_data_topic}`];
+  const out = [];
+  if (!(await toolTopics(tool)).has(ad.topic)) out.push(`${where}: about_data for ${tool} does not list ${ad.topic}`);
+  if (ad.source !== s.source) out.push(`${where}: about_data names it ${ad.source}`);
+  if (ad.publisher !== s.publisher) out.push(`${where}: about_data's publisher is ${ad.publisher}`);
+  const kind = officialKind(ad.official, ad.changed_by_betanyc.changed, ad.changed_by_betanyc.steps);
+  if ((s.changed_by_betanyc?.kind ?? "published-as-is") !== kind) out.push(`${where}: answer says ${s.changed_by_betanyc?.kind ?? "published-as-is"}, about_data says ${kind}`);
+  const wording = officialWording({ official: ad.official, changed: ad.changed_by_betanyc.changed, steps: ad.changed_by_betanyc.steps, publisher: ad.publisher, sourceName: ad.source, sourceUrl: ad.source_url });
+  const [label, tag] = wording.split(/ (Official record|Built from|Source): /);
+  if (!s.cite.startsWith(label)) out.push(`${where}: cite does not start with about_data's words: ${label}`);
+  if (!s.cite.includes(`${tag}: ${builtFrom(ad.source, ad.publisher)}, `)) out.push(`${where}: cite does not name the source as about_data does (${tag}: ${builtFrom(ad.source, ad.publisher)})`);
+  return out;
+}
+const named = (b) => [...(b.data_sources ?? [b.data_source]), b.registry_source].filter(Boolean);
+
+test("every source a tool answer names is in about_data for that tool, with the same name, publisher and label", async () => {
+  const domain = TOOLS.map((t) => t.name).filter((n) => !["whats_changed", "about_betanyc", "about_data"].includes(n));
+  const seen = new Set();
+  const problems = [];
+  const walk = async (name, b) => {
+    for (const s of named(b)) {
+      seen.add(name);
+      problems.push(...(await problemsWith(name, s)));
     }
-    const told = new Set(ad.structuredContent.sources.map((s) => officialKind(s.official, s.changed_by_betanyc?.changed ?? false, s.changed_by_betanyc?.steps ?? [])));
-    const b = await call(t.name, argsFor[t.name]);
-    const said = [b.data_source, b.registry_source].filter(Boolean).map((s) => s.changed_by_betanyc?.kind).filter(Boolean);
-    if ([...told].some((k) => k !== "published-as-is")) assert.ok(said.length, `${t.name}: about_data says ${[...told]}, the answer says nothing`);
-    for (const k of said) assert.ok(told.has(k), `${t.name} says ${k}; about_data says ${[...told]}`);
-    for (const s of [b.data_source, b.registry_source].filter(Boolean)) {
-      if (s.changed_by_betanyc?.kind === "produced-by-betanyc") assert.match(s.cite, /^BetaNYC produced this\. It is not an official record\./, t.name);
-      if (s.changed_by_betanyc?.kind === "modified-by-betanyc") assert.match(s.cite, /^BetaNYC modified this data: /, t.name);
-    }
-    walked++;
+  };
+  for (const [name, args] of [...CALLS, ["search_datasets", { query: "zzqqxxnomatch" }], ["whats_new", { since: "2000-01-01", portal: "nassau-county" }]]) await walk(name, await call(name, args));
+  // check_source that reached the portal (the request is faked).
+  const realFetch = globalThis.fetch;
+  const saved = process.env.NY_DATA_OFFLINE;
+  process.env.NY_DATA_OFFLINE = "0";
+  globalThis.fetch = async () => new Response("<html></html>", { status: 200 });
+  resetHttpState();
+  try {
+    await walk("check_source", await call("check_source", { source_id: "nys-department-of-health" }));
+  } finally {
+    globalThis.fetch = realFetch;
+    process.env.NY_DATA_OFFLINE = saved;
+    resetHttpState();
   }
-  assert.equal(walked, 10, "the ten registry and index tools");
+  assert.deepEqual(problems, []);
+  assert.deepEqual(domain.filter((n) => !seen.has(n)), [], "every registry and index tool is checked");
+});
+
+test("the agreement check fails on the answer the live check found, and on a wrong name or label", async () => {
+  const b = await call("search_datasets", { query: "zoning" });
+  const good = b.data_source;
+  assert.deepEqual(await problemsWith("search_datasets", good), []);
+  // What 0.4.0 said before this fix: "BetaNYC produced this", source "NY Data Registry index".
+  const old = { ...good, source: "NY Data Registry index", publisher: "BetaNYC", about_data_topic: undefined, changed_by_betanyc: { kind: "produced-by-betanyc", detail: "built this index" }, cite: "BetaNYC produced this. It is not an official record. What BetaNYC did: built this index. Built from: NY Data Registry index, https://github.com/BetaNYC/ny-data-registry-mcp/releases" };
+  assert.notDeepEqual(await problemsWith("search_datasets", old), []);
+  assert.notDeepEqual(await problemsWith("search_datasets", { ...good, source: "Cortland County catalog" }), [], "a name about_data does not give");
+  assert.notDeepEqual(await problemsWith("search_datasets", { ...good, changed_by_betanyc: { kind: "produced-by-betanyc", detail: "x" } }), [], "the other label");
+  assert.notDeepEqual(await problemsWith("search_datasets", { ...good, cite: good.cite.replace("cleaned it, ", "") }), [], "different words for what BetaNYC did");
+  assert.notDeepEqual(await problemsWith("find_sources", good), [], "a source about_data does not give for that tool");
 });
 
 test("registry answers say BetaNYC produced the registry; check_source keeps the live check apart from it", async () => {
@@ -186,10 +246,10 @@ test("registry answers say BetaNYC produced the registry; check_source keeps the
     const s = (await call(name, args)).data_source;
     assert.equal(s.source, "NY Data Portal Registry", name);
     assert.equal(s.changed_by_betanyc.kind, "produced-by-betanyc", name);
-    assert.match(s.cite, /^BetaNYC produced this\. It is not an official record\. What BetaNYC did: compiled and maintains this registry of New York data portals/, name);
+    assert.match(s.cite, /^BetaNYC produced this\. It is not an official record\. What BetaNYC did: BetaNYC opens each portal and records what it finds/, name);
   }
-  // A check that reached the portal: data_source is the portal, fetched now (published as is);
-  // registry_source is the BetaNYC registry row it was compared with.
+  // A check that reached the portal: data_source is BetaNYC's record of the portal's reply,
+  // fetched now (portal-check, produced); registry_source is the registry row it was compared with.
   const realFetch = globalThis.fetch;
   const saved = process.env.NY_DATA_OFFLINE;
   process.env.NY_DATA_OFFLINE = "0";
@@ -199,8 +259,9 @@ test("registry answers say BetaNYC produced the registry; check_source keeps the
     const b = await call("check_source", { source_id: "nys-department-of-health" });
     assert.equal(b.checked, true);
     assert.equal(b.data_source.as_of_kind, "retrieved");
-    assert.equal(b.data_source.changed_by_betanyc, undefined, "the live check is the portal's own reply");
-    assert.match(b.data_source.cite, /^Source: .*Fetched from the source for this answer/);
+    assert.equal(b.data_source.about_data_topic, "portal-check");
+    assert.equal(b.data_source.changed_by_betanyc.kind, "produced-by-betanyc");
+    assert.match(b.data_source.cite, /^BetaNYC produced this\. It is not an official record\. .*Fetched from the source for this answer.*Built from: NY Data Registry portal check, https:/);
     assert.equal(b.registry_source.source, "NY Data Portal Registry");
     assert.equal(b.registry_source.changed_by_betanyc.kind, "produced-by-betanyc");
     assert.notEqual(b.registry_source.cite, b.data_source.cite);

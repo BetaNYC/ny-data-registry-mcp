@@ -52,6 +52,41 @@
       ]
     },
     {
+      "@id": "https://github.com/BetaNYC/ny-data-registry-mcp#what-it-does",
+      "@type": "Dataset",
+      "title": "NY Data Registry portal check",
+      "description": "NY Data Registry portal check, published by BetaNYC.",
+      "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp#what-it-does",
+      "contactPoint": {
+        "@type": "Kind",
+        "fn": "BetaNYC (lists this dataset; report errors in the data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues)",
+        "hasEmail": "mailto:lab@beta.nyc"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "BetaNYC",
+        "@id": "https://beta.nyc/"
+      },
+      "landingPage": {
+        "@type": "Document",
+        "title": "NY Data Registry portal check",
+        "accessURL": "https://github.com/BetaNYC/ny-data-registry-mcp#what-it-does"
+      },
+      "page": [
+        {
+          "@type": "Document",
+          "title": "Check a figure at the source",
+          "accessURL": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+        }
+      ],
+      "accrualPeriodicity": "continual",
+      "license": "https://spdx.org/licenses/MIT.html",
+      "rights": [
+        "License: MIT",
+        "Terms of use: https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      ]
+    },
+    {
       "@id": "https://github.com/BetaNYC/ny-gov-web-registry",
       "@type": "Dataset",
       "title": "NY Gov Web Registry",
@@ -2420,6 +2455,95 @@
       "scopeNote": "Known gap: A place that is not in the list was not checked. That is not the same as having no portal. Known gap: Rows marked UNCONFIRMED were not fully checked. Caveat: Each row says when it was last checked. A portal can move or close after that date. Caveat: check_source makes one request to the portal's address when you ask and reports what came back. That result is the portal's own reply, compared with this list."
     },
     {
+      "@id": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#portal-check",
+      "@type": "Dataset",
+      "title": "A portal check (check_source) (NY Data Registry MCP server)",
+      "description": "What check_source found when it asked one portal address once, at your request: the HTTP status, where it redirects, how long it took, and whether that agrees with the portal list.",
+      "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#portal-check",
+      "contactPoint": {
+        "@type": "Kind",
+        "fn": "BetaNYC (serves this dataset; report errors in the data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues)",
+        "hasEmail": "mailto:lab@beta.nyc"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.beta.nyc/",
+        "name": "BetaNYC",
+        "subOrganizationOf": [
+          {
+            "@type": "Organization",
+            "name": "Fund for the City of New York"
+          }
+        ]
+      },
+      "source": [
+        {
+          "@id": "https://github.com/BetaNYC/ny-data-registry-mcp#what-it-does",
+          "@type": "Dataset",
+          "title": "NY Data Registry portal check",
+          "description": "NY Data Registry portal check, published by BetaNYC.",
+          "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp#what-it-does",
+          "contactPoint": {
+            "@type": "Kind",
+            "fn": "BetaNYC (lists this dataset; report errors in the data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues)",
+            "hasEmail": "mailto:lab@beta.nyc"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "BetaNYC",
+            "@id": "https://beta.nyc/"
+          },
+          "landingPage": {
+            "@type": "Document",
+            "title": "NY Data Registry portal check",
+            "accessURL": "https://github.com/BetaNYC/ny-data-registry-mcp#what-it-does"
+          },
+          "page": [
+            {
+              "@type": "Document",
+              "title": "Check a figure at the source",
+              "accessURL": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+            }
+          ],
+          "accrualPeriodicity": "continual",
+          "license": "https://spdx.org/licenses/MIT.html",
+          "rights": [
+            "License: MIT",
+            "Terms of use: https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+          ]
+        }
+      ],
+      "provenance": [
+        "BetaNYC produced this. It is not an official record. Built from: NY Data Registry portal check, https://github.com/BetaNYC/ny-data-registry-mcp#what-it-does",
+        "The server makes one request to the address in the portal list when you call check_source. It never retries and never follows a redirect. Nothing is kept.",
+        "Modified by BetaNYC: BetaNYC's server records the portal's reply (status, redirect, time) and compares it with the portal list's row for that portal."
+      ],
+      "page": [
+        {
+          "@type": "Document",
+          "title": "Check a figure at the source",
+          "accessURL": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+        }
+      ],
+      "spatial": {
+        "@type": "Location",
+        "prefLabel": "The one portal you ask about"
+      },
+      "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "merged"
+        }
+      ],
+      "accrualPeriodicity": "continual",
+      "license": "https://spdx.org/licenses/MIT.html",
+      "rights": [
+        "License: MIT",
+        "Terms of use: https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
+      ],
+      "scopeNote": "Known gap: One request shows one moment: a portal that does not answer now may answer a minute later, and the reverse. Caveat: The status and redirect are the portal's own reply, passed on unchanged. The verdict that compares them with the portal list is BetaNYC's."
+    },
+    {
       "@id": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#government-bodies",
       "@type": "Dataset",
       "title": "Who runs each data site (NY Data Registry MCP server)",
@@ -2757,7 +2881,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: NYS GIS Clearinghouse Data (New York State Office of Information Technology Services), https://data.gis.ny.gov/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: NYS GIS Clearinghouse Data (New York State Office of Information Technology Services), https://data.gis.ny.gov/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -2773,6 +2897,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -2949,7 +3077,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Adirondack Park Agency Hub Site, https://adirondack-park-agency-adirondack.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Adirondack Park Agency Hub Site, https://adirondack-park-agency-adirondack.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -2965,6 +3093,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3045,7 +3177,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at gisservices.dec.ny.gov (New York State Department of Environmental Conservation), https://gisservices.dec.ny.gov/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at gisservices.dec.ny.gov (New York State Department of Environmental Conservation), https://gisservices.dec.ny.gov/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -3061,6 +3193,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3141,7 +3277,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: NYS Environmental Bond Act (New York State Department of Environmental Conservation), https://environmentalbondact.ny.gov/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: NYS Environmental Bond Act (New York State Department of Environmental Conservation), https://environmentalbondact.ny.gov/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -3157,6 +3293,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3237,7 +3377,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at services6.arcgis.com/DZHaqZm9cxOD4CWM (New York State Department of Environmental Conservation), https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at services6.arcgis.com/DZHaqZm9cxOD4CWM (New York State Department of Environmental Conservation), https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -3253,6 +3393,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3333,7 +3477,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: New York Geographic Information Gateway (New York State Department of State), https://opdgig.dos.ny.gov/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: New York Geographic Information Gateway (New York State Department of State), https://opdgig.dos.ny.gov/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -3349,6 +3493,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3429,7 +3577,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at gis.dot.ny.gov (New York State Department of Transportation), https://gis.dot.ny.gov/hostingny/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at gis.dot.ny.gov (New York State Department of Transportation), https://gis.dot.ny.gov/hostingny/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -3445,6 +3593,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3525,7 +3677,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at elevation.its.ny.gov (New York State Office of Information Technology Services), https://elevation.its.ny.gov/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at elevation.its.ny.gov (New York State Office of Information Technology Services), https://elevation.its.ny.gov/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -3541,6 +3693,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3621,7 +3777,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: NYS GeoHub (New York State Office of Information Technology Services), https://nysgeohub.ny.gov/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: NYS GeoHub (New York State Office of Information Technology Services), https://nysgeohub.ny.gov/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -3637,6 +3793,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3717,7 +3877,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at gisservices.its.ny.gov (New York State Office of Information Technology Services), https://gisservices.its.ny.gov/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at gisservices.its.ny.gov (New York State Office of Information Technology Services), https://gisservices.its.ny.gov/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -3733,6 +3893,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3813,7 +3977,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at orthos.its.ny.gov (New York State Office of Information Technology Services), https://orthos.its.ny.gov/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at orthos.its.ny.gov (New York State Office of Information Technology Services), https://orthos.its.ny.gov/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -3829,6 +3993,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -3909,7 +4077,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at services.arcgis.com/1xFZPtKn1wKC6POA (New York State Office of Parks, Recreation and Historic Preservation), https://services.arcgis.com/1xFZPtKn1wKC6POA/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at services.arcgis.com/1xFZPtKn1wKC6POA (New York State Office of Parks, Recreation and Historic Preservation), https://services.arcgis.com/1xFZPtKn1wKC6POA/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -3925,6 +4093,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4005,7 +4177,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Albany County NY Open Data, https://albany-county-ny-open-data-albcountygis.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Albany County NY Open Data, https://albany-county-ny-open-data-albcountygis.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -4021,6 +4193,10 @@
         "prefLabel": "Albany County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4101,7 +4277,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Columbia County Geo-Data, https://geodata-cc-ny.opendata.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Columbia County Geo-Data, https://geodata-cc-ny.opendata.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -4117,6 +4293,10 @@
         "prefLabel": "Columbia County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4197,7 +4377,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Greene County Web Map, https://gis.gcgovny.com/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Greene County Web Map, https://gis.gcgovny.com/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -4213,6 +4393,10 @@
         "prefLabel": "Greene County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4293,7 +4477,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Warren County NY GIS, https://warren-county-gis-warrencountyny.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Warren County NY GIS, https://warren-county-gis-warrencountyny.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -4309,6 +4493,10 @@
         "prefLabel": "Warren County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4389,7 +4577,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Washington County NY GIS Web Map, https://gis.washingtoncountyny.gov/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Washington County NY GIS Web Map, https://gis.washingtoncountyny.gov/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -4405,6 +4593,10 @@
         "prefLabel": "Washington County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4485,7 +4677,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at ccgis2.cayugacounty.us (Cayuga County), https://ccgis2.cayugacounty.us/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at ccgis2.cayugacounty.us (Cayuga County), https://ccgis2.cayugacounty.us/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -4501,6 +4693,10 @@
         "prefLabel": "Cayuga County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4581,7 +4777,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: City of Syracuse Open Data Portal, https://data.syr.gov/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: City of Syracuse Open Data Portal, https://data.syr.gov/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -4597,6 +4793,10 @@
         "prefLabel": "City of Syracuse"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4676,7 +4876,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: City of Utica GIS Maps, https://www.cityofutica.com/maps/gis-maps/index",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: City of Utica GIS Maps, https://www.cityofutica.com/maps/gis-maps/index",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -4692,6 +4892,10 @@
         "prefLabel": "City of Utica"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4772,7 +4976,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Cortland County GIS Portal, https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Cortland County GIS Portal, https://cortland-county-gis-portal-cortlandplanning.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -4788,6 +4992,10 @@
         "prefLabel": "Cortland County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4868,7 +5076,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Oswego County Data, https://data-oswegogis.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Oswego County Data, https://data-oswegogis.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -4884,6 +5092,10 @@
         "prefLabel": "Oswego County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -4964,7 +5176,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Dutchess County GIS Open Data, https://opendata-dcny.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Dutchess County GIS Open Data, https://opendata-dcny.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -4980,6 +5192,10 @@
         "prefLabel": "Dutchess County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -5059,7 +5275,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Orange County GIS, https://gis.orangecountygov.com/portal/apps/sites/#/ocgis",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Orange County GIS, https://gis.orangecountygov.com/portal/apps/sites/#/ocgis",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -5075,6 +5291,10 @@
         "prefLabel": "Orange County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -5155,7 +5375,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Sullivan County GIS Open Data, https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Sullivan County GIS Open Data, https://gis2017-04-13t155717567z-sullconygiso.opendata.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -5171,6 +5391,10 @@
         "prefLabel": "Sullivan County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -5251,7 +5475,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Ulster County GIS Services, https://gis.ulstercountyny.gov/server/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Ulster County GIS Services, https://gis.ulstercountyny.gov/server/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -5267,6 +5491,10 @@
         "prefLabel": "Ulster County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -5347,7 +5575,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at gis.cmvny.com (City of Mount Vernon), https://gis.cmvny.com/server/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at gis.cmvny.com (City of Mount Vernon), https://gis.cmvny.com/server/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -5363,6 +5591,10 @@
         "prefLabel": "City of Mount Vernon"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -5635,7 +5867,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at services5.arcgis.com/GfwWNkhOj9bNBqoJ (New York City Department of City Planning), https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: ArcGIS REST Services Directory at services5.arcgis.com/GfwWNkhOj9bNBqoJ (New York City Department of City Planning), https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -5651,6 +5883,10 @@
         "prefLabel": "NYC Metro / Long Island"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -5731,7 +5967,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: NYCMapHub (New York City Office of Technology and Innovation), https://nycmaps.nyc.gov/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: NYCMapHub (New York City Office of Technology and Innovation), https://nycmaps.nyc.gov/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -5747,6 +5983,10 @@
         "prefLabel": "NYC Metro / Long Island"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -5827,7 +6067,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Putnam County GIS, https://data-pcny.opendata.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Putnam County GIS, https://data-pcny.opendata.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -5843,6 +6083,10 @@
         "prefLabel": "Putnam County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -5923,7 +6167,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Suffolk County Open Data, https://opendata.suffolkcountyny.gov/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Suffolk County Open Data, https://opendata.suffolkcountyny.gov/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -5939,6 +6183,10 @@
         "prefLabel": "Suffolk County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6019,7 +6267,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Westchester County GeoHub, https://gis.westchestercountyny.gov/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Westchester County GeoHub, https://gis.westchestercountyny.gov/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -6035,6 +6283,10 @@
         "prefLabel": "Westchester County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6115,7 +6367,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: City of Watertown GIS, https://maps.watertown-ny.gov/portal/home/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: City of Watertown GIS, https://maps.watertown-ny.gov/portal/home/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -6131,6 +6383,10 @@
         "prefLabel": "City of Watertown"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6211,7 +6467,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Essex County GIS Map Viewer, https://essex-gis.co.essex.ny.us/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Essex County GIS Map Viewer, https://essex-gis.co.essex.ny.us/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -6227,6 +6483,10 @@
         "prefLabel": "Essex County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6306,7 +6566,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Broome County GIS Portal, https://gis.broomecountyny.gov/arcgis/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Broome County GIS Portal, https://gis.broomecountyny.gov/arcgis/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -6322,6 +6582,10 @@
         "prefLabel": "Broome County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6401,7 +6665,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: City of Ithaca, NY, https://data-ithacany.opendata.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: City of Ithaca, NY, https://data-ithacany.opendata.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -6417,6 +6681,10 @@
         "prefLabel": "City of Ithaca"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6496,7 +6764,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Otsego County GIS, https://otsego-county-gis-otsegocountyny.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Otsego County GIS, https://otsego-county-gis-otsegocountyny.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -6512,6 +6780,10 @@
         "prefLabel": "Otsego County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6592,7 +6864,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Steuben County GIS, https://steubencounty-scnygis.opendata.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Steuben County GIS, https://steubencounty-scnygis.opendata.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -6608,6 +6880,10 @@
         "prefLabel": "Steuben County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6687,7 +6963,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Tioga County One Map, https://tioga-county-one-map-tiogacountyny.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Tioga County One Map, https://tioga-county-one-map-tiogacountyny.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -6703,6 +6979,10 @@
         "prefLabel": "Tioga County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6783,7 +7063,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Tompkins County Open Data Portal, https://tcdata-tompkinscounty.opendata.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Tompkins County Open Data Portal, https://tcdata-tompkinscounty.opendata.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -6799,6 +7079,10 @@
         "prefLabel": "Tompkins County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6879,7 +7163,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Cattaraugus County GIS Hub, https://cattaraugus-county-gis-hub-cattco.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Cattaraugus County GIS Hub, https://cattaraugus-county-gis-hub-cattco.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -6895,6 +7179,10 @@
         "prefLabel": "Cattaraugus County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -6975,7 +7263,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Chautauqua County Geographic Information Systems, https://maps.chautauquacounty.com/server/rest/services",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Chautauqua County Geographic Information Systems, https://maps.chautauquacounty.com/server/rest/services",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the server gives them. Descriptions have HTML tags removed and spaces squeezed, and the publisher is taken from each service's copyright text (copyrightText), cleaned the same way; each record's provenance marks a field derived when BetaNYC changed it."
       ],
@@ -6991,6 +7279,10 @@
         "prefLabel": "Chautauqua County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7167,7 +7459,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: DataROC (City of Rochester), https://data.cityofrochester.gov/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: DataROC (City of Rochester), https://data.cityofrochester.gov/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7183,6 +7475,10 @@
         "prefLabel": "City of Rochester"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7263,7 +7559,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Genesee County GIS Data, https://gis-data-cogeneseeny.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Genesee County GIS Data, https://gis-data-cogeneseeny.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7279,6 +7575,10 @@
         "prefLabel": "Genesee County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7359,7 +7659,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Livingston County, New York, https://gis.livingstoncountyny.gov/portal/home/index.html",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Livingston County, New York, https://gis.livingstoncountyny.gov/portal/home/index.html",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7375,6 +7675,10 @@
         "prefLabel": "Livingston County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7455,7 +7759,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Monroe County GIS, https://maps.monroecounty.gov/portal/apps/sites/#/mcgis",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Monroe County GIS, https://maps.monroecounty.gov/portal/apps/sites/#/mcgis",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7471,6 +7775,10 @@
         "prefLabel": "Monroe County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7551,7 +7859,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Ontario County GIS Mapping Center, https://ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Ontario County GIS Mapping Center, https://ontario-county-gis-mapping-center-ontariocony.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7567,6 +7875,10 @@
         "prefLabel": "Ontario County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7647,7 +7959,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Wayne County GIS, https://gis.co.wayne.ny.us/portal/apps/sites/#/wcgis/search?collection=Dataset",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Wayne County GIS, https://gis.co.wayne.ny.us/portal/apps/sites/#/wcgis/search?collection=Dataset",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7663,6 +7975,10 @@
         "prefLabel": "Wayne County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7743,7 +8059,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Wyoming County GIS, https://www.wyomingcountyny.gov/645/Geographic-Information-Systems-GIS",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Wyoming County GIS, https://www.wyomingcountyny.gov/645/Geographic-Information-Systems-GIS",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7759,6 +8075,10 @@
         "prefLabel": "Wyoming County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7838,7 +8158,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Yates County GIS Portal, https://gisportal.yatescounty.org/portal/home/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Yates County GIS Portal, https://gisportal.yatescounty.org/portal/home/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7854,6 +8174,10 @@
         "prefLabel": "Yates County"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -7934,7 +8258,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: SUNY Cortland Geo-Spatial Information Hub (State University of New York at Cortland), https://suny-cortland-geo-spatial-information-hub-suncortlandadmin.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: SUNY Cortland Geo-Spatial Information Hub (State University of New York at Cortland), https://suny-cortland-geo-spatial-information-hub-suncortlandadmin.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -7950,6 +8274,10 @@
         "prefLabel": "Central NY"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -8030,7 +8358,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Syracuse University, https://data-syruniv.opendata.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Syracuse University, https://data-syruniv.opendata.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -8046,6 +8374,10 @@
         "prefLabel": "Central NY"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -8222,7 +8554,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: CUGIR, Cornell University Geospatial Information Repository (Cornell University Library), https://cugir.library.cornell.edu/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: CUGIR, Cornell University Geospatial Information Repository (Cornell University Library), https://cugir.library.cornell.edu/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal once a week. The CUGIR site is not called.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Descriptions have HTML tags removed and spaces squeezed; each record's provenance marks the description derived when that changed it."
       ],
@@ -8238,6 +8570,10 @@
         "prefLabel": "New York State"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"
@@ -8318,7 +8654,7 @@
         }
       ],
       "provenance": [
-        "BetaNYC modified this data: left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Rochester Area Data (University of Rochester), https://rochester-area-data-urochester.hub.arcgis.com/",
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: Rochester Area Data (University of Rochester), https://rochester-area-data-urochester.hub.arcgis.com/",
         "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source. The harvest reads this portal every night.",
         "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row, so a row carries the portal's source_id and the government body's registry_id. Titles and most other values are kept as the portal gives them. Where a record has no description, its one-line summary (snippet) is used instead, and a license with HTML has its tags removed; each record's provenance marks those fields derived."
       ],
@@ -8334,6 +8670,10 @@
         "prefLabel": "Western NY (Finger Lakes + WNY)"
       },
       "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
         {
           "@type": "Activity",
           "label": "filtered"

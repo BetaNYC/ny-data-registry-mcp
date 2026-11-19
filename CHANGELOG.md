@@ -33,14 +33,15 @@ Dataset search matches every word of the query.
   and fetches nothing; before 0.4.0, one row on a host was always checked. With several rows on
   the host and a clear match, `url_matches` gives the count. **How to update:** on `ambiguous`,
   call again with a `source_id` from `candidates`.
-- **`cite` for BetaNYC's own data says so first.** Registry answers (`find_sources`,
-  `list_sources_for_place`, `how_to_query`, `registry_info`, and `check_source`'s
-  `registry_source`) and index answers (`search_datasets`, `list_topics`, `find_joinable`,
-  `whats_new`, a standard description) start "BetaNYC produced this. It is not an official
-  record."; `get_dataset_columns` starts "BetaNYC modified this
-  data: …" and ends with the official record. `data_source` gains `changed_by_betanyc` (and,
-  for one dataset, `held_in`). **How to update:** a client that parsed `cite` as
-  "Source: … Link: …" reads `source_url` (the official record) instead.
+- **`cite` says first whether BetaNYC modified or produced the data, in `about_data`'s words.**
+  Registry answers (`find_sources`, `list_sources_for_place`, `how_to_query`, `registry_info`,
+  and `check_source`'s `registry_source`) start "BetaNYC produced this. It is not an official
+  record." Dataset rows (`search_datasets`, `whats_new`, `find_joinable`, `get_dataset_columns`)
+  name each row's portal catalog and start "BetaNYC modified this data: …", ending with the
+  portal as the official record. `data_source` gains `changed_by_betanyc` and `about_data_topic`;
+  an answer whose rows come from several portals adds `data_sources`, one block per source.
+  **How to update:** a client that parsed `cite` as "Source: … Link: …" reads `source_url` (the
+  official record) instead, and reads `data_sources` when it is there.
 
 ### Changed
 
@@ -60,9 +61,9 @@ Dataset search matches every word of the query.
 - Every answer from the ten registry and index tools carries a `data_source` block (source,
   publisher, link, `as_of`, `as_of_kind`, `cite`), built with the shared `provenance()` (#36,
   #37). Test: `test/answers.test.mjs`. Error answers and the three shared tools do not; the
-  server instructions say "every registry and index answer". `check_source` cites the portal as
-  `as_of_kind: "retrieved"` with `retrieved_at` (New York time to the minute in `cite`), and the
-  registry row when the portal was not checked, blocked or did not answer.
+  server instructions say "every registry and index answer". `check_source` cites its check of
+  the portal as `as_of_kind: "retrieved"` with `retrieved_at` (New York time to the minute in
+  `cite`), and the registry row when the portal was not checked, blocked or did not answer.
 - `list_sources_for_place`: at most 25 rows per list by default (`limit`, up to 100), with
   `counts` and a `showing` note. "Long Island" was about 116 KB with 104 rows (#38).
 - `get_dataset_columns`: 100 columns by default (`limit` up to 500, `offset`), with
@@ -120,15 +121,26 @@ Dataset search matches every word of the query.
   for a blank `api_endpoint`, 4 rows have no portal URL, and one portal URL has a note after it
   (only the URL part is fetched). The registry data is not edited here; the rows are listed for
   its owner in #52.
-- `get_dataset_columns`: `data_source` says the record is BetaNYC's modified copy in the NY Data
-  Registry index (`changed_by_betanyc`: modified, `held_in`), with the dataset's own portal page
-  as the official record, as `about_data` says for the portal catalogs. Index answers say BetaNYC
-  produced the index and it is not an official record. Registry answers (`find_sources`,
-  `list_sources_for_place`, `how_to_query`, `registry_info`) say BetaNYC produced the registry
-  ("compiled and maintains this registry of New York data portals"), as `about_data` says.
-  `check_source` cites a portal it reached in `data_source` and the registry row it compared that
-  with in a separate `registry_source`. A test walks every tool and checks its answer against
-  `about_data` for that tool.
+- Every `data_source` is made from one `DATA-SOURCES.json` entry (`about_data_topic`), so an
+  answer and `about_data` give the same source name, publisher and official answer, in the same
+  words. Dataset rows cite their portal's catalog (for example "NYC Open Data", New York City
+  Office of Technology and Innovation), "BetaNYC modified this data", as of that portal's last
+  good read; `get_dataset_columns` links the dataset's own page, as of the harvest that last saw
+  it. Before this, index answers said "BetaNYC produced this" under the name "NY Data Registry
+  index", which `about_data` did not give for those tools, and `get_dataset_columns` named
+  "<portal> catalog". `held_in` is gone. BetaNYC's own lists in an answer are named beside the
+  rows as produced: topics (`list_topics`), the join-key list (`find_joinable`), the standard
+  mapping (a Croissant or DCAT-US description), and the harvest coverage when a search or
+  `whats_new` has no rows. `check_source` cites a portal it reached as the new `portal-check`
+  source (BetaNYC's record of the portal's reply, produced) and the registry row it compared that
+  with in a separate `registry_source`. Tests: every source any tool answer names is in
+  `about_data` for that tool with the same name, publisher and words, and the check fails on the
+  answer 0.4.0 gave before (`test/answers.test.mjs`).
+- `DATA-SOURCES.json`: the 54 portal catalogs whose harvest removes HTML (ArcGIS, ArcGIS Server,
+  GeoBlacklight, InvenioRDM) list the `cleaned` step, so their answer reads "BetaNYC modified
+  this data: cleaned it, left some records out, reshaped it, and joined it with other data". The
+  six Socrata catalogs are not cleaned. New source `portal-check`; `coverage` also names
+  `whats_new`. `data.json` rebuilt.
 - Per-field `provenance` in harvested records: a field the harvest cleaned or chose is
   `derived`, not `portal`. ArcGIS Server, GeoBlacklight and InvenioRDM descriptions with HTML
   removed or spaces squeezed; the ArcGIS Server publisher, taken from `copyrightText`; an ArcGIS
