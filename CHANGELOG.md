@@ -9,21 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Dataset search matches every word of the query.
 
+### Breaking
+
+- **Failures are MCP errors.** A client that read the `error` or `place_error` field of a JSON
+  answer (an unknown dataset, source or place, a bad `whats_new` date) now gets `isError: true`
+  with one plain sentence instead. `check_source` is the exception: a portal that does not
+  answer is the check's finding, so that answer stays JSON, with the reason in `request_error`
+  (was `error`). **How to update:** check `isError` and read the message in `content[0].text`;
+  for `check_source`, read `request_error`.
+- **Lists are capped.** `list_sources_for_place` lists 25 rows per list (own, within, regional,
+  statewide) by default, and `get_dataset_columns` 100 columns; `how_to_query` lists 25 rows
+  when several match. **How to update:** compare `counts` (or `columns_shown.total`, or `total`)
+  with the rows you got, and ask for the rest with `limit` (up to 100 rows, 500 columns) and,
+  for columns and `how_to_query`, `offset`.
+
 ### Changed
 
 - The `registry_id` and `runs_it` notes, repeated in five tool descriptions, are said once in the
   server instructions, with a line about `data_source`. The tool-list budget drops to 26,500
-  characters (25,947 measured), and a test fails if any sentence repeats across descriptions
-  (#45).
+  characters (25,947 measured; 26,334 with the review fixes below), and a test fails if any
+  sentence repeats across descriptions (#45).
 - `test/stdout.test.mjs`: starts the server, calls every tool over raw stdio, and fails on any
   stdout line that is not a JSON-RPC message (#44).
 - `data/BUNDLED.sha256` and `test/bundled.test.mjs`: the bundled copies of the government-bodies
   list and the portal registry match recorded sums and name their source and date (#42).
 - `test/eval-set.test.mjs` keeps `eval/questions.json` well formed; a 2026-11-18 run against the
-  published index scored 27/27 with no invariant violations (`eval/runs/`) (#40).
+  published index scored 27/27 with no invariant violations (`eval/runs/`) (#40). Since lists
+  are paged, the `list_sources_for_place` steps ask for `limit: 100` so the invariants still see
+  every row, and the eval notes any list that was still cut (`cutLists`). The 27/27 was recorded
+  before that change and has not been re-run against the real index.
 - Every answer from the ten registry and index tools carries a `data_source` block (source,
   publisher, link, `as_of`, `as_of_kind`, `cite`), built with the shared `provenance()` (#36,
-  #37). Test: `test/answers.test.mjs`.
+  #37). Test: `test/answers.test.mjs`. Error answers and the three shared tools do not; the
+  server instructions say "every registry and index answer". `check_source` cites the portal as
+  `as_of_kind: "retrieved"` with `retrieved_at` (New York time to the minute in `cite`), and the
+  registry row when the portal was not checked, blocked or did not answer.
 - `list_sources_for_place`: at most 25 rows per list by default (`limit`, up to 100), with
   `counts` and a `showing` note. "Long Island" was about 116 KB with 104 rows (#38).
 - `get_dataset_columns`: 100 columns by default (`limit` up to 500, `offset`), with
@@ -34,21 +54,42 @@ Dataset search matches every word of the query.
   shared `toolError` (stack lines dropped, upstream bodies cut to 500 characters, keys from env
   redacted). Before, an unknown dataset, source or place, or a bad `whats_new` date, came back
   as an ordinary answer with an `error` or `place_error` field (#43). Test: `test/errors.test.mjs`.
+  Only an answer that is an error and nothing else is turned into one: a `check_source` answer
+  for a portal that did not answer keeps its verdict and `matches_registry` (a dead row that
+  does not answer agrees with the registry). Test: `test/check-source.test.mjs`.
 - `src/http.ts`: retries 500, 502 and 504 as well as 429 and 503. The four requests to GitHub
   that skip it (registry and government-bodies refreshes, index manifest, index download) now
   retry 429 and 5xx through `fetchWithRetry`, never past their own timeout. The 60 s request
   timeout and the 10 minute download timeout carry their reasons in the code (#35).
+  `check_source` does not retry (`politeFetch`'s `noRetry`): one check is exactly one request,
+  with its 20 s timeout, since for a health check a 500 is the answer. With retries a 500 took
+  3 requests and 15 s.
+- `how_to_query`: when several rows match, at most 25 by default (`limit` up to 100, `offset`),
+  with `total`, `showing` and `next_offset`. `{entity: "county"}` was 68 rows in 67 KB.
+  `check_source` by `url`: when several rows share the host, it checks only the best match (same
+  page, then path, then the rarest shared query parameter) and `url_matches` gives the count and
+  the other rows' ids; still one request. A `url` with no http(s) host (`127.0.0.1` without a
+  scheme, `file:///etc/passwd`) now matches no row: before, it matched every row whose
+  `api_endpoint` is not a URL. Tests lock in that `check_source` never fetches the address a
+  caller gives and reports a redirect without following it.
 - `src/http.ts`: error text built from a response body has every request-header value removed
   (`redactHeaders`), so an echoed `X-App-Token` or GitHub token cannot reach a public harvest
   issue (#39).
 - Every tool now carries MCP tool annotations (`title`, `readOnlyHint: true`, `openWorldHint`),
   set with the shared module's `annotateTools`. `openWorldHint` is `true` only for
   `check_source`. Tests: `test/tool-size.test.mjs` and the stdio smoke test (#34).
-- `test/tool-size.test.mjs`: the tool list plus server instructions must stay at or under
-  27,000 characters (26,545 on 2026-11-18) (#41).
-- `src/betanyc-tools.ts`: BetaNYC's shared module 1.5.0 (was 1.4.0), and
+- `test/tool-size.test.mjs`: the tool list plus server instructions must stay at or under a
+  budget (#41): 27,000 characters when it was added (26,545 on 2026-11-18), lowered to 26,500 by
+  #45 (above).
+- `src/betanyc-tools.ts`: BetaNYC's shared module 1.5.1 (was 1.4.0), and
   `scripts/whats_changed.py` 1.4.1 with its `scripts/mcp_shared/data-sources.schema.json`
-  (were 1.4.0), copied unchanged from betanyc-ai-workspace (#1702).
+  (were 1.4.0), copied unchanged from betanyc-ai-workspace (#1702; the module from commit
+  17938f2: raw file sha256 `567838e0cf659690f3e07885fdfedefa461274e1f51477084f3b48f4e683a72d`;
+  the stamp hash on its line 2, which leaves that line out, `e1e15642…`). 1.5.1 checks that
+  every tool has `readOnlyHint: true`, a boolean `openWorldHint` and a title, labels a live
+  answer's `asOf` as the data's own date (so `check_source` no longer passes its fetch time as
+  one), and in `toolError` keeps the caller's own message whole and redacts more encoded forms
+  of a key.
 - `search_datasets`: a dataset must match every word of the query (the word, its stem or one of
   its synonyms). Before, any one word was enough, so "tax parcels" in Erie County also counted
   opioid excise tax reports: 208 matches, now 113. When no dataset has every word, the search

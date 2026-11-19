@@ -178,7 +178,7 @@ export function findSources(args: FindArgs) {
   if (args.place) {
     place = resolvePlace(args.place);
     if (!place) {
-      return { query: args.query, place_error: `'${args.place}' is not a New York county, city, borough or region this server knows. Try list_sources_for_place.`, results: [] };
+      return { place_error: `'${args.place}' is not a New York county, city, borough or region this server knows. Try list_sources_for_place.` };
     }
   }
   const terms = expandTerms(tokenize(args.query));
@@ -330,9 +330,12 @@ export function lookupSource(ref: { source_id?: string; registry_id?: string; en
   }
   if (ref.url) {
     const host = safeHost(ref.url);
+    // A string with no host ("127.0.0.1" with no scheme, a file: URL) matches nothing. Without
+    // this, it would equal the null host of every row whose api_endpoint is not a URL.
+    if (!host) return { error: `no registry row matches '${ref.url}': it is not an http(s) URL with a host. Try source_id or entity instead` };
     const m = reg.filter((x) => (x.url && safeHost(x.url) === host) || (x.api_endpoint && safeHost(x.api_endpoint) === host));
     if (m.length === 1) return { source: m[0] };
-    if (m.length > 1) return { candidates: m };
+    if (m.length > 1) return { candidates: byUrlMatch(ref.url, m) };
     return { error: `no registry row with host ${host}. Try source_id or entity instead` };
   }
   if (ref.entity) {
@@ -346,6 +349,66 @@ export function lookupSource(ref: { source_id?: string; registry_id?: string; en
     return { error: `no registry row matches '${ref.entity}'. Try find_sources with part of the name` };
   }
   return { error: "give one of source_id, registry_id, entity or url" };
+}
+
+/** One URL's parts for matching: host without "www.", lower-case path without a trailing "/", and query. */
+function urlParts(u: string): { host: string; path: string; query: string } | null {
+  try {
+    const x = new URL(u.trim().split(/\s/)[0]);
+    return { host: x.host.replace(/^www\./, "").toLowerCase(), path: x.pathname.replace(/\/+$/, "").toLowerCase(), query: x.search.toLowerCase() };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rows that share a URL's host, best match first: the row whose portal URL is the given URL
+ * (path and query), then rows whose portal URL (not only the API) is on that host, then the
+ * longest portal path the given URL starts with, then query parameters in common, each
+ * weighted by how few of these rows have it (four counties share one Beacon host and differ
+ * only by ?App=; a PageType they share counts for little), then live rows. Ties keep registry
+ * order.
+ */
+export function byUrlMatch(url: string, rows: Source[]): Source[] {
+  const want = urlParts(url);
+  const params = (q: string) => new Set(q.replace(/^\?/, "").split("&").filter(Boolean));
+  const rowsWith = new Map<string, number>();
+  for (const s of rows) for (const p of params((s.url && urlParts(s.url)?.query) || "")) rowsWith.set(p, (rowsWith.get(p) ?? 0) + 1);
+  const rank = (s: Source): number[] => {
+    const have = s.url ? urlParts(s.url) : null;
+    const onHost = !!want && !!have && have.host === want.host;
+    const exact = onHost && have!.path === want!.path && have!.query === want!.query;
+    const prefix = onHost && (want!.path === have!.path || want!.path.startsWith(have!.path + "/")) ? have!.path.length : -1;
+    const asked = params(want?.query ?? "");
+    const shared = onHost ? [...params(have!.query)].filter((p) => asked.has(p)).reduce((n, p) => n + 1 / (rowsWith.get(p) ?? 1), 0) : 0;
+    return [exact ? 1 : 0, onHost ? 1 : 0, prefix, shared, s.status === "live" ? 1 : 0];
+  };
+  const ranked = rows.map((s, i) => ({ s, i, r: rank(s) }));
+  ranked.sort((a, b) => {
+    for (let k = 0; k < a.r.length; k++) if (a.r[k] !== b.r[k]) return b.r[k] - a.r[k];
+    return a.i - b.i;
+  });
+  return ranked.map((x) => x.s);
+}
+
+/** Candidate lists (several rows match one lookup): 25 by default, up to 100, like list_sources_for_place. */
+export const CANDIDATES_DEFAULT = 25;
+export const CANDIDATES_MAX = 100;
+
+/** One page of candidate rows, with the full count and a `showing` note saying how to see the rest. */
+export function candidatePage(rows: Source[], limit = CANDIDATES_DEFAULT, offset = 0, more = "pass offset to see the rest") {
+  const page = rows.slice(offset, offset + limit);
+  const end = offset + page.length;
+  const next = end < rows.length ? end : null;
+  return {
+    total: rows.length,
+    showing:
+      next === null && offset === 0
+        ? `All ${rows.length} matching rows.`
+        : `Rows ${page.length ? offset + 1 : 0} to ${end} of ${rows.length}.${next === null ? "" : ` Narrow the name, or ${more} (offset ${next}).`}`,
+    next_offset: next,
+    candidates: page.map(sourceSummary),
+  };
 }
 
 export function safeHost(u: string): string | null {
@@ -372,11 +435,16 @@ export function isUnconfirmed(s: Source): string[] {
   return why;
 }
 
-export function howToQuery(ref: { source_id?: string; registry_id?: string; entity?: string }) {
+export function howToQuery(ref: { source_id?: string; registry_id?: string; entity?: string; limit?: number; offset?: number }) {
   const found = lookupSource(ref);
   if (found.error) return { error: found.error };
   if (found.candidates) {
-    return { ambiguous: true, message: "Several rows match; call again with a source_id.", candidates: found.candidates.map(sourceSummary), runs_it_source: runsItSource() };
+    return {
+      ambiguous: true,
+      message: "Several rows match; call again with a source_id.",
+      ...candidatePage(found.candidates, ref.limit, ref.offset, `pass limit (up to ${CANDIDATES_MAX}) and offset`),
+      runs_it_source: runsItSource(),
+    };
   }
   const s = found.source!;
   handoffs ??= readDataJson<{ servers: Handoff[] }>("handoffs.json").servers;

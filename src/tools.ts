@@ -2,7 +2,7 @@ import { z } from "zod";
 import { basename } from "node:path";
 import { readFileSync } from "node:fs";
 import { FAMILIES } from "./families.js";
-import { findSources, howToQuery, listSourcesForPlace, PLACE_LIST_DEFAULT, PLACE_LIST_MAX, registryInfo } from "./sources.js";
+import { CANDIDATES_MAX, findSources, howToQuery, listSourcesForPlace, PLACE_LIST_DEFAULT, PLACE_LIST_MAX, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
 import { COLUMNS_DEFAULT, COLUMNS_MAX, datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState, INDEX_RELEASES_PAGE } from "./fetchindex.js";
@@ -37,7 +37,7 @@ export const SERVER_INSTRUCTIONS =
   // Said once here, not in each tool description (#45).
   "Source rows (find_sources, list_sources_for_place, how_to_query, check_source) and dataset rows carry registry_id when the row has one: the id of the row's government body in BetaNYC/ny-gov-web-registry, for joining the two. " +
   "Source rows also carry runs_it, the government body that runs the site (name, government_level, classification, website), looked up by registry_id in that list; null when the row has no id, found: false when the list lacks it. runs_it_source says which copy of the list answered. " +
-  "Every answer carries data_source: the source, its publisher, a link and how current it is, with a cite line to quote. " +
+  "Every registry and index answer carries data_source: the source, its publisher, a link and how current it is, with a cite line to quote. " +
   BETANYC_INSTRUCTIONS;
 
 /** The last harvest of the installed index, or "not fetched yet" before the first download. */
@@ -192,13 +192,15 @@ const DOMAIN_TOOLS = [
         source_id: { type: "string", description: "From find_sources / list_sources_for_place results" },
         registry_id: { type: "string", description: "Government body id from BetaNYC/ny-gov-web-registry. Several sources can share one; then the reply lists them" },
         entity: { type: "string", description: "Entity name, e.g. 'NYS Department of Health'" },
+        limit: { type: "integer", minimum: 1, maximum: CANDIDATES_MAX, description: "When several rows match: most to list. Default 25" },
+        offset: { type: "integer", minimum: 0, description: "When several rows match: skip this many (next_offset)" },
       },
     },
   },
   {
     name: "check_source",
     description:
-      "Live check of one source's portal URL: one polite request, redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. Never calls key-required or account-gated sources, and reports a bot block rather than working around it.",
+      "Live check of one source's portal URL: exactly one request (no retry), redirects reported (not followed), HTTP status, response time, and whether that matches the registry's status. A url is matched to registry rows by host and never fetched itself; if several rows share the host, the best match is checked. Never calls key-required or account-gated sources, and reports a bot block rather than working around it.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -329,7 +331,7 @@ const ARG_SHAPES = {
     limit: z.number().int().min(1).max(50).optional(),
   },
   list_sources_for_place: { place: z.string().min(1), include_statewide: z.boolean().optional(), limit: z.number().int().min(1).max(PLACE_LIST_MAX).optional() },
-  how_to_query: { source_id: z.string().optional(), registry_id: z.string().optional(), entity: z.string().optional() },
+  how_to_query: { source_id: z.string().optional(), registry_id: z.string().optional(), entity: z.string().optional(), limit: z.number().int().min(1).max(CANDIDATES_MAX).optional(), offset: z.number().int().min(0).optional() },
   check_source: { source_id: z.string().optional(), registry_id: z.string().optional(), url: z.string().optional() },
   registry_info: {},
   search_datasets: {
@@ -388,29 +390,40 @@ function datasetSource(b: Record<string, any>): Prov {
     return indexSource(); // no portal name, publisher or link on the row
   }
 }
-/** check_source: the portal page itself, fetched for this answer; otherwise the registry row. */
+/** check_source: the portal page itself, fetched for this answer; otherwise (not checked, no
+ * answer, blocked) the registry row. No asOf: for a live answer that would be the data's own
+ * date (shared module 1.5.1), and a status check has none; the fetch time is the answer's time. */
 function checkSourceSource(b: Record<string, any>): Prov {
-  if (b.checked !== true) return registrySource();
+  if (b.checked !== true || b.request_error || b.blocked) return registrySource();
   try {
-    return provenance({ sourceName: b.source?.portal_name || b.source?.entity, publisher: b.source?.entity, sourceUrl: b.url, kind: "live", asOf: b.checked_at });
+    return provenance({ sourceName: b.source?.portal_name || b.source?.entity, publisher: b.source?.entity, sourceUrl: b.url, kind: "live" });
   } catch {
     return registrySource();
   }
 }
+/** The message when an answer is a failure and nothing else: an object whose only field is a
+ * string `error` (unknown dataset, source or date) or `place_error` (a place this server does
+ * not know). An answer that carries a problem next to real content (check_source's
+ * request_error, with its verdict) is an answer, not a failure. */
+function failureOf(v: unknown): string | null {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null;
+  const keys = Object.keys(v);
+  if (keys.length !== 1 || (keys[0] !== "error" && keys[0] !== "place_error")) return null;
+  const m = (v as Record<string, unknown>)[keys[0]];
+  return typeof m === "string" ? m : null;
+}
 const withSource = (body: unknown, p: Prov) =>
-  body && typeof body === "object" && !("error" in body) && !("place_error" in body) ? { ...(body as object), data_source: cite(p) } : body;
+  body && typeof body === "object" && failureOf(body) === null ? { ...(body as object), data_source: cite(p) } : body;
 
 /** Keys this package reads from env. No error text repeats them (#39). */
 const secrets = () => [process.env.SOCRATA_APP_TOKEN, process.env.GITHUB_TOKEN];
 /** An isError result: a plain sentence, stack lines dropped, keys redacted (#43). */
 const fail = (message: string) => toolError(message, { secrets: secrets() });
 
-/** The JSON answer, or an isError result when the answer is a failure: a top-level `error`
- * (unknown dataset, source or date) or `place_error` (a place this server does not know). */
-const text = (v: unknown) => {
-  const o = v as { error?: unknown; place_error?: unknown } | null;
-  const err = typeof o?.error === "string" ? o.error : typeof o?.place_error === "string" ? o.place_error : null;
-  if (err) return fail(err);
+/** The JSON answer, or an isError result when the answer is a failure and nothing else (failureOf). */
+export const text = (v: unknown) => {
+  const err = failureOf(v);
+  if (err !== null) return fail(err);
   return { content: [{ type: "text", text: toolJson(v) }] as Record<string, any>[] };
 };
 

@@ -32,3 +32,21 @@ test("every step names a real tool, passes its argument check, and has exactly o
     }
   }
 });
+
+// Lists are paged since 0.4.0 (25 rows per list by default). The eval's invariants read every row
+// of list_sources_for_place's lists, so its steps ask for the most rows (limit 100), and against
+// the bundled registry each such answer then lists every row. No index and no network needed.
+test("list_sources_for_place steps ask for every row, and get them from the bundled registry", async () => {
+  const { PLACE_LIST_MAX, listSourcesForPlace } = await import("../dist/sources.js");
+  const { cutLists } = await import("../dist/eval.js");
+  const steps = set.questions.flatMap((q) => q.steps.filter((s) => s.tool === "list_sources_for_place").map((s) => [q.id, s]));
+  assert.ok(steps.length > 0);
+  for (const [id, s] of steps) {
+    assert.equal(s.args.limit, PLACE_LIST_MAX, `${id}: list_sources_for_place without limit ${PLACE_LIST_MAX}`);
+    const body = listSourcesForPlace(s.args.place, s.args.include_statewide ?? true, s.args.limit);
+    assert.deepEqual(cutLists(body), [], `${id}: a list is still cut`);
+  }
+  // cutLists itself: a 25-row page of a longer list is reported.
+  const big = listSourcesForPlace("Long Island", true);
+  assert.ok(cutLists(big).some((c) => /^own 25 of \d+$/.test(c)), JSON.stringify(cutLists(big)));
+});

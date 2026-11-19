@@ -74,8 +74,12 @@ test("check_source that reached the portal cites the portal, fetched for this an
   try {
     const b = await call("check_source", { source_id: "nys-department-of-health" });
     assert.equal(b.checked, true);
+    // Shared module 1.5.1: a live answer's as_of is its fetch time unless the data gives its own
+    // date; a status check has none, so it is "retrieved", as of the fetch.
     assert.equal(b.data_source.as_of_kind, "retrieved");
-    assert.equal(b.data_source.as_of, b.checked_at);
+    assert.equal(b.data_source.as_of, b.data_source.retrieved_at);
+    assert.ok(Math.abs(Date.parse(b.data_source.as_of) - Date.parse(b.checked_at)) < 5000);
+    assert.match(b.data_source.cite, /Fetched from the source for this answer at .* \(New York time\)/);
     assert.equal(b.data_source.source_url, b.url);
   } finally {
     globalThis.fetch = realFetch;

@@ -20,8 +20,8 @@ Thirteen tools, in three groups.
 |---|---|
 | `find_sources` | Which portals cover this topic or place? Filters: place, tier, platform family, has API, key required, status (default `live`) |
 | `list_sources_for_place` | Everything for one county, city, NYC borough or region. Says whether the place **has a portal**, was **checked and has none**, or is **not in the registry** (unchecked, not absent). Up to 25 rows per list by default (`limit`, up to 100), with full `counts` |
-| `how_to_query` | Endpoint (verbatim from the registry, never guessed), API type, key and env var, example request, and which MCP to hand off to. Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows |
-| `check_source` | One live request to a portal URL: status, redirect, response time, and whether that matches the registry |
+| `how_to_query` | Endpoint (verbatim from the registry, never guessed), API type, key and env var, example request, and which MCP to hand off to. Flags UNCONFIRMED, undocumented, gated, dead and no-portal rows. When several rows match, lists 25 by default (`limit`, up to 100, and `offset`), with `total` and `showing` |
+| `check_source` | Exactly one live request (no retry) to a registry row's portal URL: status, redirect (reported, not followed), response time, and whether that matches the registry. A `url` you give is only matched to a row by host, never fetched itself; when several rows share the host, the best match is checked and `url_matches` says how many there were |
 | `registry_info` | Row counts, registry date and origin, unmapped platform strings, index size and last harvest |
 
 **Index tools** (need the harvested SQLite index):
@@ -46,11 +46,11 @@ These three come from `src/betanyc-tools.ts`, a copy of a file BetaNYC is adding
 
 All tool inputs are strict: an unknown parameter is rejected by name, never silently dropped (same rule as `nyc-311-mcp`).
 
-**Every answer names its source.** Each answer from the ten registry and index tools carries a `data_source` block: the source and its publisher (the same names as in [DATA-SOURCES.json](DATA-SOURCES.json)), a link a person can open, `as_of` with `as_of_kind`, and `cite`, the same as one plain line to quote. Registry tools cite the NY Data Portal Registry as of its `generated` date; index tools cite the NY Data Registry index as of its last harvest; `get_dataset_columns` cites the dataset's own portal and page as of the harvest that last saw it; `check_source` cites the portal it reached, as of that request.
+**Every answer names its source.** Each answer from the ten registry and index tools carries a `data_source` block: the source and its publisher (the same names as in [DATA-SOURCES.json](DATA-SOURCES.json)), a link a person can open, `as_of` with `as_of_kind`, and `cite`, the same as one plain line to quote. Registry tools cite the NY Data Portal Registry as of its `generated` date; index tools cite the NY Data Registry index as of its last harvest; `get_dataset_columns` cites the dataset's own portal and page as of the harvest that last saw it; `check_source` cites the portal it reached, as of that request (`as_of_kind: "retrieved"`, with `retrieved_at`), and the registry row when it was not checked, was blocked or got no answer.
 
 **Every list is bounded.** Each list has a default size and a maximum in its schema, and the answer says when it was cut and how to get the rest (`showing`, or `columns_shown` for columns). `search_datasets` gives the whole answer in one call (below).
 
-Every failure comes back as an MCP error (`isError: true`) with one plain sentence saying what went wrong and what to try: an unknown dataset, source or place, a bad date, an unknown parameter. No stack traces, upstream bodies cut to 500 characters, and no key from the environment is ever repeated.
+When a tool cannot answer, it says so as an MCP error (`isError: true`) with one plain sentence saying what went wrong and what to try: an unknown dataset, source or place, a bad date, an unknown parameter. No stack traces, upstream bodies cut to 500 characters, and no key from the environment is ever repeated. A portal that does not answer `check_source` is not such a failure: that is the check's finding, so it comes back as a normal answer with its verdict, `matches_registry` and the reason in `request_error`.
 
 Every tool tells the client it only reads (MCP tool annotations: `readOnlyHint: true` and a `title`). `openWorldHint` is `true` only for `check_source`, which makes one live request to a portal; the others answer from the registry and the downloaded index. A test caps the size of the tool list plus the server instructions (`test/tool-size.test.mjs`), since the model reads both on every turn.
 

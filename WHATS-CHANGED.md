@@ -10,7 +10,7 @@ To report a bug in this server or ask for a new feature, [open an issue on GitHu
 ## Unreleased: Tools say they only read, and answers name their source and date
 
 - **Tags:** MCP
-- **What changed:** Every tool now tells your AI app that it only reads, and every answer names where its data comes from, gives a link and says how current it is. Long lists stop at a sensible size and say how to see the rest, such as a place's sources (25 per list unless you ask for more) and a dataset's columns (100 at a time). When something goes wrong, such as a dataset or place the server does not know, the answer is marked as an error and says what to try next.
+- **What changed:** Every tool now tells your AI app that it only reads, and every answer names where its data comes from, gives a link and says how current it is. Long lists stop at a sensible size and say how to see the rest, such as a place's sources (25 per list unless you ask for more) and a dataset's columns (100 at a time). When something goes wrong, such as a dataset or place the server does not know, the answer is marked as an error and says what to try next. A check on a portal asks it once, and when the portal does not answer, the reply still says whether that matches BetaNYC's list.
 - **MCP version:** [ny-data-registry-mcp 0.4.0](CHANGELOG.md)
 
 ## 2026-11-13: Dataset search gives the whole answer in one call

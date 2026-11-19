@@ -373,7 +373,7 @@ export function searchDatasets(a: SearchArgs) {
   if (a.place) {
     const p = resolvePlace(a.place);
     resolved = p;
-    if (!p) return { query: query ?? null, place_error: `'${a.place}' is not a New York place this server knows. Give a county, city, NYC borough or region, such as 'Erie County' or 'Brooklyn', or leave place out`, total_matches: 0, results: [] };
+    if (!p) return { place_error: `'${a.place}' is not a New York place this server knows. Give a county, city, NYC borough or region, such as 'Erie County' or 'Brooklyn', or leave place out` };
     if (p.kind === "state") where.push("p.place_scope = 'statewide'");
     else if (p.kind === "region") {
       where.push("(p.region = ? OR p.place_scope = 'statewide')");
@@ -823,7 +823,7 @@ export function findJoinable(ref: string, column?: string, limitPerKey = 10) {
   let keys = d.prepare("SELECT key_label, group_concat(DISTINCT field) AS field FROM dataset_columns WHERE dataset_id = ? AND key_label IS NOT NULL GROUP BY key_label").all(r.id) as { key_label: string; field: string }[];
   if (column) {
     keys = keys.filter((k) => k.field.toLowerCase().split(",").includes(column.toLowerCase()) || k.key_label.toLowerCase() === column.toLowerCase());
-    if (!keys.length) return { dataset: summary(r), error: `column '${column}' is not a recognized join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP)` };
+    if (!keys.length) return { error: `column '${column}' is not a recognized join key (BBL, BIN, borough, community district, council district, census tract, SWIS, FIPS, ZIP)` };
   }
   // NYC-only keys (BBL, BIN, borough, community district, council district) are meaningless
   // outside the city: Buffalo's council_district is a different council. Keep NYC and

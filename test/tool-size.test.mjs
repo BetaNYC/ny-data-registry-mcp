@@ -13,6 +13,8 @@ import { assertEveryToolAnnotated, toolListSize } from "../dist/betanyc-tools.js
 // Lowered 2026-11-18 to 26,500: the registry_id and runs_it notes moved from five tool
 // descriptions into the server instructions (#45). Measured 25,947 after that, with the
 // limit and offset parameters #38 added.
+// 2026-11-19, budget unchanged: 26,334 with shared module 1.5.1, how_to_query's limit and offset,
+// and check_source's one-request, matched-by-host wording (review fixes, epic #33).
 const BUDGET_CHARS = 26_500;
 
 test("tool definitions plus server instructions stay within the size budget", () => {

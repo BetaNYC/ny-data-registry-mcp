@@ -11,7 +11,8 @@
  *   (delay-seconds or an HTTP-date, RFC 9110 § 10.2.3), otherwise backing off 5 s then 10 s;
  *   every wait is capped at 60 s. A 429 also doubles that host's gap for the rest of the run
  *   (capped at 10 s). Socrata sends 429 and 503 when throttling
- *   (https://dev.socrata.com/docs/response-codes). No other retries.
+ *   (https://dev.socrata.com/docs/response-codes). No other retries. `noRetry` turns them off:
+ *   check_source makes exactly one request, because for a health check a 500 is the answer.
  * - Timeout: 60 s per request unless the caller passes less. Only the nightly harvest uses the
  *   default: some portals take longer than 30 s to answer one page of a large catalog (the
  *   2026-11-17 run timed out on two state GIS portals at 60 s). The server's own live request,
@@ -61,6 +62,8 @@ export interface PoliteOptions {
   timeoutMs?: number;
   /** Do not follow redirects; report them (used by check_source). */
   manualRedirect?: boolean;
+  /** Exactly one request: no retry on 429 or 5xx (used by check_source). A 429 is still reported as blocked. */
+  noRetry?: boolean;
   /** Skip the robots.txt check (only for robots.txt itself). */
   skipRobots?: boolean;
   /** Extra request headers (e.g. a Socrata X-App-Token). */
@@ -264,12 +267,16 @@ export async function politeFetch(url: string, opts: PoliteOptions = {}): Promis
     });
 
   let { res, body, bytes, elapsed } = await doFetch();
-  for (let attempt = 1; RETRY_STATUSES.has(res.status) && attempt <= MAX_RETRIES; attempt++) {
+  const retries = opts.noRetry ? 0 : MAX_RETRIES;
+  for (let attempt = 1; RETRY_STATUSES.has(res.status) && attempt <= retries; attempt++) {
     if (res.status === 429) widenedGapMs.set(u.host, Math.min(hostFloorMs(u.host) * 2, MAX_WIDENED_GAP_MS));
     await sleep(retryWaitMs(res.headers.get("retry-after"), attempt));
     ({ res, body, bytes, elapsed } = await doFetch());
   }
-  if (res.status === 429) throw new BlockedError(url, `HTTP 429 after ${MAX_RETRIES} retries (rate limited); stopped`);
+  if (res.status === 429) {
+    if (opts.noRetry) widenedGapMs.set(u.host, Math.min(hostFloorMs(u.host) * 2, MAX_WIDENED_GAP_MS));
+    throw new BlockedError(url, opts.noRetry ? "HTTP 429 (rate limited); not retried" : `HTTP 429 after ${MAX_RETRIES} retries (rate limited); stopped`);
+  }
   const hdrs: Record<string, string> = {};
   res.headers.forEach((v, k) => (hdrs[k] = v));
 

@@ -4,7 +4,8 @@
     "Checks: `answer` (a field equals a value), `top3` (one of the first 3 results matches every given condition),",
     "`field` (a dotted path equals a value), `min` (a dotted path is at least a number), `none` (no result matches).",
     "Invariants checked on every result of every question: nothing dead or refused-as-out-of-state is reported as live, and no dataset whose extent lies wholly outside New York is returned.",
-    "`top3_any`: one of the first 3 results matches any one of the listed condition sets."
+    "`top3_any`: one of the first 3 results matches any one of the listed condition sets.",
+    "Lists are paged (25 rows per list by default since 0.4.0). A step whose checks or invariants need every row asks for more with `limit` (list_sources_for_place: 100, the maximum); the eval notes any list that was still cut."
   ],
   "questions": [
     {
@@ -15,7 +16,8 @@
           "tool": "list_sources_for_place",
           "args": {
             "place": "Erie County",
-            "include_statewide": false
+            "include_statewide": false,
+            "limit": 100
           },
           "check": {
             "answer": [
@@ -136,7 +138,8 @@
           "tool": "list_sources_for_place",
           "args": {
             "place": "Buffalo",
-            "include_statewide": false
+            "include_statewide": false,
+            "limit": 100
           },
           "check": {
             "answer": [
@@ -190,7 +193,8 @@
           "tool": "list_sources_for_place",
           "args": {
             "place": "City of Albany",
-            "include_statewide": false
+            "include_statewide": false,
+            "limit": 100
           },
           "check": {
             "answer": [
@@ -288,7 +292,8 @@
           "tool": "list_sources_for_place",
           "args": {
             "place": "Syracuse",
-            "include_statewide": false
+            "include_statewide": false,
+            "limit": 100
           },
           "check": {
             "answer": [
@@ -429,7 +434,8 @@
           "tool": "list_sources_for_place",
           "args": {
             "place": "Tompkins County",
-            "include_statewide": false
+            "include_statewide": false,
+            "limit": 100
           },
           "check": {
             "answer": [
