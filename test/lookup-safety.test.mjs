@@ -213,7 +213,7 @@ test("F3d: a failed cache write in the registry refresh does not show this machi
         assert.equal(calls.length, 1);
         assert.ok(r.refresh_error, "the write failed");
         assert.ok(!r.refresh_error.includes(blocker), r.refresh_error);
-        assert.match(r.refresh_error, /<temp>\//, "the temp folder is named <temp>");
+        assert.match(r.refresh_error, /<temp>[\\/]nydr-blocked-/, "the temp folder is named <temp> (with / or \\ after it)");
         const info = (await callTool("registry_info", {})).content[0].text;
         assert.ok(!info.includes(blocker), "registry_info shows the cache path");
       }
@@ -241,7 +241,7 @@ test("F3d: the same for the master list of government bodies", async () => {
         assert.equal(calls.length, 1);
         assert.ok(g.refresh_error, "the write failed");
         assert.ok(!g.refresh_error.includes(blocker), g.refresh_error);
-        assert.match(g.refresh_error, /<temp>\//);
+        assert.match(g.refresh_error, /<temp>[\\/]nydr-blocked-/);
       }
     );
   } finally {
