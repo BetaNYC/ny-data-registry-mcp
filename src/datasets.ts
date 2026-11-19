@@ -84,13 +84,59 @@ export function closeDb(): void {
   cachedId = null;
 }
 
+/**
+ * Which portals' records an answer counts or shows, by portal id, with hand-kept rows apart. It
+ * rides on the answer under a symbol, so it is never printed: src/tools.ts (answerSources) names
+ * each of these portals' catalogs as a source. Every count, group, total or export an index
+ * answer gives is covered, not only the rows it lists.
+ */
+export const COUNTED = Symbol("nydr.counted");
+export type Counted = { portals: Map<string, number>; handKept: Map<string, number> };
+type CountRow = { portal_id: string; hk: number; n: number };
+export function countedOf(v: unknown): Counted | undefined {
+  return v && typeof v === "object" ? ((v as Record<symbol, unknown>)[COUNTED] as Counted | undefined) : undefined;
+}
+function countedFrom(...lists: CountRow[][]): Counted {
+  const c: Counted = { portals: new Map(), handKept: new Map() };
+  for (const r of lists.flat()) {
+    const m = Number(r.hk) ? c.handKept : c.portals;
+    m.set(r.portal_id, (m.get(r.portal_id) ?? 0) + Number(r.n));
+  }
+  return c;
+}
+/** Marks an answer with what it counted (`markCounted(v, countedFrom(rows))` or the rows). */
+export function markCounted<T extends object>(v: T, ...lists: (CountRow[] | Counted)[]): T {
+  const c = lists.length === 1 && !Array.isArray(lists[0]) ? (lists[0] as Counted) : countedFrom(...(lists as CountRow[][]));
+  Object.defineProperty(v, COUNTED, { value: c, enumerable: false });
+  return v;
+}
+/**
+ * A search answer's size budget covers its sources too. src/tools.ts adds the sources after the
+ * search (one per portal with a match), so it registers how many bytes they take
+ * (setSourcesBytes), and a search fits its rows and groups into what is left: at least
+ * MIN_FIT_BYTES, so a search that counts very many portals still shows some rows, and then says
+ * the larger limit it kept to.
+ */
+let sourcesBytes: (c: Counted) => number = () => 0;
+export function setSourcesBytes(fn: (c: Counted) => number): void {
+  sourcesBytes = fn;
+}
+const MIN_FIT_BYTES = 8_000;
+
+/** SQL: 1 when a native id (or the part of a dataset id after the portal) is a hand-kept entry. */
+const HAND_KEPT_SQL = (col: string) => `(${col} LIKE 'hand-kept:%')`;
+
 export function indexInfo(): Record<string, unknown> | null {
   try {
     const d = db();
     const meta = Object.fromEntries((d.prepare("SELECT key, value FROM meta").all() as { key: string; value: string }[]).map((r) => [r.key, r.value]));
     const n = d.prepare("SELECT (SELECT COUNT(*) FROM datasets WHERE removed_at IS NULL) AS datasets, (SELECT COUNT(*) FROM dataset_columns) AS columns, (SELECT COUNT(*) FROM portals WHERE harvest_status IN ('ok','partial')) AS portals").get() as Record<string, number>;
     const byPortal = d.prepare("SELECT id, harvest_status, dataset_count, last_harvested FROM portals WHERE harvest_status IS NOT NULL ORDER BY id").all();
-    return { path: indexPath(), bytes: statSync(indexPath()).size, last_harvest: meta.last_harvest ?? null, registry_generated_at_harvest: meta.registry_generated ?? null, ...n, portals_detail: byPortal };
+    const counted = d.prepare(`SELECT portal_id, ${HAND_KEPT_SQL("native_id")} AS hk, COUNT(*) AS n FROM datasets WHERE removed_at IS NULL GROUP BY 1, 2`).all() as CountRow[];
+    return markCounted(
+      { path: indexPath(), bytes: statSync(indexPath()).size, last_harvest: meta.last_harvest ?? null, registry_generated_at_harvest: meta.registry_generated ?? null, ...n, portals_detail: byPortal },
+      counted,
+    );
   } catch (e) {
     return { path: indexPath(), built: false, note: hideLocalPaths(e instanceof Error ? e.message : String(e)) };
   }
@@ -203,6 +249,10 @@ export type Detail = (typeof DETAIL)[number];
 export const RANK_POOL_MAX = 5000;
 /** Target ceiling for one search_datasets answer, in bytes of the JSON text the tool returns. */
 export const RESPONSE_BUDGET_BYTES = 20_000;
+/** This search's room for everything but its sources, and the whole answer's limit as its notes
+ * say it (both set at the start of each search; see setSourcesBytes). */
+let fitBudget = RESPONSE_BUDGET_BYTES;
+let answerLimit = RESPONSE_BUDGET_BYTES;
 export const MAX_LIMIT = 50;
 export const MAX_TOP_PER_GROUP = 10;
 
@@ -476,6 +526,11 @@ export function searchDatasets(a: SearchArgs) {
   // A bare 0 in ORDER BY would name a column, so a topic-only export orders by views.
   const orderExpr = fq ? rankExpr : "-COALESCE(d.views, 0)";
   const ctx: SearchCtx = { d, joins, whereSql, from, bindAll: bind(null), orderExpr, scored, a, total };
+  // Every match, by portal: total_matches, the groups and the export count them all.
+  const counted = countedFrom(d.prepare(`SELECT d.portal_id AS portal_id, ${HAND_KEPT_SQL("d.native_id")} AS hk, COUNT(*) AS n ${from} GROUP BY 1, 2`).all(...bind(null)) as CountRow[]);
+  const reserve = sourcesBytes(counted);
+  fitBudget = Math.max(RESPONSE_BUDGET_BYTES - reserve, MIN_FIT_BYTES);
+  answerLimit = fitBudget + reserve;
 
   if (a.group_by) {
     const topN = a.top_per_group ?? 3;
@@ -495,7 +550,7 @@ export function searchDatasets(a: SearchArgs) {
     // No rows are listed in group mode, so the CSV is the full list.
     if (exportMode === "always" || (exportMode === "auto" && total > 0)) attachExport(ctx, resp);
     fitGroups(resp, groups, null);
-    return resp;
+    return markCounted(resp, counted);
   }
 
   const pageIds = scored.slice(offset, offset + limit);
@@ -526,7 +581,7 @@ export function searchDatasets(a: SearchArgs) {
   // (more than limit, or over the size budget), summarize every match by portal and put the
   // full list in a CSV, unless the caller is paging by hand with offset.
   const overLimit = total > results.length;
-  const overBudget = byteSize(resp) > RESPONSE_BUDGET_BYTES;
+  const overBudget = byteSize(resp) > fitBudget;
   let groups: GroupRow[] | null = null;
   if (!pagingByHand && (overLimit || overBudget)) {
     groups = computeGroups(ctx, "portal", 3);
@@ -534,7 +589,7 @@ export function searchDatasets(a: SearchArgs) {
       auto_grouped: true,
       auto_grouped_reason: overLimit
         ? `${total} datasets match, more than the reply's row limit (${limit}). Every match is counted by portal in groups; the best-ranked rows follow in results, and export has the full list.`
-        : `${total} datasets match, more than fit in this reply's ${RESPONSE_BUDGET_BYTES}-byte budget. Every match is counted by portal in groups; the best-ranked rows follow in results, and export has the full list.`,
+        : `${total} datasets match, more than fit in this reply's ${answerLimit}-byte budget. Every match is counted by portal in groups; the best-ranked rows follow in results, and export has the full list.`,
       group_by: "portal",
       group_key: "portal_id",
       group_count: groups.length,
@@ -548,23 +603,23 @@ export function searchDatasets(a: SearchArgs) {
   }
   if (exportMode === "always" || (exportMode === "auto" && groups !== null)) attachExport(ctx, resp);
   if (groups) fitSummary(resp, results, groups);
-  else while (results.length > 1 && byteSize(resp) > RESPONSE_BUDGET_BYTES) results.pop();
+  else while (results.length > 1 && byteSize(resp) > fitBudget) results.pop();
   const noteOmitted = () => {
     const omitted = pageIds.length - results.length;
     resp.returned = results.length;
     if (omitted > 0) {
       resp.next_offset = offset + results.length;
       resp.omitted_for_size = omitted;
-      resp.size_note = `${omitted} more row(s) were left out to keep the answer under ${RESPONSE_BUDGET_BYTES} bytes.${resp.export ? " The export CSV has every match." : ` offset=${offset + results.length} gets them${detail === "full" ? ', or use detail: "compact"' : ""}.`}`;
+      resp.size_note = `${omitted} more row(s) were left out to keep the answer under ${answerLimit} bytes.${resp.export ? " The export CSV has every match." : ` offset=${offset + results.length} gets them${detail === "full" ? ', or use detail: "compact"' : ""}.`}`;
     }
   };
   noteOmitted();
   // The notes just added take room too; trim again until the whole reply fits.
-  while (results.length > 1 && byteSize(resp) > RESPONSE_BUDGET_BYTES) {
+  while (results.length > 1 && byteSize(resp) > fitBudget) {
     results.pop();
     noteOmitted();
   }
-  return resp;
+  return markCounted(resp, counted);
 }
 
 interface SearchCtx {
@@ -628,18 +683,18 @@ function groupNote(by: GroupBy): string {
 /** Group mode: shorten the title lists first, then drop the smallest groups (counted, never silently). */
 function fitGroups(resp: Record<string, unknown>, groups: GroupRow[], results: unknown[] | null): void {
   let n = Number(resp.top_per_group);
-  while (n > 0 && byteSize(resp) > RESPONSE_BUDGET_BYTES) {
+  while (n > 0 && byteSize(resp) > fitBudget) {
     n--;
     for (const g of groups) g.top = g.top.slice(0, n);
     resp.top_per_group = n;
-    resp.groups_size_note = `Titles per group cut to ${n} to keep the answer under ${RESPONSE_BUDGET_BYTES} bytes.`;
+    resp.groups_size_note = `Titles per group cut to ${n} to keep the answer under ${answerLimit} bytes.`;
   }
   let dropped = 0;
-  while (groups.length > 1 && byteSize(resp) > RESPONSE_BUDGET_BYTES) {
+  while (groups.length > 1 && byteSize(resp) > fitBudget) {
     groups.pop();
     dropped++;
     resp.groups_omitted_for_size = dropped;
-    resp.groups_size_note = `${dropped} smallest group(s) and the per-group titles were left out to keep the answer under ${RESPONSE_BUDGET_BYTES} bytes.${resp.export ? " The export CSV has every match." : " Add a filter (place, portal, platform_family) to see them."}`;
+    resp.groups_size_note = `${dropped} smallest group(s) and the per-group titles were left out to keep the answer under ${answerLimit} bytes.${resp.export ? " The export CSV has every match." : " Add a filter (place, portal, platform_family) to see them."}`;
   }
   void results;
 }
@@ -658,7 +713,7 @@ function fitSummary(resp: Record<string, unknown>, results: unknown[], groups: G
     results.length = 0;
     results.push(...allRows.slice(0, n));
     resp.returned = n;
-    return byteSize(resp) <= RESPONSE_BUDGET_BYTES;
+    return byteSize(resp) <= fitBudget;
   };
   const floor = Math.min(MIN_ROWS, allRows.length);
   for (let t = Number(resp.top_per_group); t >= 0; t--) {
@@ -666,13 +721,13 @@ function fitSummary(resp: Record<string, unknown>, results: unknown[], groups: G
     let n = floor;
     while (n < allRows.length && set(t, n + 1)) n++;
     set(t, n);
-    if (t < 3) resp.groups_size_note = `Titles per group cut to ${t} to keep the answer under ${RESPONSE_BUDGET_BYTES} bytes.`;
+    if (t < 3) resp.groups_size_note = `Titles per group cut to ${t} to keep the answer under ${answerLimit} bytes.`;
     return;
   }
   let n = floor;
   while (n > 0 && !set(0, n)) n--;
   if (set(0, n)) {
-    resp.groups_size_note = `Titles per group cut to 0 to keep the answer under ${RESPONSE_BUDGET_BYTES} bytes.`;
+    resp.groups_size_note = `Titles per group cut to 0 to keep the answer under ${answerLimit} bytes.`;
     return;
   }
   fitGroups(resp, groups, null);
@@ -884,11 +939,15 @@ export function whatsNew(since: string, portal?: string, limit = 50) {
     .all(...params, String(limit));
   const updatedTotal = (d.prepare(`SELECT COUNT(*) AS n ${updatedFrom}`).get(...params) as { n: number }).n;
   const changesTotal = (counts as { n: number }[]).reduce((a, c) => a + c.n, 0);
+  const changedBy = d
+    .prepare(`SELECT c.portal_id AS portal_id, ${HAND_KEPT_SQL("substr(c.dataset_id, instr(c.dataset_id, ':') + 1)")} AS hk, COUNT(*) AS n FROM changes c JOIN portals p ON p.id = c.portal_id WHERE c.at >= ?${pw} GROUP BY 1, 2`)
+    .all(...params) as CountRow[];
+  const updatedBy = d.prepare(`SELECT ds.portal_id AS portal_id, ${HAND_KEPT_SQL("ds.native_id")} AS hk, COUNT(*) AS n ${updatedFrom} GROUP BY 1, 2`).all(...params) as CountRow[];
   const cut = [
     changesTotal > rows.length ? `index_change_detail ${rows.length} of ${changesTotal}` : "",
     updatedTotal > updated.length ? `data_updated_per_portal ${updated.length} of ${updatedTotal}` : "",
   ].filter(Boolean);
-  return {
+  return markCounted({
     since,
     showing: cut.length
       ? `Showing the newest: ${cut.join(", ")}. Raise limit (up to 200), use a later since date, or filter by portal for the rest.`
@@ -901,7 +960,7 @@ export function whatsNew(since: string, portal?: string, limit = 50) {
       firstRun && since < firstRun.slice(0, 10)
         ? `The index's first harvest was ${firstRun.slice(0, 10)}. 'added' before that date means 'first indexed', not 'newly published'. data_updated_per_portal uses each portal's own updated date.`
         : "index_changes compares harvests. data_updated_per_portal uses each portal's own updated date.",
-  };
+  }, changedBy, updatedBy);
 }
 
 /**
@@ -972,7 +1031,8 @@ export function listTopics(a: { portal?: string } = {}) {
     (d.prepare(`SELECT COUNT(*) AS n FROM datasets d JOIN portals p ON p.id = d.portal_id WHERE ${w} AND EXISTS (SELECT 1 FROM dataset_topics dt WHERE dt.dataset_id = d.id)`).get(...params) as { n: number }).n
   );
   const meta = (k: string) => (d.prepare("SELECT value FROM meta WHERE key = ?").get(k) as { value: string } | undefined)?.value ?? null;
-  return {
+  const counted = d.prepare(`SELECT d.portal_id AS portal_id, ${HAND_KEPT_SQL("d.native_id")} AS hk, COUNT(*) AS n FROM datasets d JOIN portals p ON p.id = d.portal_id WHERE ${w} GROUP BY 1, 2`).all(...params) as CountRow[];
+  return markCounted({
     ...base,
     portal: a.portal ?? null,
     datasets,
@@ -984,5 +1044,5 @@ export function listTopics(a: { portal?: string } = {}) {
     topics_built: meta("topics_built"),
     index_last_harvest: meta("last_harvest"),
     note: "Use a topic id with search_datasets (topic), alone or with a query. Datasets with no topic carry no category, tag or department that fits the list; they are still found by text search.",
-  };
+  }, counted);
 }

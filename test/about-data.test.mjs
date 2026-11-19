@@ -118,7 +118,8 @@ test("NYC Open Data's terms are set by law: no restrictions on use, and no warra
 
 test("a tool name as topic gives the sources behind that tool", () => {
   const topics = ask({ topic: "find_joinable" }).structuredContent.sources.map((s) => s.topic);
-  assert.deepEqual(topics, [...CATALOGS.map((s) => s.id), "join-keys"]);
+  // portal-catalogs: what the harvest does to a portal with no catalog entry of its own (round 2).
+  assert.deepEqual(topics, ["portal-catalogs", ...CATALOGS.map((s) => s.id), "join-keys"]);
 });
 
 test("freshness comes from real state: the portal list's date, and no date for undated files", () => {

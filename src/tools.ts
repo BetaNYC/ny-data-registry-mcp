@@ -5,14 +5,14 @@ import { readFileSync } from "node:fs";
 import { FAMILIES } from "./families.js";
 import { CANDIDATES_MAX, findSources, howToQuery, listSourcesForPlace, PLACE_LIST_DEFAULT, PLACE_LIST_MAX, registryInfo } from "./sources.js";
 import { checkSource } from "./check.js";
-import { COLUMNS_DEFAULT, COLUMNS_MAX, datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, toolJson, whatsNew } from "./datasets.js";
+import { COLUMNS_DEFAULT, COLUMNS_MAX, COUNTED, countedOf, datasetStandard, db, DETAIL, EXPORT_MODE, findJoinable, getDatasetColumns, GROUP_BY, indexInfo, listTopics, MAX_LIMIT, MAX_TOP_PER_GROUP, NoIndexError, RANK_POOL_MAX, RESPONSE_BUDGET_BYTES, searchDatasets, setSourcesBytes, toolJson, whatsNew } from "./datasets.js";
 import { awaitIndex, downloadState } from "./fetchindex.js";
 import { indexExists } from "./db.js";
 import { indexStatus } from "./refresh.js";
 import { annotateTools, BETANYC_INSTRUCTIONS, provenance, toolError, createBetanycTools, FRESHNESS_NOT_FETCHED, officialKind, whatWasDone } from "./betanyc-tools.js";
 import { registry } from "./registry.js";
 import { govBodies } from "./govbodies.js";
-import { hideLocalPaths, hideLocalPathsDeep, VERSION } from "./paths.js";
+import { hideLocalPaths, hideLocalPathsDeep, REGISTRY_PAGE, VERSION } from "./paths.js";
 import { topicRules } from "./topics.js";
 import { STANDARDS } from "./standards/build.js";
 
@@ -235,7 +235,7 @@ const DOMAIN_TOOLS = [
       "One call gives the whole answer. total_matches is the true number of matching datasets. When they all fit, the reply lists them. When they do not, the reply summarizes every match by portal (count and top titles per portal, auto_grouped: true), lists the best-ranked rows that fit, and writes every match to a CSV file on this machine (export.path, export.rows; also a resource_link). " +
       "Use group_by to summarize by entity, county or platform_family instead. " +
       "Rows are compact (id, name, portal, type, update date, link, formats); detail: 'full' adds description, API endpoint, views, column count and, for Socrata, the domain + 4x4 to hand to the `socrata` MCP. " +
-      `Replies stay under about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
+      `Replies aim for about ${Math.round(RESPONSE_BUDGET_BYTES / 1000)} KB. Each reply also lists registry portals the index does not search, so no result is not proof that no data exists. ` +
       "When the index is more than 14 days old (NY_DATA_INDEX_STALE_DAYS), the reply carries index_note saying so and how to update it.",
     inputSchema: {
       type: "object",
@@ -324,7 +324,7 @@ function withShortAboutData<T extends { inputSchema: any }>(t: T): T {
   const topic = t.inputSchema?.properties?.topic;
   if (!topic) return t;
   const description =
-    "A source id, or a tool name for the data behind that tool. Any case. Default: a short list of every source. \"all\": every source in full.";
+    "A source id, or a tool name for the data behind it. Any case. Default: a short list of all sources; \"all\": each in full.";
   return { ...t, inputSchema: { ...t.inputSchema, properties: { ...t.inputSchema.properties, topic: { ...topic, description } } } };
 }
 
@@ -410,7 +410,7 @@ export function parseToolArgs<K extends keyof typeof ARG_SHAPES>(tool: K, args: 
  *   topics, join keys, coverage, standard descriptions: their own entries (produced)
  */
 type Prov = ReturnType<typeof provenance>;
-type Cited = Prov["provenance"] & { cite: string; about_data_topic: string | null };
+type Cited = Prov["provenance"] & { cite: string; about_data_topic: string | null; about_data_note?: string; portal_id?: string };
 type DsEntry = {
   id: string;
   source_name: string;
@@ -467,56 +467,154 @@ function checkSourceSource(b: Record<string, any>): Cited {
     return registrySource();
   }
 }
-/** The source of one dataset row, from its dataset_id ("<portal source_id>:<native id>"). */
-function rowSource(datasetId: string, opts: { asOf?: string | null; sourceUrl?: string | null } = {}): Cited | null {
+/** The DATA-SOURCES.json entry that says what BetaNYC does to every portal's catalog, for a portal
+ * this release has no catalog-* entry for. */
+const ANY_CATALOG = "portal-catalogs";
+const oneLine = (s: unknown) => (typeof s === "string" ? s.replace(/[\s\p{Cc}\p{Cf}\p{Zl}\p{Zp}]+/gu, " ").trim() : "");
+const httpUrl = (s: unknown) => {
+  const u = oneLine(s).split(" ")[0];
+  return /^https?:\/\/[^/\s@]+\.[^/\s@]+/i.test(u) ? u : "";
+};
+/** A portal's name, publisher and link, from the index (what the harvest recorded) and the registry. */
+function portalFacts(portalId: string): { name: string; publisher: string; url: string } {
+  let row: { name?: string; entity?: string; base_url?: string } | undefined;
+  try {
+    row = db().prepare("SELECT name, entity, base_url FROM portals WHERE id = ?").get(portalId) as typeof row;
+  } catch {
+    row = undefined;
+  }
+  const reg = registry().sources.find((s) => s.source_id === portalId) as Record<string, any> | undefined;
+  const name = oneLine(row?.name) || oneLine(reg?.portal_name) || oneLine(reg?.entity) || portalId;
+  const publisher = oneLine(row?.entity) || oneLine(reg?.entity) || name;
+  const url = httpUrl(row?.base_url) || httpUrl(reg?.portal_url) || httpUrl(reg?.url) || REGISTRY_PAGE;
+  return { name, publisher, url };
+}
+/**
+ * One portal's catalog. A portal with a catalog-* entry gets it. A portal this release's
+ * DATA-SOURCES.json does not have (the index is rebuilt every night; the list of sources changes
+ * only with a release, so a portal the registry added or renamed since has none) still gets
+ * "BetaNYC modified this data", in the words of the portal-catalogs entry, naming the portal and
+ * its publisher as the official record, with a note that about_data has no fuller entry for it.
+ * No dataset row is ever left without a source or called "produced".
+ */
+function portalSource(portalId: string, opts: { asOf?: string | null; sourceUrl?: string | null } = {}): Cited {
+  const id = CATALOG_OF_PORTAL.get(portalId);
+  if (id) return { ...sourceFrom(id, opts), portal_id: portalId };
+  const g = DS_ENTRIES.get(ANY_CATALOG);
+  if (!g) throw new Error(`DATA-SOURCES.json has no source ${ANY_CATALOG}`);
+  const f = portalFacts(portalId);
+  const harvested = portalHarvestedAt(portalId);
+  const p = provenance({
+    sourceName: f.name,
+    publisher: f.publisher,
+    sourceUrl: httpUrl(opts.sourceUrl) || f.url,
+    kind: "snapshot",
+    asOf: opts.asOf !== undefined ? opts.asOf : typeof harvested === "string" ? harvested : null,
+    changedByBetanyc: { kind: "modified-by-betanyc", detail: whatWasDone(g.changes.steps) },
+  });
+  return {
+    ...p.provenance,
+    cite: p.text,
+    about_data_topic: ANY_CATALOG,
+    portal_id: portalId,
+    about_data_note: `This server's about_data has no entry of its own for ${f.name} yet. about_data topic ${ANY_CATALOG} says what BetaNYC does to every portal's catalog.`,
+  };
+}
+/** The source of one dataset, from its dataset_id ("<portal source_id>:<native id>"). */
+function datasetSource(datasetId: string, opts: { asOf?: string | null; sourceUrl?: string | null } = {}): Cited | null {
   const i = datasetId.indexOf(":");
   if (i < 1) return null;
-  const portal = datasetId.slice(0, i);
   if (datasetId.slice(i + 1).startsWith("hand-kept:")) return sourceFrom("hand-kept", { sourceUrl: opts.sourceUrl });
-  const id = CATALOG_OF_PORTAL.get(portal);
-  return id ? sourceFrom(id, opts) : null;
+  return portalSource(datasetId.slice(0, i), opts);
 }
-/** Every dataset_id in an answer, at any depth, most frequent first (ties: first seen). */
-function datasetIds(v: unknown, out: Map<string, number> = new Map()): Map<string, number> {
-  if (Array.isArray(v)) for (const x of v) datasetIds(x, out);
-  else if (v && typeof v === "object") {
-    for (const [k, x] of Object.entries(v)) {
-      if (k === "dataset_id" && typeof x === "string") out.set(x, (out.get(x) ?? 0) + 1);
-      else datasetIds(x, out);
+/** Parts of an answer that are not catalog content: its own source blocks and the coverage list
+ * of registry portals the index does not search. */
+const NOT_CATALOG = new Set(["data_source", "data_sources", "registry_source", "coverage"]);
+/**
+ * Every portal whose catalog an answer draws on, with how much of the answer comes from it:
+ * the portals an index function counted (countedOf: every match behind total_matches, groups,
+ * exports, whats_new totals, topic counts, the index's per-portal counts), the portal of every
+ * dataset_id, and every other portal_id (find_joinable's by_portal). Hand-kept rows are apart.
+ */
+function catalogContent(body: unknown): { portals: Map<string, number>; handKept: number } {
+  const portals = new Map<string, number>();
+  let handKept = 0;
+  const add = (id: string, n: number) => portals.set(id, (portals.get(id) ?? 0) + (Number.isFinite(n) && n > 0 ? n : 1));
+  const visit = (v: unknown): void => {
+    if (Array.isArray(v)) return v.forEach(visit);
+    if (!v || typeof v !== "object") return;
+    const o = v as Record<string, unknown>;
+    const c = countedOf(o);
+    if (c) {
+      for (const [id, n] of c.portals) add(id, n);
+      for (const n of c.handKept.values()) handKept += n;
     }
-  }
-  return out;
+    if (typeof o.dataset_id === "string" && o.dataset_id.includes(":")) {
+      const [pid, ...rest] = o.dataset_id.split(":");
+      if (rest.join(":").startsWith("hand-kept:")) handKept++;
+      else add(pid, 1);
+    } else if (typeof o.portal_id === "string") add(o.portal_id, Number(o.n ?? o.matches ?? 1));
+    for (const [k, x] of Object.entries(o)) if (!NOT_CATALOG.has(k)) visit(x);
+  };
+  visit(body);
+  return { portals, handKept };
 }
-/** The sources of the dataset rows in an answer, one block per source, the source with the most
- * rows first. `first` (a dataset the answer is about) leads when given. */
-function rowSources(body: unknown, first?: string): Cited[] {
-  const n = new Map<string, { c: Cited; rows: number }>();
-  const ids = [...datasetIds(body).entries()];
-  if (first) ids.unshift([first, Number.MAX_SAFE_INTEGER]);
-  for (const [id, rows] of ids) {
-    const c = rowSource(id);
-    if (!c) continue;
-    const key = c.about_data_topic ?? c.source;
-    const had = n.get(key);
-    if (had) had.rows += rows;
-    else n.set(key, { c, rows });
-  }
-  return [...n.values()].sort((a, b) => b.rows - a.rows).map((x) => x.c);
+/** The sources of an answer: `lead` first, then every portal catalog it draws on (most first),
+ * the hand-kept list when it shows hand-kept rows, then `also`; `whenEmpty` when that is nothing. */
+function answerSources(body: unknown, o: { lead?: (Cited | null)[]; also?: Cited[]; whenEmpty?: Cited } = {}): Cited[] {
+  const w = catalogContent(body);
+  const list = [
+    ...(o.lead ?? []).filter((x): x is Cited => !!x),
+    ...[...w.portals].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([id]) => portalSource(id)),
+    ...(w.handKept ? [sourceFrom("hand-kept")] : []),
+    ...(o.also ?? []),
+  ];
+  return list.length ? list : o.whenEmpty ? [o.whenEmpty] : [];
 }
-/** Adds the answer's sources: `data_source` (the main one) and, when there is more than one,
- * `data_sources` (all of them, the main one first). A failure gets none. */
+/** What a source says about being official: the first sentences of its cite, the same words as
+ * about_data's ("BetaNYC modified this data: <what>. This copy should not be considered the
+ * official record." or "BetaNYC produced this. It is not an official record."). */
+const saysOf = (c: Cited) =>
+  c.cite.match(/^(BetaNYC modified this data: .*?This copy should not be considered the official record\.|BetaNYC produced this\. It is not an official record\.)/)?.[1] ?? c.cite;
+/**
+ * Adds the answer's sources. `data_source` is the main one in full (with `cite`). When there is
+ * more than one, `data_sources` lists every one, grouped by what it says, each with its
+ * about_data_topic, name, publisher, link and date: an answer counting 60 portals stays short.
+ * A failure gets none.
+ */
 function withSources(body: unknown, sources: Cited[]): unknown {
   if (!body || typeof body !== "object" || failureOf(body) !== null || !sources.length) return body;
   const seen = new Set<string>();
   const all = sources.filter((s) => {
-    const key = `${s.about_data_topic}|${s.source}|${s.source_url}`;
+    const key = `${s.about_data_topic}|${s.source}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
-  return all.length > 1 ? { ...(body as object), data_source: all[0], data_sources: all } : { ...(body as object), data_source: all[0] };
+  if (all.length === 1) return { ...(body as object), data_source: all[0] };
+  const groups = new Map<string, Record<string, unknown>[]>();
+  for (const s of all) {
+    const says = saysOf(s);
+    const item: Record<string, unknown> = { about_data_topic: s.about_data_topic, source: s.source, publisher: s.publisher, source_url: s.source_url, as_of: s.as_of };
+    if (s.portal_id) item.portal_id = s.portal_id;
+    if (s.about_data_note) item.about_data_note = s.about_data_note;
+    groups.set(says, [...(groups.get(says) ?? []), item]);
+  }
+  return { ...(body as object), data_source: all[0], data_sources: [...groups].map(([says, items]) => ({ says, sources: items })) };
 }
 const withSource = (body: unknown, s: Cited) => withSources(body, [s]);
+const SOURCES_MARGIN_BYTES = 400;
+/** How many bytes a search answer's sources take, for the portals it counted: the search keeps
+ * its rows and groups to what is left of its size budget (datasets.ts, setSourcesBytes). */
+setSourcesBytes((counted) => {
+  const body = {};
+  Object.defineProperty(body, COUNTED, { value: counted, enumerable: false });
+  const probe = { p: 0 };
+  const sized = withSources(probe, answerSources(body, { also: [sourceFrom("coverage")] }));
+  // The answer's own rows can change which portal leads (its block is in full), so allow for a
+  // longer name and link than the one measured here.
+  return Buffer.byteLength(toolJson(sized), "utf8") - Buffer.byteLength(toolJson(probe), "utf8") + SOURCES_MARGIN_BYTES;
+});
 /** The message when an answer is a failure and nothing else: an object whose only field is a
  * string `error` (unknown dataset, source or date) or `place_error` (a place this server does
  * not know). An answer that carries a problem next to real content (check_source's
@@ -676,13 +774,18 @@ export async function callTool(name: string, args: unknown) {
       }
       case "registry_info":
         parseToolArgs("registry_info", args);
-        return text(withSource({ ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() }, registrySource()));
+      {
+        // The registry, then the catalog of every portal whose datasets the index counts (index.datasets, portals_detail).
+        const r = { ...registryInfo(indexInfo()), index_download: downloadState(), index_status: indexStatus() };
+        return text(withSources(r, answerSources(r, { lead: [registrySource()] })));
+      }
       case "search_datasets": {
         const r = searchDatasets(parseToolArgs("search_datasets", args)) as Record<string, any>;
-        // Each row's own portal catalog (or the hand-kept list); with no rows, the coverage list
-        // that says which portals the index reads.
-        const found = rowSources(r.results);
-        const out = text(withSources(r, found.length ? found : [sourceFrom("coverage")]));
+        // The catalog of every portal with a match (rows, groups, total_matches and the export
+        // count them all), the hand-kept list for its rows, and the coverage list the answer
+        // carries (registry portals the index does not search); the coverage list alone when
+        // nothing matched.
+        const out = text(withSources(r, answerSources(r, { also: r.coverage ? [sourceFrom("coverage")] : [], whenEmpty: sourceFrom("coverage") })));
         // MCP resource_link content (spec 2025-06-18 and later, "Resource Links" under Tool Result).
         // The JSON text block above stays the answer; this lets a client open or attach the file.
         if (r.export?.uri) {
@@ -699,26 +802,33 @@ export async function callTool(name: string, args: unknown) {
         return out;
       }
       case "list_topics":
-        return text(withSource(listTopics(parseToolArgs("list_topics", args)), sourceFrom("topics")));
+      {
+        // BetaNYC's topics, then the catalog of every portal whose datasets the counts include.
+        const r = listTopics(parseToolArgs("list_topics", args));
+        return text(withSources(r, answerSources(r, { lead: [sourceFrom("topics")] })));
+      }
       case "get_dataset_columns": {
         const a = parseToolArgs("get_dataset_columns", args);
         // One dataset: its portal's catalog, with the dataset's own page as the official record, as
         // of the harvest that last saw it. A description in a standard also cites the mapping.
         const r = getDatasetColumns(a.dataset, a.standard ? 1 : a.limit, a.standard ? 0 : a.offset) as Record<string, any>;
-        const own = typeof r.dataset_id === "string" ? rowSource(r.dataset_id, { asOf: r.last_seen ?? null, sourceUrl: r.url }) : null;
-        if (a.standard) return text(withSources(datasetStandard(a.dataset, a.standard), [own, sourceFrom("standard-descriptions")].filter((x): x is Cited => !!x)));
-        return text(withSources(r, own ? [own] : []));
+        const own = typeof r.dataset_id === "string" ? datasetSource(r.dataset_id, { asOf: r.last_seen ?? null, sourceUrl: r.url }) : null;
+        if (a.standard) {
+          const std = datasetStandard(a.dataset, a.standard);
+          return text(withSources(std, own ? answerSources(std, { lead: [own], also: [sourceFrom("standard-descriptions")] }) : []));
+        }
+        return text(withSources(r, own ? answerSources(r, { lead: [own] }) : []));
       }
       case "find_joinable": {
         const a = parseToolArgs("find_joinable", args);
         const r = findJoinable(a.dataset, a.column, a.limit_per_key) as Record<string, any>;
-        return text(withSources(r, [...rowSources(r, r.dataset?.dataset_id), sourceFrom("join-keys")]));
+        const own = typeof r.dataset?.dataset_id === "string" ? datasetSource(r.dataset.dataset_id) : null;
+        return text(withSources(r, answerSources(r, { lead: [own], also: [sourceFrom("join-keys")] })));
       }
       case "whats_new": {
         const a = parseToolArgs("whats_new", args);
         const r = whatsNew(a.since, a.portal, a.limit);
-        const found = rowSources(r);
-        return text(withSources(r, found.length ? found : [sourceFrom("coverage")]));
+        return text(withSources(r, answerSources(r, { whenEmpty: sourceFrom("coverage") })));
       }
       default:
         return fail(`Unknown tool: ${echo(name)}. The tools are: ${TOOLS.map((t) => t.name).join(", ")}.`);

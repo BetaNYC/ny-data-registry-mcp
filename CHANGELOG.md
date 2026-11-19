@@ -33,15 +33,6 @@ Dataset search matches every word of the query.
   and fetches nothing; before 0.4.0, one row on a host was always checked. With several rows on
   the host and a clear match, `url_matches` gives the count. **How to update:** on `ambiguous`,
   call again with a `source_id` from `candidates`.
-- **`cite` says first whether BetaNYC modified or produced the data, in `about_data`'s words.**
-  Registry answers (`find_sources`, `list_sources_for_place`, `how_to_query`, `registry_info`,
-  and `check_source`'s `registry_source`) start "BetaNYC produced this. It is not an official
-  record." Dataset rows (`search_datasets`, `whats_new`, `find_joinable`, `get_dataset_columns`)
-  name each row's portal catalog and start "BetaNYC modified this data: …", ending with the
-  portal as the official record. `data_source` gains `changed_by_betanyc` and `about_data_topic`;
-  an answer whose rows come from several portals adds `data_sources`, one block per source.
-  **How to update:** a client that parsed `cite` as "Source: … Link: …" reads `source_url` (the
-  official record) instead, and reads `data_sources` when it is there.
 
 ### Changed
 
@@ -130,25 +121,49 @@ Dataset search matches every word of the query.
   index", which `about_data` did not give for those tools, and `get_dataset_columns` named
   "<portal> catalog". `held_in` is gone. BetaNYC's own lists in an answer are named beside the
   rows as produced: topics (`list_topics`), the join-key list (`find_joinable`), the standard
-  mapping (a Croissant or DCAT-US description), and the harvest coverage when a search or
-  `whats_new` has no rows. `check_source` cites a portal it reached as the new `portal-check`
-  source (BetaNYC's record of the portal's reply, produced) and the registry row it compared that
-  with in a separate `registry_source`. Tests: every source any tool answer names is in
-  `about_data` for that tool with the same name, publisher and words, and the check fails on the
-  answer 0.4.0 gave before (`test/answers.test.mjs`).
+  mapping (a Croissant or DCAT-US description), and the harvest coverage in every search answer
+  (which carries the list of registry portals the index does not search) and, alone, when a
+  search or `whats_new` has nothing. `check_source` cites a portal it reached as the new
+  `portal-check` source (BetaNYC's record of the portal's reply, produced) and the registry row
+  it compared that with in a separate `registry_source`. Tests: every source any tool answer
+  names is in `about_data` for that tool with the same name, publisher and words, and the check
+  fails on the answer 0.4.0 gave before (`test/answers.test.mjs`).
+- Every portal whose catalog an answer draws on is named, not only the portals of the rows it
+  lists: group titles and counts (`group_by` portal, county, entity or platform, and the
+  automatic summary), `total_matches` and the export, `whats_new`'s totals, `list_topics`'
+  counts, `find_joinable`'s `by_portal`, and `registry_info`'s per-portal dataset counts. Each
+  index function marks the portals it counted, and one helper in `src/tools.ts`
+  (`answerSources`) turns them, and every `dataset_id` and `portal_id` in the answer, into
+  sources. Before, `search_datasets` with `group_by: "portal"` named only `coverage` ("BetaNYC
+  produced this"), and its automatic summary only the portals of the listed rows. Test:
+  `test/answer-sources.test.mjs`. A search's size budget (about 20 KB) now covers its sources:
+  rows and group titles are cut to leave room for them; when a search matches so many portals
+  that their sources take most of it, the reply keeps 8,000 bytes of rows and groups and its size
+  note gives the larger limit it kept to (on the 2026-11-05 index, a 30-portal search such as
+  "parcels" is about 20.7 KB). The tool description says replies "aim for" about 20 KB. Test:
+  `test/search-budget-sources.test.mjs`.
+- A portal with no entry of its own in `DATA-SOURCES.json` (the index is rebuilt every night,
+  the list of sources only with a release, so a portal the registry adds or renames after a
+  release has none) still says "BetaNYC modified this data", naming the portal, its publisher and
+  link from the index and the registry as the official record, with `about_data_topic:
+  "portal-catalogs"` and an `about_data_note` that this server's `about_data` has no fuller entry
+  for it yet. Before, such rows (834 under the old id
+  `nys-department-of-environmental-conservation` in the 2026-11-05 index) had no source in
+  `get_dataset_columns` and were labeled "produced" elsewhere. Test: a fixture portal unknown
+  to `DATA-SOURCES.json`, across every dataset tool (`test/answer-sources.test.mjs`).
 - `DATA-SOURCES.json`: the 54 portal catalogs whose harvest removes HTML (ArcGIS, ArcGIS Server,
   GeoBlacklight, InvenioRDM) list the `cleaned` step, so their answer reads "BetaNYC modified
   this data: cleaned it, left some records out, reshaped it, and joined it with other data". The
-  six Socrata catalogs are not cleaned. New source `portal-check`; `coverage` also names
-  `whats_new`. `data.json` rebuilt.
+  six Socrata catalogs are not cleaned. New sources `portal-check` and `portal-catalogs`;
+  `coverage` also names `whats_new`. `data.json` rebuilt.
 - `about_data` is short. With no topic it was 198,462 characters in a live check (the shared
   module gives every source in full, and the 60 portal catalogs are one source each); now it is a
   list of every source, one line each (topic, name, publisher, official answer), about 7,000
   characters, with how to ask for more. With a tool's name (192,235 characters for
   `search_datasets`, since every catalog names every index tool), BetaNYC's own sources come in
   full and the portal catalogs one line each with their link and date (at most about 22,000
-  characters). One source, or `all`, is the shared module's answer, unchanged. This is a layer
-  over the shared module's own answer in `src/tools.ts`; `betanyc-tools.ts` is not edited. Test:
+  characters). One source, or `all`, is the shared module's answer, unchanged. This is a layer over
+  the shared module's own answer in `src/tools.ts`; `betanyc-tools.ts` is not edited. Test:
   `test/about-data-size.test.mjs` (budgets, and every source still reachable by its topic).
 - Per-field `provenance` in harvested records: a field the harvest cleaned or chose is
   `derived`, not `portal`. ArcGIS Server, GeoBlacklight and InvenioRDM descriptions with HTML
@@ -189,12 +204,24 @@ Dataset search matches every word of the query.
 
 ### Added
 
+- Every answer from the ten registry and index tools names its sources (#36, #37; new in 0.4.0,
+  so nothing changes for a 0.3.0 client). `data_source` is the main source in full: name,
+  publisher, link, `as_of`, `changed_by_betanyc`, `about_data_topic`, `portal_id` for a portal's
+  catalog, and `cite`, which says first whether BetaNYC modified or produced the data, in
+  `about_data`'s words. Registry answers (`find_sources`, `list_sources_for_place`,
+  `how_to_query`, `registry_info`, and `check_source`'s `registry_source`) start "BetaNYC
+  produced this. It is not an official record." Anything an answer shows from a portal's catalog
+  starts "BetaNYC modified this data: …" and ends with the portal as the official record. When
+  an answer draws on more than one source, `data_sources` lists every one, grouped by what it
+  says (`says`), each with its `about_data_topic`, name, publisher, link and date.
 - `about_data`, the third BetaNYC standard tool (betanyc-ai-workspace #1672): where each kind
-  of data comes from, from `DATA-SOURCES.json`. 68 sources: one for each of the 60 portals the
+  of data comes from, from `DATA-SOURCES.json`. 70 sources: one for each of the 60 portals the
   harvest reads, published by the government or institution that runs it (the platform, such as
   Socrata or ArcGIS, is named but is not the publisher), plus the portal list, who runs each
   site, places, the hand-kept list, topics, coverage, join keys, and the Croissant and DCAT-US
-  descriptions. Each gives one of the three answers to "is this official?". A test fails when
+  descriptions, the `portal-check` record of a `check_source` request, and `portal-catalogs`, what
+  the harvest does to any portal's catalog. Each gives one of the three answers to "is this
+  official?". A test fails when
   the harvest reads a portal with no source. Each portal source carries the portal's own name
   (its site title; an unnamed ArcGIS services directory is named by its page title and
   address), links the portal itself to check a figure, cites what sets its terms (NYC Open Data and

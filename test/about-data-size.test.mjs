@@ -83,6 +83,7 @@ test("\"all\" still gives every source in full, as the shared module does", asyn
 
 test("about_data's topic says a short list is the default", () => {
   const d = TOOLS.find((t) => t.name === "about_data").inputSchema.properties.topic.description;
-  assert.match(d, /Default: a short list of every source/);
+  assert.match(d, /Default: a short list of all sources/);
+  assert.match(d, /"all": each in full/);
   assert.doesNotMatch(d, /Default: all/);
 });

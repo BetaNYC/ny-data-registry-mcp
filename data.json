@@ -157,6 +157,38 @@
       ]
     },
     {
+      "@id": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+      "@type": "Dataset",
+      "title": "New York open data portal catalogs",
+      "description": "New York open data portal catalogs, published by The government or institution that runs each portal.",
+      "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+      "contactPoint": {
+        "@type": "Kind",
+        "fn": "BetaNYC (lists this dataset; report errors in the data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues)",
+        "hasEmail": "mailto:lab@beta.nyc"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "The government or institution that runs each portal"
+      },
+      "landingPage": {
+        "@type": "Document",
+        "title": "New York open data portal catalogs",
+        "accessURL": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest"
+      },
+      "page": [
+        {
+          "@type": "Document",
+          "title": "Check a figure at the source",
+          "accessURL": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+        }
+      ],
+      "accrualPeriodicity": "daily",
+      "rights": [
+        "Terms of use: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+      ]
+    },
+    {
       "@id": "https://health.data.ny.gov/",
       "@type": "Dataset",
       "title": "Health Data NY",
@@ -2725,6 +2757,103 @@
         "Terms of use: https://github.com/BetaNYC/ny-data-registry-mcp/blob/main/LICENSE"
       ],
       "scopeNote": "Known gap: Not yet checked against an official list of places. Towns and villages are not in it."
+    },
+    {
+      "@id": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#portal-catalogs",
+      "@type": "Dataset",
+      "title": "Any portal's dataset catalog, as the harvest copies it (NY Data Registry MCP server)",
+      "description": "What BetaNYC's nightly harvest does to the catalog of every New York portal it reads. An answer cites this when a dataset comes from a portal that has no source of its own in this list yet: the index is rebuilt every night, and this list changes only with a new release of the server. The answer names the portal and its publisher; that portal is the official record.",
+      "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#portal-catalogs",
+      "contactPoint": {
+        "@type": "Kind",
+        "fn": "BetaNYC (serves this dataset; report errors in the data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues)",
+        "hasEmail": "mailto:lab@beta.nyc"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://www.beta.nyc/",
+        "name": "BetaNYC",
+        "subOrganizationOf": [
+          {
+            "@type": "Organization",
+            "name": "Fund for the City of New York"
+          }
+        ]
+      },
+      "source": [
+        {
+          "@id": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+          "@type": "Dataset",
+          "title": "New York open data portal catalogs",
+          "description": "New York open data portal catalogs, published by The government or institution that runs each portal.",
+          "identifier": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+          "contactPoint": {
+            "@type": "Kind",
+            "fn": "BetaNYC (lists this dataset; report errors in the data to BetaNYC: https://github.com/BetaNYC/ny-data-registry-mcp/issues)",
+            "hasEmail": "mailto:lab@beta.nyc"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "The government or institution that runs each portal"
+          },
+          "landingPage": {
+            "@type": "Document",
+            "title": "New York open data portal catalogs",
+            "accessURL": "https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest"
+          },
+          "page": [
+            {
+              "@type": "Document",
+              "title": "Check a figure at the source",
+              "accessURL": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+            }
+          ],
+          "accrualPeriodicity": "daily",
+          "rights": [
+            "Terms of use: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+          ]
+        }
+      ],
+      "provenance": [
+        "BetaNYC modified this data: cleaned it, left some records out, reshaped it, and joined it with other data. This copy should not be considered the official record. Official record: New York open data portal catalogs (The government or institution that runs each portal), https://github.com/BetaNYC/ny-data-registry-mcp#the-harvest",
+        "Read by BetaNYC's nightly harvest (GitHub Actions) and published as a SQLite index on this repo's GitHub Releases. The server downloads that index once and checks for a newer one. Nothing on a portal is called when you ask, except by check_source.",
+        "Modified by BetaNYC: BetaNYC's nightly harvest reads each portal's catalog, keeps only data records (not stories, charts or pages) and drops records whose map extent is outside New York. It copies each record's title, description, tags, columns, formats, dates and links into one search index, and joins each record to its registry row. On most platforms (ArcGIS, ArcGIS Server, GeoBlacklight, InvenioRDM) it also removes HTML from descriptions; Socrata values are kept as the portal gives them."
+      ],
+      "page": [
+        {
+          "@type": "Document",
+          "title": "Check a figure at the source",
+          "accessURL": "https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+        }
+      ],
+      "spatial": {
+        "@type": "Location",
+        "prefLabel": "New York State"
+      },
+      "wasGeneratedBy": [
+        {
+          "@type": "Activity",
+          "label": "cleaned"
+        },
+        {
+          "@type": "Activity",
+          "label": "filtered"
+        },
+        {
+          "@type": "Activity",
+          "label": "reshaped"
+        },
+        {
+          "@type": "Activity",
+          "label": "merged"
+        }
+      ],
+      "accrualPeriodicity": "daily",
+      "rights": [
+        "Credit: Dataset descriptions from each dataset's page on its portal, via BetaNYC's NY Data Registry.",
+        "Terms of use: https://betanyc.github.io/grounding-ai-with-ny-open-data/resources/ny-data-portal-registry.html"
+      ],
+      "scopeNote": "Known gap: Records whose map extent is wholly outside New York are dropped. Caveat: Each dataset's own page on its portal, the link in each result, is the official record of that dataset. Caveat: Each portal sets its own terms of use; check them on the portal. Caveat: This is a catalog of dataset descriptions, not the data itself."
     },
     {
       "@id": "https://github.com/BetaNYC/ny-data-registry-mcp/blob/HEAD/DATA-SOURCES.json#catalog-health-data-ny",

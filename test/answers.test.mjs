@@ -62,11 +62,13 @@ test("registry answers cite the registry's date; dataset rows their portal's cat
   // whats_new lists rows from several portals: one source per portal catalog, as of that portal's
   // last good read in the index (the same date about_data gives for that catalog).
   const wn = await call("whats_new", { since: "2000-01-01" });
-  assert.ok(wn.data_sources.length > 1, "rows from several portals name each portal's catalog");
-  assert.deepEqual(wn.data_source, wn.data_sources[0]);
+  const listed = wn.data_sources.flatMap((g) => g.sources);
+  assert.ok(listed.length > 1, "rows from several portals name each portal's catalog");
+  assert.equal(listed[0].source, wn.data_source.source, "data_source is the first of data_sources");
   const portals = new Set(wn.index_change_detail.map((r) => r.dataset_id.split(":")[0]));
-  assert.equal(wn.data_sources.length, portals.size);
-  for (const s of wn.data_sources) assert.match(s.about_data_topic, /^catalog-/);
+  assert.deepEqual(new Set(listed.map((s) => s.portal_id)), portals);
+  for (const s of listed) assert.match(s.about_data_topic, /^catalog-/);
+  for (const g of wn.data_sources) assert.match(g.says, /^BetaNYC modified this data: /);
   const ds = await call("get_dataset_columns", { dataset: WIDE });
   assert.equal(ds.data_source.source_url, ds.url, "the dataset's own page is the official record");
   assert.equal(ds.data_source.source, "Cortland County GIS Portal");
@@ -151,9 +153,10 @@ test("dataset rows say BetaNYC modified this data and name their portal's catalo
   }
   // BetaNYC's own work in an answer is named apart, as produced: the join-key list, the topic
   // rules, the standard mapping, and the coverage list when no row matched.
-  assert.ok((await call("find_joinable", { dataset: "test-0001" })).data_sources.some((s) => s.about_data_topic === "join-keys" && s.changed_by_betanyc.kind === "produced-by-betanyc"));
+  const fj = await call("find_joinable", { dataset: "test-0001" });
+  assert.ok(fj.data_sources.some((g) => /^BetaNYC produced this\./.test(g.says) && g.sources.some((s) => s.about_data_topic === "join-keys")));
   assert.equal((await call("list_topics", {})).data_source.about_data_topic, "topics");
-  assert.ok((await call("get_dataset_columns", { dataset: WIDE, standard: "dcat-us" })).data_sources.some((s) => s.about_data_topic === "standard-descriptions"));
+  assert.ok(allSources(await call("get_dataset_columns", { dataset: WIDE, standard: "dcat-us" })).some((s) => s.about_data_topic === "standard-descriptions"));
   const none = await call("search_datasets", { query: "zzqqxxnomatch" });
   assert.equal(none.results.length, 0);
   assert.equal(none.data_source.about_data_topic, "coverage");
@@ -181,33 +184,53 @@ async function toolTopics(tool) {
   if (r.isError) return new Set();
   return new Set([...r.structuredContent.sources, ...(r.structuredContent.portal_catalogs ?? [])].map((s) => s.topic));
 }
-async function problemsWith(tool, s) {
+// A source block in full (data_source, registry_source: with cite) or a short one in
+// data_sources (with the `says` of its group). A portal with no entry of its own cites the
+// generic portal-catalogs entry: its name and publisher are the portal's, not that entry's, and
+// it says so in about_data_note.
+const kindOfSays = (t) => (/^BetaNYC modified this data: /.test(t) ? "modified-by-betanyc" : /^BetaNYC produced this\. /.test(t) ? "produced-by-betanyc" : "published-as-is");
+async function problemsWith(tool, s, says = null) {
   const where = `${tool}: ${s.source}`;
+  const text = s.cite ?? says;
+  if (typeof text !== "string") return [`${where}: no cite and no says`];
   if (!s.about_data_topic) return [`${where}: no about_data_topic`];
   const ad = await aboutDataSource(s.about_data_topic);
   if (!ad) return [`${where}: about_data has no source ${s.about_data_topic}`];
   const out = [];
+  const generic = ad.topic === "portal-catalogs";
   if (!(await toolTopics(tool)).has(ad.topic)) out.push(`${where}: about_data for ${tool} does not list ${ad.topic}`);
-  if (ad.source !== s.source) out.push(`${where}: about_data names it ${ad.source}`);
-  if (ad.publisher !== s.publisher) out.push(`${where}: about_data's publisher is ${ad.publisher}`);
+  if (generic) {
+    if (!s.portal_id || !/has no entry of its own/.test(s.about_data_note ?? "")) out.push(`${where}: a portal with no entry of its own must name it and say so`);
+  } else {
+    if (ad.source !== s.source) out.push(`${where}: about_data names it ${ad.source}`);
+    if (ad.publisher !== s.publisher) out.push(`${where}: about_data's publisher is ${ad.publisher}`);
+  }
   const kind = officialKind(ad.official, ad.changed_by_betanyc.changed, ad.changed_by_betanyc.steps);
-  if ((s.changed_by_betanyc?.kind ?? "published-as-is") !== kind) out.push(`${where}: answer says ${s.changed_by_betanyc?.kind ?? "published-as-is"}, about_data says ${kind}`);
+  const said = s.changed_by_betanyc?.kind ?? kindOfSays(text);
+  if (said !== kind || kindOfSays(text) !== kind) out.push(`${where}: answer says ${said}, about_data says ${kind}`);
   const wording = officialWording({ official: ad.official, changed: ad.changed_by_betanyc.changed, steps: ad.changed_by_betanyc.steps, publisher: ad.publisher, sourceName: ad.source, sourceUrl: ad.source_url });
   const [label, tag] = wording.split(/ (Official record|Built from|Source): /);
-  if (!s.cite.startsWith(label)) out.push(`${where}: cite does not start with about_data's words: ${label}`);
-  if (!s.cite.includes(`${tag}: ${builtFrom(ad.source, ad.publisher)}, `)) out.push(`${where}: cite does not name the source as about_data does (${tag}: ${builtFrom(ad.source, ad.publisher)})`);
+  if (!text.startsWith(label)) out.push(`${where}: does not start with about_data's words: ${label}`);
+  if (says !== null && says !== label) out.push(`${where}: says is not about_data's words: ${label}`);
+  const named = generic ? builtFrom(s.source, s.publisher) : builtFrom(ad.source, ad.publisher);
+  if (s.cite && !s.cite.includes(`${tag}: ${named}, `)) out.push(`${where}: cite does not name the source as ${tag}: ${named}`);
   return out;
 }
-const named = (b) => [...(b.data_sources ?? [b.data_source]), b.registry_source].filter(Boolean);
+/** Every source an answer names: [block, says] pairs (says is null for a block in full). */
+const named = (b) => [
+  ...[b.data_source, b.registry_source].filter(Boolean).map((s) => [s, null]),
+  ...(b.data_sources ?? []).flatMap((g) => g.sources.map((s) => [s, g.says])),
+];
+const allSources = (b) => named(b).map(([s]) => s);
 
 test("every source a tool answer names is in about_data for that tool, with the same name, publisher and label", async () => {
   const domain = TOOLS.map((t) => t.name).filter((n) => !["whats_changed", "about_betanyc", "about_data"].includes(n));
   const seen = new Set();
   const problems = [];
   const walk = async (name, b) => {
-    for (const s of named(b)) {
+    for (const [s, says] of named(b)) {
       seen.add(name);
-      problems.push(...(await problemsWith(name, s)));
+      problems.push(...(await problemsWith(name, s, says)));
     }
   };
   for (const [name, args] of [...CALLS, ["search_datasets", { query: "zzqqxxnomatch" }], ["whats_new", { since: "2000-01-01", portal: "nassau-county" }]]) await walk(name, await call(name, args));
